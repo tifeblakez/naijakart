@@ -18,9 +18,16 @@ def arc(cx, cz, r, a0, a1, n, y=0.0):
         a = math.radians(a0 + (a1 - a0) * i / n)
         add(cx + r * math.cos(a), cz + r * math.sin(a), y)
 
-# Start/finish on the bridge deck heading +Z. Bridge rises gently then falls.
+# Start/finish on the bridge approach heading +Z. The deck climbs to 8 m over the lagoon
+# (z 30..330), holds, then drops back to the mainland.
+def deck_height(z):
+    if z <= 0: return 0.0
+    if z < 90: return 8.0 * z / 90.0
+    if z <= 270: return 8.0
+    if z < 360: return 8.0 * (360 - z) / 90.0
+    return 0.0
 for i in range(0, 13):
-    add(0, i * 30, min(6.0, i * 1.0) if i < 6 else max(0.0, 6.0 - (i - 6) * 1.2))
+    add(0, i * 30, deck_height(i * 30))
 # Construction chicane (narrow, right-left) around z=390..470
 add(6, 400); add(14, 420); add(14, 445); add(4, 465); add(-4, 485)
 # Sweep right onto the Oworonshoki ramp

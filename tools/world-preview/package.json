@@ -4,11 +4,13 @@
   "version": "0.1.0",
   "description": "Renders the generated Naija Kart world and a race replay to video (no artists, no engine licence).",
   "scripts": {
-    "setup": "cp node_modules/three/build/three.module.js public/three.module.js",
-    "render": "node render.js"
+    "setup": "mkdir -p public/vendor public/fonts && cp node_modules/three/build/three.module.js public/vendor/three.module.js && cp -r node_modules/three/examples/jsm public/vendor/jsm && cp node_modules/@fontsource/baloo-2/files/baloo-2-latin-800-normal.woff2 public/fonts/baloo-800.woff2 && cp node_modules/@fontsource/baloo-2/files/baloo-2-latin-700-normal.woff2 public/fonts/baloo-700.woff2 && cp index.html public/index.html",
+    "render": "node render.js",
+    "still": "node still.js"
   },
   "dependencies": {
     "three": "0.169.0",
-    "playwright": "1.47.2"
+    "playwright": "1.47.2",
+    "@fontsource/baloo-2": "5.3.0"
   }
 }

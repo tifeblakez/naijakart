@@ -143,5 +143,61 @@ namespace NaijaKart.Core.World
 
         public void Cone(MeshBatch m, Vec3 centreBase, float radius, float height, int segments = 8) =>
             Cylinder(m, centreBase, radius, height, segments, 0.02f);
+
+        /// <summary>Tapered box: bottom face of size bottom, top face of size top, both centred on the vertical axis (car bodies, roofs, hulls).</summary>
+        public void Frustum(MeshBatch m, Vec3 centreBase, Vec3 bottom, Vec3 top, float height, float yaw = 0f, float topOffsetZ = 0f)
+        {
+            Vec3 P(float x, float y, float z) => centreBase + Rot(new Vec3(x, y, z), yaw);
+            float bx = bottom.X * 0.5f, bz = bottom.Z * 0.5f, tx = top.X * 0.5f, tz = top.Z * 0.5f;
+            Vec3 a = P(-bx, 0, -bz), b = P(bx, 0, -bz), c = P(bx, 0, bz), d = P(-bx, 0, bz);
+            Vec3 e = P(-tx, height, -tz + topOffsetZ), f = P(tx, height, -tz + topOffsetZ), g = P(tx, height, tz + topOffsetZ), h = P(-tx, height, tz + topOffsetZ);
+            Quad(m, e, f, g, h);
+            Quad(m, d, c, b, a);
+            Quad(m, a, b, f, e);
+            Quad(m, c, d, h, g);
+            Quad(m, b, c, g, f);
+            Quad(m, d, a, e, h);
+        }
+
+        /// <summary>Low-poly sphere (heads, hair, tree canopies, buoys).</summary>
+        public void Sphere(MeshBatch m, Vec3 centre, float radius, int segments = 8, int rings = 6, float yScale = 1f)
+        {
+            var prev = new Vec3[segments];
+            for (int r = 0; r <= rings; r++)
+            {
+                float phi = MathUtil.Pi * r / rings;
+                float y = (float)System.Math.Cos(phi) * radius * yScale, rr = (float)System.Math.Sin(phi) * radius;
+                var ring = new Vec3[segments];
+                for (int i = 0; i < segments; i++)
+                {
+                    float a = MathUtil.TwoPi * i / segments;
+                    ring[i] = centre + new Vec3((float)System.Math.Cos(a) * rr, y, (float)System.Math.Sin(a) * rr);
+                }
+                if (r > 0)
+                {
+                    for (int i = 0; i < segments; i++)
+                    {
+                        int j = (i + 1) % segments;
+                        if (r == 1) Tri(m, prev[0], ring[j], ring[i]);
+                        else if (r == rings) Tri(m, prev[i], prev[j], ring[0]);
+                        else Quad(m, prev[i], prev[j], ring[j], ring[i]);
+                    }
+                }
+                prev = ring;
+            }
+        }
+
+        /// <summary>Thin beam between two points (cables, rails, poles at an angle).</summary>
+        public void Beam(MeshBatch m, Vec3 from, Vec3 to, float thickness)
+        {
+            Vec3 d = to - from; float len = d.Magnitude; if (len < 1e-4f) return;
+            Vec3 axis = d / len;
+            Vec3 side = Vec3.Cross(axis, System.Math.Abs(axis.Y) > 0.9f ? new Vec3(1, 0, 0) : Vec3.Up).Normalized * (thickness * 0.5f);
+            Vec3 up = Vec3.Cross(side, axis).Normalized * (thickness * 0.5f);
+            Vec3 a = from - side - up, b = from + side - up, c = from + side + up, dd = from - side + up;
+            Vec3 e = to - side - up, f = to + side - up, g = to + side + up, h = to - side + up;
+            Quad(m, a, b, f, e); Quad(m, b, c, g, f); Quad(m, c, dd, h, g); Quad(m, dd, a, e, h);
+            Quad(m, dd, c, b, a); Quad(m, e, f, g, h);
+        }
     }
 }

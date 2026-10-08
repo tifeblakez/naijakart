@@ -58,3 +58,7 @@ Thumbs.db
 /tools/world-preview/public/three.module.js
 /tools/world-preview/frames/
 /tools/world-preview/*.mp4
+/tools/world-preview/public/vendor/
+/tools/world-preview/public/fonts/
+/tools/world-preview/public/index.html
+*.png

@@ -73,7 +73,8 @@ namespace NaijaKart.Server
             var hub = new LoopbackTransportHub(seed);
             var server = new GameServer(content, hub.Server, log, seed: seed);
             var room = server.CreateRoom(RaceMode.Practice, trackId ?? content.TrackIds[0], content.Game.raceRules.defaultLaps, null);
-            for (int i = 0; i < players; i++) room.AddBot("bot_" + (i + 1), 0.4f + 0.08f * i);
+            // bot_1 drives the Danfo (the hero kart of the previews); the rest cycle through the garage.
+            for (int i = 0; i < players; i++) room.AddBot("bot_" + (i + 1), 0.4f + 0.08f * i, i == 0 ? "danfo" : null);
             room.Race.BeginCountdown();
 
             var replay = replayPath != null ? new ReplayWriter(room.Race, content) : null;
@@ -165,7 +166,8 @@ namespace NaijaKart.Server
                 {
                     var s = p.State;
                     karts.Add(new { id = p.PlayerId, x = R(s.Position.X), y = R(s.Position.Y), z = R(s.Position.Z), h = R(s.Heading), v = R(s.Speed), lat = R(s.LateralVelocity),
-                        d = s.IsDrifting, dd = s.DriftDirection, b = s.IsBoosting, l = p.Checkpoints?.LapsCompleted ?? 0, p = p.Position, st = p.Status.ToString() });
+                        d = s.IsDrifting, dd = s.DriftDirection, b = s.IsBoosting, l = p.Checkpoints?.LapsCompleted ?? 0, p = p.Position, st = p.Status.ToString(),
+                        it = _race.InventoryOf(p.PlayerId)?.SnapshotIds(), bc = s.BoostCharges, stun = s.IsStunned, sh = s.ShieldTimeRemaining > 0f });
                 }
                 var hazards = new System.Collections.Generic.List<object>();
                 foreach (var h in _race.Hazards.All)
@@ -186,7 +188,8 @@ namespace NaijaKart.Server
             public void Finish(string path)
             {
                 string follow = null;
-                if (_race.Results != null && _race.Results.Entries.Count > 0) follow = _race.Results.Entries[0].PlayerId;
+                foreach (var kv in _karts) if (kv.Value.vehicle == "danfo") follow = kv.Key;
+                if (follow == null && _race.Results != null && _race.Results.Entries.Count > 0) follow = _race.Results.Entries[0].PlayerId;
                 var kartList = new System.Collections.Generic.List<object>();
                 foreach (var kv in _karts) kartList.Add(new { id = kv.Key, name = kv.Value.name, vehicle = kv.Value.vehicle, template = NaijaKart.Core.World.WorldBuilder.KartTemplateFor(kv.Value.vehicle) });
                 var doc = new { trackId = _race.Setup.TrackId, laps = _race.Setup.Laps, sampleRate = _content.Game.simulation.tickRate, followKartId = follow, karts = kartList, frames = _frames, events = _events };

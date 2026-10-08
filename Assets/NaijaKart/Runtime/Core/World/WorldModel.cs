@@ -13,7 +13,7 @@ namespace NaijaKart.Core.World
     public sealed class MeshBatch
     {
         public string name;
-        /// <summary>Material hint: road, kerb, concrete, metal, glass, water, foliage, trunk, paint, rubber, sign, ground, emissive.</summary>
+        /// <summary>Material hint: road, concrete, barrier, metal, chrome, glass, tower, water, foliage, trunk, paint, rubber, sign, ground, sand, grass, skin, cloth, emissive.</summary>
         public string material = "paint";
         public float r = 0.5f, g = 0.5f, b = 0.5f;
         public float emissive;
@@ -36,11 +36,32 @@ namespace NaijaKart.Core.World
         public string label;
     }
 
+    /// <summary>
+    /// Text that the renderer draws onto a quad (gantry boards, billboards, number plates, shop
+    /// fronts). Text is content, not art: each renderer rasterises it with its own font.
+    /// </summary>
+    [Serializable]
+    public sealed class SignInstance
+    {
+        /// <summary>gantry, billboard, shop, plate, banner, bus.</summary>
+        public string style = "billboard";
+        public string text = "";
+        public string subText = "";
+        public Vec3 position;
+        public float yaw;
+        public float width = 6f, height = 2f;
+        public float[] background = { 0.05f, 0.45f, 0.22f };
+        public float[] foreground = { 1f, 1f, 1f };
+        /// <summary>Template the sign belongs to, or null for a world sign.</summary>
+        public string template;
+    }
+
     [Serializable]
     public sealed class MeshTemplate
     {
         public string name;
         public List<MeshBatch> batches = new List<MeshBatch>();
+        public List<SignInstance> signs = new List<SignInstance>();
     }
 
     [Serializable]
@@ -52,6 +73,9 @@ namespace NaijaKart.Core.World
         public List<MeshBatch> batches = new List<MeshBatch>();
         public List<MeshTemplate> templates = new List<MeshTemplate>();
         public List<PropInstance> props = new List<PropInstance>();
+        public List<SignInstance> signs = new List<SignInstance>();
+        /// <summary>Centreline sampled every few metres for minimaps and overview cameras.</summary>
+        public List<Vec3> minimap = new List<Vec3>();
         public Vec3 sunDirection = new Vec3(-0.4f, -0.8f, -0.3f);
         public float[] skyTop = { 0.35f, 0.6f, 0.95f };
         public float[] skyHorizon = { 0.95f, 0.8f, 0.6f };

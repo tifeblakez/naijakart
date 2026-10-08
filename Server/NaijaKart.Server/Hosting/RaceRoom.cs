@@ -108,11 +108,11 @@ namespace NaijaKart.Server.Hosting
             return true;
         }
 
-        public void AddBot(string botId, float skill)
+        public void AddBot(string botId, float skill, string vehicleId = null)
         {
             if (_members.Contains(botId)) return;
             var vehicles = _content.Vehicles.vehicles;
-            string vehicle = vehicles[(int)((_seed + (ulong)_members.Count) % (ulong)vehicles.Length)].id;
+            string vehicle = vehicleId ?? vehicles[(int)((_seed + (ulong)_members.Count) % (ulong)vehicles.Length)].id;
             if (!Race.AddParticipant(botId, botId, vehicle, null, isBot: true)) return;
             _server.Ledger.EnsureAccount(botId);
             _members.Add(botId);
