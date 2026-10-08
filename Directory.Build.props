@@ -1,0 +1,12 @@
+<Project>
+  <PropertyGroup>
+    <Nullable>disable</Nullable>
+    <LangVersion>9.0</LangVersion>
+    <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
+    <WarningLevel>4</WarningLevel>
+    <EnableNETAnalyzers>true</EnableNETAnalyzers>
+    <AnalysisLevel>latest-minimum</AnalysisLevel>
+    <Deterministic>true</Deterministic>
+    <NaijaKartRoot>$(MSBuildThisFileDirectory)</NaijaKartRoot>
+  </PropertyGroup>
+</Project>

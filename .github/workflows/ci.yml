@@ -1,0 +1,35 @@
+name: CI
+
+on:
+  push:
+    branches: ["**"]
+  pull_request:
+
+jobs:
+  dotnet:
+    name: Core + Server build & test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 8.0.x
+      - name: Restore
+        run: dotnet restore NaijaKart.sln
+      - name: Build
+        run: dotnet build NaijaKart.sln --no-restore -c Release
+      - name: Validate config
+        run: dotnet run --project Server/NaijaKart.Server -c Release --no-build -- validate-config --config Assets/StreamingAssets/NaijaKart/Config
+      - name: Test
+        run: dotnet test NaijaKart.sln --no-build -c Release --logger "trx;LogFileName=results.trx"
+      - name: Headless 8-bot race
+        run: dotnet run --project Server/NaijaKart.Server -c Release --no-build -- simulate --players 8 --config Assets/StreamingAssets/NaijaKart/Config
+      - name: Track data is reproducible
+        run: |
+          python3 -I tools/gen_third_mainland_rush.py
+          git diff --exit-code -- Assets/StreamingAssets/NaijaKart/Config/tracks
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: test-results
+          path: "**/TestResults/*.trx"

@@ -1,0 +1,259 @@
+{
+  "schemaVersion": 1,
+  "simulation": {
+    "tickRate": 30,
+    "maxPlayersPerRace": 8,
+    "snapshotRate": 15
+  },
+  "driving": {
+    "minTopSpeed": 18,
+    "maxTopSpeed": 30,
+    "minAcceleration": 6,
+    "maxAcceleration": 14,
+    "coastDeceleration": 8,
+    "brakeDeceleration": 20,
+    "minYawRate": 1.4,
+    "maxYawRate": 2.6,
+    "steeringPeakSpeed": 8,
+    "highSpeedSteerFactor": 0.65,
+    "minLateralGrip": 4,
+    "maxLateralGrip": 9,
+    "offroadSpeedMultiplier": 0.55,
+    "offroadGripMultiplier": 0.6,
+    "recoveryDelaySeconds": 1.5,
+    "recoveryMarginMeters": 12,
+    "recoverySpeedFraction": 0.3,
+    "recoveryStunSeconds": 0.8
+  },
+  "drift": {
+    "minSpeed": 9,
+    "minSteerToStart": 0.25,
+    "minYawMultiplier": 1.25,
+    "maxYawMultiplier": 1.7,
+    "innerSteerFactor": 0.55,
+    "outerSteerFactor": 1.35,
+    "slideInjection": 6,
+    "gripMultiplier": 0.45,
+    "speedRetention": 0.93,
+    "chargeRate": 1,
+    "steerIntoChargeBonus": 0.5,
+    "levelThresholds": [
+      0.8,
+      1.8,
+      3
+    ],
+    "levelBoostDuration": [
+      0.6,
+      1.1,
+      1.8
+    ],
+    "levelBoostMultiplier": [
+      1.15,
+      1.22,
+      1.3
+    ]
+  },
+  "boost": {
+    "maxMultiplier": 1.6,
+    "boostAcceleration": 40,
+    "minDurationScale": 0.85,
+    "maxDurationScale": 1.2
+  },
+  "tilt": {
+    "fullSteerAngleDegrees": 15,
+    "deadZoneDegrees": 1.5,
+    "responseExponent": 1.3,
+    "smoothingLambda": 18,
+    "defaultSensitivity": 1,
+    "minSensitivity": 0.5,
+    "maxSensitivity": 2
+  },
+  "raceRules": {
+    "defaultLaps": 3,
+    "countdownSeconds": 3,
+    "lobbyReadyTimeoutSeconds": 45,
+    "minPlayersToStart": 2,
+    "matchmakingWaitSeconds": 20,
+    "finishGraceSeconds": 30,
+    "maxRaceDurationSeconds": 420,
+    "reconnectWindowSeconds": 20,
+    "gridRowSpacing": 4,
+    "gridColumnSpacing": 2.5,
+    "rematchVoteSeconds": 20
+  },
+  "collision": {
+    "vehicleRadius": 1.1,
+    "bumpSpeedLoss": 0.25,
+    "bumpLateralImpulse": 3,
+    "hitEventMinClosingSpeed": 4,
+    "hardHazardStunSeconds": 1.2,
+    "hardHazardSpeedRetention": 0.2,
+    "hazardImmunitySeconds": 1.5,
+    "trafficLateralShove": 2.5
+  },
+  "items": {
+    "rollDurationSeconds": 1,
+    "boxRespawnSeconds": 4,
+    "boxPickupRadius": 2,
+    "forwardTargetRange": 45,
+    "dropBehindDistance": 3,
+    "maxActiveHazards": 24
+  },
+  "roadEvents": {
+    "enabled": true,
+    "minIntervalSeconds": 6,
+    "maxIntervalSeconds": 14,
+    "telegraphSeconds": 1.5,
+    "kindWeights": [
+      3,
+      2,
+      2.5,
+      2,
+      1,
+      0.5,
+      0.5
+    ],
+    "placeAheadMeters": 35,
+    "crossingLifetimeSeconds": 3.5,
+    "crossingSpeed": 9,
+    "staticLifetimeSeconds": 25,
+    "potholeSpeedRetention": 0.6,
+    "goSlowSpeedMultiplier": 0.5,
+    "goSlowLengthMeters": 25,
+    "floodGripMultiplier": 0.5,
+    "floodSpeedMultiplier": 0.75
+  },
+  "lastma": {
+    "enabled": true,
+    "firstTriggerMinSeconds": 20,
+    "minIntervalSeconds": 25,
+    "maxIntervalSeconds": 45,
+    "noTriggerBeforeFinishSeconds": 10,
+    "maxActiveEvents": 1,
+    "positionWeights": [
+      1.6,
+      1.3,
+      1.1,
+      1,
+      1,
+      1,
+      0.9,
+      0.8
+    ],
+    "targetCooldownSeconds": 60,
+    "warningSeconds": 2,
+    "pursuitSeconds": 12,
+    "pressureGainPerSecond": 0.06,
+    "pressureLossWhileBoosting": 0.25,
+    "pressureGainWhileStunned": 0.6,
+    "pressureGainWhileOffroad": 0.2,
+    "shortcutPressureRelief": 0.5,
+    "slowSpeedFraction": 0.6,
+    "pressureGainWhileSlow": 0.3,
+    "fineAmount": 2000,
+    "fineDecisionSeconds": 15,
+    "pulledOverSpeedMultiplier": 0,
+    "resumeStunSeconds": 1,
+    "shieldBlocksCatch": true
+  },
+  "economy": {
+    "currencyName": "Naija Coins",
+    "startingBalance": 2500,
+    "maxSingleTransaction": 1000000,
+    "coinsByPosition": [
+      850,
+      600,
+      450,
+      350,
+      300,
+      260,
+      230,
+      200
+    ],
+    "coinsPerLapCompleted": 25,
+    "coinsDnf": 50,
+    "coinsLastmaEscapeBonus": 100
+  },
+  "progression": {
+    "maxLevel": 60,
+    "levelBaseXp": 300,
+    "levelExponent": 1.25,
+    "xpByPosition": [
+      420,
+      340,
+      290,
+      250,
+      220,
+      200,
+      180,
+      160
+    ],
+    "xpPerLapCompleted": 20,
+    "xpDnf": 40,
+    "xpLastmaEscape": 60,
+    "xpPerOvertake": 4,
+    "xpPerItemHit": 6,
+    "ratingStart": 1000,
+    "ratingK": 24,
+    "ratingSpread": 400,
+    "ranks": [
+      {
+        "id": "newbie",
+        "displayName": "Newbie",
+        "minRating": 0
+      },
+      {
+        "id": "sharp_guy",
+        "displayName": "Sharp Guy",
+        "minRating": 1050
+      },
+      {
+        "id": "correct_guy",
+        "displayName": "Correct Guy",
+        "minRating": 1120
+      },
+      {
+        "id": "no_dull",
+        "displayName": "No Dull",
+        "minRating": 1200
+      },
+      {
+        "id": "omo",
+        "displayName": "Omo!",
+        "minRating": 1290
+      },
+      {
+        "id": "na_you_sabi",
+        "displayName": "Na You Sabi",
+        "minRating": 1390
+      },
+      {
+        "id": "odogwu",
+        "displayName": "Odogwu",
+        "minRating": 1500
+      },
+      {
+        "id": "chairman",
+        "displayName": "Chairman",
+        "minRating": 1620
+      },
+      {
+        "id": "wahala_dey",
+        "displayName": "Wahala Dey",
+        "minRating": 1750
+      },
+      {
+        "id": "untouchable",
+        "displayName": "Untouchable",
+        "minRating": 1900
+      }
+    ]
+  },
+  "antiCheat": {
+    "absoluteMinLapSeconds": 20,
+    "minLapFractionOfReference": 0.55,
+    "maxSpeedTolerance": 1.15,
+    "teleportSlackMeters": 3,
+    "maxInputFramesPerSecond": 120
+  }
+}

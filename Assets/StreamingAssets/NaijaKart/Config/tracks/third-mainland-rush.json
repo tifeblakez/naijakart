@@ -1,0 +1,677 @@
+{
+  "id": "third_mainland_rush",
+  "displayName": "Third Mainland Rush",
+  "city": "Lagos",
+  "description": "Bridge traffic, Danfos, potholes, construction and an under-bridge shortcut. Learn it or lose it.",
+  "centreline": [
+    {
+      "X": 0,
+      "Y": 0.0,
+      "Z": 0
+    },
+    {
+      "X": 0,
+      "Y": 1.0,
+      "Z": 30
+    },
+    {
+      "X": 0,
+      "Y": 2.0,
+      "Z": 60
+    },
+    {
+      "X": 0,
+      "Y": 3.0,
+      "Z": 90
+    },
+    {
+      "X": 0,
+      "Y": 4.0,
+      "Z": 120
+    },
+    {
+      "X": 0,
+      "Y": 5.0,
+      "Z": 150
+    },
+    {
+      "X": 0,
+      "Y": 6.0,
+      "Z": 180
+    },
+    {
+      "X": 0,
+      "Y": 4.8,
+      "Z": 210
+    },
+    {
+      "X": 0,
+      "Y": 3.6,
+      "Z": 240
+    },
+    {
+      "X": 0,
+      "Y": 2.4,
+      "Z": 270
+    },
+    {
+      "X": 0,
+      "Y": 1.2,
+      "Z": 300
+    },
+    {
+      "X": 0,
+      "Y": 0.0,
+      "Z": 330
+    },
+    {
+      "X": 0,
+      "Y": 0.0,
+      "Z": 360
+    },
+    {
+      "X": 6,
+      "Y": 0.0,
+      "Z": 400
+    },
+    {
+      "X": 14,
+      "Y": 0.0,
+      "Z": 420
+    },
+    {
+      "X": 14,
+      "Y": 0.0,
+      "Z": 445
+    },
+    {
+      "X": 4,
+      "Y": 0.0,
+      "Z": 465
+    },
+    {
+      "X": -4,
+      "Y": 0.0,
+      "Z": 485
+    },
+    {
+      "X": -1.82,
+      "Y": 0.0,
+      "Z": 516.56
+    },
+    {
+      "X": 4.57,
+      "Y": 0.0,
+      "Z": 532.0
+    },
+    {
+      "X": 14.75,
+      "Y": 0.0,
+      "Z": 545.25
+    },
+    {
+      "X": 28.0,
+      "Y": 0.0,
+      "Z": 555.43
+    },
+    {
+      "X": 43.44,
+      "Y": 0.0,
+      "Z": 561.82
+    },
+    {
+      "X": 60.0,
+      "Y": 0.0,
+      "Z": 564.0
+    },
+    {
+      "X": 120,
+      "Y": 0.0,
+      "Z": 572
+    },
+    {
+      "X": 180,
+      "Y": 0.0,
+      "Z": 572
+    },
+    {
+      "X": 230,
+      "Y": 0.0,
+      "Z": 566
+    },
+    {
+      "X": 257.6,
+      "Y": 0.0,
+      "Z": 562.5
+    },
+    {
+      "X": 272.53,
+      "Y": 0.0,
+      "Z": 552.53
+    },
+    {
+      "X": 282.5,
+      "Y": 0.0,
+      "Z": 537.6
+    },
+    {
+      "X": 286.0,
+      "Y": 0.0,
+      "Z": 520.0
+    },
+    {
+      "X": 282.5,
+      "Y": 0.0,
+      "Z": 502.4
+    },
+    {
+      "X": 272.53,
+      "Y": 0.0,
+      "Z": 487.47
+    },
+    {
+      "X": 257.6,
+      "Y": 0.0,
+      "Z": 477.5
+    },
+    {
+      "X": 240.0,
+      "Y": 0.0,
+      "Z": 474.0
+    },
+    {
+      "X": 200,
+      "Y": 0.0,
+      "Z": 468
+    },
+    {
+      "X": 150,
+      "Y": 0.0,
+      "Z": 462
+    },
+    {
+      "X": 110,
+      "Y": 0.0,
+      "Z": 452
+    },
+    {
+      "X": 80,
+      "Y": 0.0,
+      "Z": 430
+    },
+    {
+      "X": 70,
+      "Y": 0.0,
+      "Z": 400
+    },
+    {
+      "X": 84,
+      "Y": 0.0,
+      "Z": 372
+    },
+    {
+      "X": 92,
+      "Y": 0.0,
+      "Z": 345
+    },
+    {
+      "X": 80,
+      "Y": 0.0,
+      "Z": 318
+    },
+    {
+      "X": 70,
+      "Y": 0.0,
+      "Z": 290
+    },
+    {
+      "X": 52,
+      "Y": 0.0,
+      "Z": 255
+    },
+    {
+      "X": 38,
+      "Y": 0.0,
+      "Z": 220
+    },
+    {
+      "X": 34,
+      "Y": 0.0,
+      "Z": 190
+    },
+    {
+      "X": 34,
+      "Y": 0.0,
+      "Z": 140
+    },
+    {
+      "X": 34,
+      "Y": 0.0,
+      "Z": 90
+    },
+    {
+      "X": 34,
+      "Y": 0.0,
+      "Z": 30
+    },
+    {
+      "X": 34,
+      "Y": 0.0,
+      "Z": -60
+    },
+    {
+      "X": 32.71,
+      "Y": 0.0,
+      "Z": -66.51
+    },
+    {
+      "X": 29.02,
+      "Y": 0.0,
+      "Z": -72.02
+    },
+    {
+      "X": 23.51,
+      "Y": 0.0,
+      "Z": -75.71
+    },
+    {
+      "X": 17.0,
+      "Y": 0.0,
+      "Z": -77.0
+    },
+    {
+      "X": 10.49,
+      "Y": 0.0,
+      "Z": -75.71
+    },
+    {
+      "X": 4.98,
+      "Y": 0.0,
+      "Z": -72.02
+    },
+    {
+      "X": 1.29,
+      "Y": 0.0,
+      "Z": -66.51
+    },
+    {
+      "X": 0.0,
+      "Y": 0.0,
+      "Z": -60.0
+    }
+  ],
+  "roadHalfWidth": 7.5,
+  "shortcutRoads": [
+    {
+      "id": "under_bridge",
+      "points": [
+        {
+          "X": 234.0,
+          "Y": 0.0,
+          "Z": 574.0
+        },
+        {
+          "X": 240.0,
+          "Y": -2.0,
+          "Z": 556.0
+        },
+        {
+          "X": 240.0,
+          "Y": -3.0,
+          "Z": 486.0
+        },
+        {
+          "X": 232.0,
+          "Y": -1.0,
+          "Z": 468.0
+        },
+        {
+          "X": 214.0,
+          "Y": 0.0,
+          "Z": 466.0
+        }
+      ],
+      "halfWidth": 4.0,
+      "gripMultiplier": 0.85,
+      "speedMultiplier": 1.0
+    }
+  ],
+  "checkpoints": [
+    {
+      "id": "cp00",
+      "gates": [
+        {
+          "position": {
+            "X": 0.0,
+            "Y": 0.0,
+            "Z": 0.0
+          },
+          "radius": 10.5,
+          "isShortcut": false,
+          "label": "start"
+        }
+      ]
+    },
+    {
+      "id": "cp01",
+      "gates": [
+        {
+          "position": {
+            "X": 0.0,
+            "Y": 4.78,
+            "Z": 143.37
+          },
+          "radius": 10.5,
+          "isShortcut": false,
+          "label": ""
+        }
+      ]
+    },
+    {
+      "id": "cp02",
+      "gates": [
+        {
+          "position": {
+            "X": 0.0,
+            "Y": 1.73,
+            "Z": 286.73
+          },
+          "radius": 10.5,
+          "isShortcut": false,
+          "label": ""
+        }
+      ]
+    },
+    {
+      "id": "cp03",
+      "gates": [
+        {
+          "position": {
+            "X": 14.0,
+            "Y": 0.0,
+            "Z": 428.11
+          },
+          "radius": 10.5,
+          "isShortcut": false,
+          "label": ""
+        }
+      ]
+    },
+    {
+      "id": "cp04",
+      "gates": [
+        {
+          "position": {
+            "X": 28.76,
+            "Y": 0.0,
+            "Z": 555.74
+          },
+          "radius": 10.5,
+          "isShortcut": false,
+          "label": ""
+        }
+      ]
+    },
+    {
+      "id": "cp05",
+      "gates": [
+        {
+          "position": {
+            "X": 170.24,
+            "Y": 0.0,
+            "Z": 572.0
+          },
+          "radius": 10.5,
+          "isShortcut": false,
+          "label": ""
+        }
+      ]
+    },
+    {
+      "id": "cp06",
+      "gates": [
+        {
+          "position": {
+            "X": 285.69,
+            "Y": 0.0,
+            "Z": 518.45
+          },
+          "radius": 10.5,
+          "isShortcut": false,
+          "label": ""
+        },
+        {
+          "position": {
+            "X": 240.0,
+            "Y": -3.0,
+            "Z": 480.0
+          },
+          "radius": 5.0,
+          "isShortcut": true,
+          "label": "under_bridge"
+        }
+      ]
+    },
+    {
+      "id": "cp07",
+      "gates": [
+        {
+          "position": {
+            "X": 167.53,
+            "Y": 0.0,
+            "Z": 464.1
+          },
+          "radius": 10.5,
+          "isShortcut": false,
+          "label": ""
+        }
+      ]
+    },
+    {
+      "id": "cp08",
+      "gates": [
+        {
+          "position": {
+            "X": 77.0,
+            "Y": 0.0,
+            "Z": 385.99
+          },
+          "radius": 10.5,
+          "isShortcut": false,
+          "label": ""
+        }
+      ]
+    },
+    {
+      "id": "cp09",
+      "gates": [
+        {
+          "position": {
+            "X": 51.66,
+            "Y": 0.0,
+            "Z": 254.14
+          },
+          "radius": 10.5,
+          "isShortcut": false,
+          "label": ""
+        }
+      ]
+    },
+    {
+      "id": "cp10",
+      "gates": [
+        {
+          "position": {
+            "X": 34.0,
+            "Y": 0.0,
+            "Z": 113.67
+          },
+          "radius": 10.5,
+          "isShortcut": false,
+          "label": ""
+        }
+      ]
+    },
+    {
+      "id": "cp11",
+      "gates": [
+        {
+          "position": {
+            "X": 34.0,
+            "Y": 0.0,
+            "Z": -29.7
+          },
+          "radius": 10.5,
+          "isShortcut": false,
+          "label": ""
+        }
+      ]
+    }
+  ],
+  "itemBoxes": [
+    {
+      "id": "box0_0",
+      "position": {
+        "X": -4.12,
+        "Y": 4.94,
+        "Z": 206.45
+      }
+    },
+    {
+      "id": "box0_1",
+      "position": {
+        "X": 0.0,
+        "Y": 4.94,
+        "Z": 206.45
+      }
+    },
+    {
+      "id": "box0_2",
+      "position": {
+        "X": 4.12,
+        "Y": 4.94,
+        "Z": 206.45
+      }
+    },
+    {
+      "id": "box1_0",
+      "position": {
+        "X": 175.97,
+        "Y": 0.0,
+        "Z": 576.12
+      }
+    },
+    {
+      "id": "box1_1",
+      "position": {
+        "X": 175.97,
+        "Y": 0.0,
+        "Z": 572.0
+      }
+    },
+    {
+      "id": "box1_2",
+      "position": {
+        "X": 175.97,
+        "Y": 0.0,
+        "Z": 567.88
+      }
+    },
+    {
+      "id": "box2_0",
+      "position": {
+        "X": 90.27,
+        "Y": 0.0,
+        "Z": 330.95
+      }
+    },
+    {
+      "id": "box2_1",
+      "position": {
+        "X": 86.5,
+        "Y": 0.0,
+        "Z": 332.63
+      }
+    },
+    {
+      "id": "box2_2",
+      "position": {
+        "X": 82.73,
+        "Y": 0.0,
+        "Z": 334.3
+      }
+    },
+    {
+      "id": "box3_0",
+      "position": {
+        "X": 38.12,
+        "Y": 0.0,
+        "Z": 33.38
+      }
+    },
+    {
+      "id": "box3_1",
+      "position": {
+        "X": 34.0,
+        "Y": 0.0,
+        "Z": 33.38
+      }
+    },
+    {
+      "id": "box3_2",
+      "position": {
+        "X": 29.88,
+        "Y": 0.0,
+        "Z": 33.38
+      }
+    }
+  ],
+  "roadEventAnchors": [
+    {
+      "id": "bridge_traffic",
+      "distanceAlongTrack": 137.6,
+      "allowedKinds": [
+        "Traffic",
+        "Pothole",
+        "DanfoCross"
+      ]
+    },
+    {
+      "id": "construction",
+      "distanceAlongTrack": 464.5,
+      "allowedKinds": [
+        "Pothole",
+        "GoSlow"
+      ]
+    },
+    {
+      "id": "ramp",
+      "distanceAlongTrack": 688.2,
+      "allowedKinds": [
+        "OkadaCross",
+        "Traffic"
+      ]
+    },
+    {
+      "id": "lagoon",
+      "distanceAlongTrack": 1118.3,
+      "allowedKinds": [
+        "Flood",
+        "OkadaCross"
+      ]
+    },
+    {
+      "id": "adekunle",
+      "distanceAlongTrack": 1462.3,
+      "allowedKinds": [
+        "DanfoCross",
+        "CheckpointStop",
+        "Traffic"
+      ]
+    }
+  ],
+  "referenceLapSeconds": 68.0,
+  "baseGripMultiplier": 1.0,
+  "baseSpeedMultiplier": 1.0,
+  "sceneKey": "Track_ThirdMainlandRush"
+}

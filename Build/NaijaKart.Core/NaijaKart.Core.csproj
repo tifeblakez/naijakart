@@ -1,0 +1,18 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!--
+    Compiles the engine-agnostic gameplay core that lives under Assets/NaijaKart/Runtime/Core.
+    The same sources are compiled by Unity through NaijaKart.Core.asmdef (noEngineReferences=true),
+    so this project must never add a dependency Unity cannot satisfy. netstandard2.1 + C# 9 is the
+    common denominator for Unity 2021.2+ / Unity 6.
+  -->
+  <PropertyGroup>
+    <TargetFramework>netstandard2.1</TargetFramework>
+    <RootNamespace>NaijaKart.Core</RootNamespace>
+    <AssemblyName>NaijaKart.Core</AssemblyName>
+    <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
+    <GenerateDocumentationFile>false</GenerateDocumentationFile>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="$(NaijaKartRoot)Assets/NaijaKart/Runtime/Core/**/*.cs" LinkBase="Core" />
+  </ItemGroup>
+</Project>

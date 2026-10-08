@@ -1,0 +1,12 @@
+{
+  "characters": [
+    { "id": "tunde", "displayName": "Tunde", "archetype": "Danfo Driver", "personality": "Confident", "strengthStat": "acceleration", "strengthBonus": 6, "weaknessStat": "handling", "weaknessPenalty": 3, "unlockLevel": 0, "prefabKey": "chr_tunde", "voiceLineKeys": ["vo_tunde_omo", "vo_tunde_move", "vo_tunde_run_am"] },
+    { "id": "amaka", "displayName": "Amaka", "archetype": "Hustler", "personality": "Relentless", "strengthStat": "", "strengthBonus": 0, "weaknessStat": "", "weaknessPenalty": 0, "unlockLevel": 0, "prefabKey": "chr_amaka", "voiceLineKeys": ["vo_amaka_no_wahala", "vo_amaka_wahala"] },
+    { "id": "musa", "displayName": "Musa", "archetype": "Strategist", "personality": "Calm", "strengthStat": "handling", "strengthBonus": 6, "weaknessStat": "speed", "weaknessPenalty": 3, "unlockLevel": 4, "prefabKey": "chr_musa", "voiceLineKeys": ["vo_musa_easy", "vo_musa_sabi"] },
+    { "id": "bisi", "displayName": "Bisi", "archetype": "Socialite", "personality": "Flashy", "strengthStat": "speed", "strengthBonus": 6, "weaknessStat": "traction", "weaknessPenalty": 3, "unlockLevel": 7, "prefabKey": "chr_bisi", "voiceLineKeys": ["vo_bisi_omo", "vo_bisi_bye"] },
+    { "id": "emeka", "displayName": "Emeka", "archetype": "Mechanic", "personality": "Steady", "strengthStat": "weight", "strengthBonus": 8, "weaknessStat": "acceleration", "weaknessPenalty": 3, "unlockLevel": 10, "prefabKey": "chr_emeka", "voiceLineKeys": ["vo_emeka_fix", "vo_emeka_wahala"] },
+    { "id": "zainab", "displayName": "Zainab", "archetype": "Dispatch Rider", "personality": "Fearless", "strengthStat": "drift", "strengthBonus": 6, "weaknessStat": "weight", "weaknessPenalty": 3, "unlockLevel": 13, "prefabKey": "chr_zainab", "voiceLineKeys": ["vo_zainab_move", "vo_zainab_sharp"] },
+    { "id": "kelechi", "displayName": "Kelechi", "archetype": "Tech Bro", "personality": "Smug", "strengthStat": "boost", "strengthBonus": 6, "weaknessStat": "drift", "weaknessPenalty": 3, "unlockLevel": 16, "prefabKey": "chr_kelechi", "voiceLineKeys": ["vo_kelechi_shift", "vo_kelechi_omo"] },
+    { "id": "mama_nkechi", "displayName": "Mama Nkechi", "archetype": "Market Queen", "personality": "Unbothered", "strengthStat": "traction", "strengthBonus": 6, "weaknessStat": "acceleration", "weaknessPenalty": 3, "unlockLevel": 20, "prefabKey": "chr_mama_nkechi", "voiceLineKeys": ["vo_nkechi_who_send_you", "vo_nkechi_dem_do_you"] }
+  ]
+}

@@ -1,0 +1,63 @@
+name: Unity
+
+# Runs the EditMode tests inside Unity and produces Android/iOS builds.
+# Requires repository secrets UNITY_LICENSE (or UNITY_EMAIL/UNITY_PASSWORD/UNITY_SERIAL).
+# The job is skipped when the secret is absent so forks still get the dotnet CI.
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  unity-tests:
+    name: Unity EditMode tests
+    runs-on: ubuntu-latest
+    if: ${{ secrets.UNITY_LICENSE != '' }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          lfs: true
+      - uses: actions/cache@v4
+        with:
+          path: Library
+          key: Library-${{ hashFiles('Packages/manifest.json', 'ProjectSettings/ProjectVersion.txt') }}
+      - uses: game-ci/unity-test-runner@v4
+        env:
+          UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
+        with:
+          testMode: EditMode
+          artifactsPath: unity-test-results
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: unity-test-results
+          path: unity-test-results
+
+  unity-build:
+    name: Build ${{ matrix.targetPlatform }}
+    runs-on: ubuntu-latest
+    needs: unity-tests
+    if: ${{ secrets.UNITY_LICENSE != '' }}
+    strategy:
+      fail-fast: false
+      matrix:
+        targetPlatform: [Android, iOS]
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          lfs: true
+      - uses: actions/cache@v4
+        with:
+          path: Library
+          key: Library-${{ matrix.targetPlatform }}-${{ hashFiles('Packages/manifest.json', 'ProjectSettings/ProjectVersion.txt') }}
+      - uses: game-ci/unity-builder@v4
+        env:
+          UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
+        with:
+          targetPlatform: ${{ matrix.targetPlatform }}
+          buildName: NaijaKart
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Build-${{ matrix.targetPlatform }}
+          path: build
