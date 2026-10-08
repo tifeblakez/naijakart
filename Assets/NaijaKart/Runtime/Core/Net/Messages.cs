@@ -67,7 +67,11 @@ namespace NaijaKart.Core.Net
         GetSeasonPass,
         /// <summary>Laps = tier number; Flag = premium track.</summary>
         ClaimPassTier,
-        BuyPremiumPass
+        BuyPremiumPass,
+        /// <summary>Text = tournament id (null = the first open one).</summary>
+        GetTournament,
+        EnterTournament,
+        LeaveTournament
     }
 
     [Serializable]
@@ -127,7 +131,58 @@ namespace NaijaKart.Core.Net
         /// <summary>Someone wants to be your friend: PlayerId, Text = their name.</summary>
         FriendRequest,
         Shop,
-        SeasonPass
+        SeasonPass,
+        Tournament
+    }
+
+    [Serializable]
+    public sealed class TournamentRoundDto
+    {
+        public string Name;
+        /// <summary>Advanced | Now | Upcoming | Done | Out (you did not advance).</summary>
+        public string State;
+        public string StartsUtc;
+        public int Races;
+        public int RaceIndex;
+        public int Advance;
+    }
+
+    [Serializable]
+    public sealed class TournamentStandingDto
+    {
+        public int Position;
+        public string PlayerId;
+        public string DisplayName;
+        public int Points;
+        public string Note;
+        public bool Alive;
+    }
+
+    [Serializable]
+    public sealed class TournamentDto
+    {
+        public string Id;
+        public string Name;
+        public int Entrants;
+        public int MaxEntrants;
+        public bool Entered;
+        public bool Started;
+        public bool Finished;
+        public string ChampionId;
+        public int CurrentRound;
+        public TournamentRoundDto[] Rounds = Array.Empty<TournamentRoundDto>();
+        public TournamentStandingDto[] Standings = Array.Empty<TournamentStandingDto>();
+        public int MyPoints;
+        public bool MyAlive;
+        public int NextRaceInSeconds = -1;
+        public string NextTrackId;
+        public int Laps;
+        public long CoinsPerRace;
+        public string ChampionRewardName;
+        public string FinalistRewardName;
+        public int FinalistsCount;
+        /// <summary>Room code to join when a tournament race is seating you.</summary>
+        public string RoomCode;
     }
 
     [Serializable]
@@ -465,5 +520,6 @@ namespace NaijaKart.Core.Net
         public FriendDto[] SentRequests;
         public CosmeticDto[] Cosmetics;
         public SeasonPassDto SeasonPass;
+        public TournamentDto Tournament;
     }
 }

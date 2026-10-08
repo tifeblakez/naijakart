@@ -13,6 +13,7 @@ namespace NaijaKart.Core.Config
         Challenges.ChallengeLibrary Challenges { get; }
         CosmeticLibrary Cosmetics { get; }
         SeasonPassDefinition SeasonPass { get; }
+        Tournaments.TournamentLibrary Tournaments { get; }
         TrackDefinition GetTrack(string trackId);
         string[] TrackIds { get; }
     }
@@ -29,6 +30,7 @@ namespace NaijaKart.Core.Config
         public Challenges.ChallengeLibrary Challenges { get; set; } = new Challenges.ChallengeLibrary();
         public CosmeticLibrary Cosmetics { get; set; } = new CosmeticLibrary();
         public SeasonPassDefinition SeasonPass { get; set; } = new SeasonPassDefinition();
+        public Tournaments.TournamentLibrary Tournaments { get; set; } = new Tournaments.TournamentLibrary();
 
         public string[] TrackIds
         {
@@ -115,6 +117,18 @@ namespace NaijaKart.Core.Config
                         if (t.freeCosmeticId != null && !seenK.Contains(t.freeCosmeticId)) errors.Add("season pass tier " + t.tier + " free cosmetic unknown: " + t.freeCosmeticId);
                         if (t.premiumCosmeticId != null && !seenK.Contains(t.premiumCosmeticId)) errors.Add("season pass tier " + t.tier + " premium cosmetic unknown: " + t.premiumCosmeticId);
                     }
+            }
+            if (source.Tournaments != null && source.Tournaments.tournaments != null)
+            {
+                var seenT = new System.Collections.Generic.HashSet<string>();
+                foreach (var t in source.Tournaments.tournaments)
+                {
+                    if (string.IsNullOrEmpty(t.id)) errors.Add("tournament with empty id");
+                    else if (!seenT.Add(t.id)) errors.Add("duplicate tournament id " + t.id);
+                    if (t.rounds == null || t.rounds.Length == 0) errors.Add("tournament " + t.id + " has no rounds");
+                    if (t.maxEntrants <= 1) errors.Add("tournament " + t.id + " maxEntrants must be > 1");
+                    foreach (var tr in t.trackIds ?? System.Array.Empty<string>()) if (source.GetTrack(tr) == null) errors.Add("tournament " + t.id + " unknown track " + tr);
+                }
             }
             if (g.liveEvents != null && g.liveEvents.weekdayRules != null)
             {

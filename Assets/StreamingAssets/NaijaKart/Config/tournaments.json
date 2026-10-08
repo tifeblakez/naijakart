@@ -1,0 +1,57 @@
+{
+  "tournaments": [
+    {
+      "id": "lagos_championship",
+      "name": "Lagos Championship",
+      "maxEntrants": 32,
+      "minRealPlayers": 2,
+      "fillWithAi": true,
+      "laps": 2,
+      "trackIds": [
+        "third_mainland_rush"
+      ],
+      "rounds": [
+        {
+          "name": "Round 1",
+          "races": 3,
+          "advance": 16
+        },
+        {
+          "name": "Round 2",
+          "races": 3,
+          "advance": 8
+        },
+        {
+          "name": "Round 3",
+          "races": 3,
+          "advance": 8
+        },
+        {
+          "name": "Semi",
+          "races": 1,
+          "advance": 8
+        },
+        {
+          "name": "Final",
+          "races": 1,
+          "advance": 0
+        }
+      ],
+      "pointsByPosition": [
+        10,
+        8,
+        6,
+        5,
+        4,
+        3,
+        2,
+        1
+      ],
+      "coinsPerRace": 200,
+      "championCosmeticId": "banner_eko_for_show",
+      "finalistCosmeticId": "banner_season_free",
+      "finalistsCount": 8,
+      "secondsBetweenRaces": 60
+    }
+  ]
+}

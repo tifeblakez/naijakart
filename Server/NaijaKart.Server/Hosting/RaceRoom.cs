@@ -50,6 +50,8 @@ namespace NaijaKart.Server.Hosting
         /// <summary>Off | BoostsOnly | On.</summary>
         public string ItemsMode { get; private set; } = "On";
         public bool FillWithAi { get; private set; }
+        /// <summary>Set for rooms created by a tournament.</summary>
+        public string TournamentId { get; set; }
         public RaceSimulation Race { get; private set; }
         public IReadOnlyList<string> Members => _members;
         public bool HasMember(string playerId) => _members.Contains(playerId);

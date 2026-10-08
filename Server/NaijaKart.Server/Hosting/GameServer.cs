@@ -7,6 +7,7 @@ using NaijaKart.Core.Economy;
 using NaijaKart.Core.Net;
 using NaijaKart.Core.Progression;
 using NaijaKart.Core.Simulation;
+using NaijaKart.Core.Tournaments;
 using NaijaKart.Core.Util;
 
 namespace NaijaKart.Server.Hosting
@@ -92,6 +93,7 @@ namespace NaijaKart.Server.Hosting
             _now += _dt;
             _transport.PumpIncoming();
             TickMatchmaking();
+            TickTournaments();
             var finished = new List<string>();
             foreach (var kv in _rooms)
             {
@@ -216,6 +218,26 @@ namespace NaijaKart.Server.Hosting
                 case ClientMessageKind.BuyPremiumPass:
                     HandleBuyPremiumPass(s);
                     break;
+                case ClientMessageKind.GetTournament:
+                {
+                    var t = Tournament(msg.Text);
+                    if (t == null) SendError(s.PlayerId, "No tournament right now"); else SendTournament(s, t);
+                    break;
+                }
+                case ClientMessageKind.EnterTournament:
+                {
+                    var t = Tournament(msg.Text);
+                    if (t == null) { SendError(s.PlayerId, "No tournament right now"); break; }
+                    if (!t.Enter(s.PlayerId)) { SendError(s.PlayerId, t.State.Started ? "The tournament has started" : "The tournament is full"); SendTournament(s, t); break; }
+                    BroadcastTournament(t);   // everyone in the lobby sees the entrant count move
+                    break;
+                }
+                case ClientMessageKind.LeaveTournament:
+                {
+                    var t = Tournament(msg.Text);
+                    if (t != null) { t.Leave(s.PlayerId); SendTournament(s, t); BroadcastTournament(t); }
+                    break;
+                }
                 case ClientMessageKind.GetChallenges:
                     _transport.Send(connectionId, new ServerEnvelope { Kind = ServerMessageKind.Challenges, Challenges = BuildChallenges(s.PlayerId) });
                     break;
@@ -363,6 +385,9 @@ namespace NaijaKart.Server.Hosting
         }
 
         private float _queueStatusTimer;
+        private float _tournamentTimer;
+        private readonly Dictionary<string, TournamentEngine> _tournaments = new Dictionary<string, TournamentEngine>();
+        private int _tournamentRaceCounter;
 
         private void TickMatchmaking()
         {
@@ -498,6 +523,7 @@ namespace NaijaKart.Server.Hosting
                         if (_byPlayer.TryGetValue(id, out var sess)) SendAccount(sess, "ReferralRewarded");
                 }
             }
+            SettleTournamentRace(room, results);
             RaceSettled?.Invoke(room, results);
         }
 
@@ -558,6 +584,126 @@ namespace NaijaKart.Server.Hosting
                 }
             });
         }
+
+        // ---- tournaments (PRD §8, design 17) ----
+        /// <summary>Engines are created from content on first use, so tests and live ops can swap definitions.</summary>
+        public TournamentEngine Tournament(string id = null)
+        {
+            foreach (var def in Content.Tournaments?.tournaments ?? Array.Empty<TournamentDefinition>())
+                if (!_tournaments.ContainsKey(def.id)) _tournaments[def.id] = new TournamentEngine(def);
+            if (id != null) return _tournaments.TryGetValue(id, out var e) ? e : null;
+            TournamentEngine first = null;
+            foreach (var e in _tournaments.Values) { if (!e.State.Finished) return e; first ??= e; }
+            return first;
+        }
+
+        private long NowUnixMs() => new DateTimeOffset(UtcNow()).ToUnixTimeMilliseconds();
+
+        private int OnlineEntrants(TournamentEngine t)
+        {
+            int n = 0;
+            foreach (var e in t.State.Entrants) if (e.Alive && _byPlayer.TryGetValue(e.PlayerId, out var s) && s.ConnectionId != null) n++;
+            return n;
+        }
+
+        private void TickTournaments()
+        {
+            _tournamentTimer -= _dt;
+            if (_tournamentTimer > 0f) return;
+            _tournamentTimer = 1f;
+            Tournament();   // materialise engines
+            long now = NowUnixMs();
+            foreach (var t in _tournaments.Values)
+            {
+                if (!t.CanStartRace(now, OnlineEntrants(t))) continue;
+                var def = t.Definition;
+                int grid = Content.Game.simulation.maxPlayersPerRace;
+                string trackId = def.trackIds != null && def.trackIds.Length > 0 ? def.trackIds[_tournamentRaceCounter % def.trackIds.Length] : Content.TrackIds[0];
+                if (Content.GetTrack(trackId) == null) trackId = Content.TrackIds[0];
+                _tournamentRaceCounter++;
+                foreach (var ids in t.Grids(grid, id => _byPlayer.TryGetValue(id, out var ss) && ss.ConnectionId != null && (ss.Room == null || ss.Room.Mode != RaceMode.Tournament)))
+                {
+                    if (ids.Count == 0) continue;
+                    var room = CreateRoom(RaceMode.Tournament, trackId, def.laps, null);
+                    room.TournamentId = def.id;
+                    foreach (var id in ids)
+                    {
+                        var sess = _byPlayer[id];
+                        if (sess.Room != null) LeaveRoom(sess);
+                        _queue.Remove(sess);
+                        JoinRoom(sess, room, null, null);
+                    }
+                    if (def.fillWithAi) { int i = 0; while (room.Members.Count < grid) room.AddBot("bot_" + room.Code.ToLowerInvariant().Replace("-", "") + "_" + (++i), 0.45f + 0.07f * i); }
+                    foreach (var id in ids) room.SetReady(id, true);
+                    t.RaceStarted(room.Race.Setup.RaceId);
+                    Log.Info("tournament", $"{def.name}: {t.CurrentRound?.name} race {t.State.RaceIndex + 1} in room {room.Code} ({ids.Count} racers)");
+                    foreach (var id in ids) SendTournament(_byPlayer[id], t);
+                }
+            }
+        }
+
+        private void SettleTournamentRace(RaceRoom room, RaceResults results)
+        {
+            if (room.TournamentId == null || !_tournaments.TryGetValue(room.TournamentId, out var t)) return;
+            var def = t.Definition;
+            foreach (var e in results.Entries)
+                if (!e.IsBot && t.State.Find(e.PlayerId) != null && def.coinsPerRace > 0)
+                    Ledger.Credit(e.PlayerId, def.coinsPerRace, "tournament_race", results.RaceId + ":tournament:" + e.PlayerId, out _);
+            bool slotDone = t.ApplyRaceResult(results, NowUnixMs(), out _, out bool finished);
+            if (finished)
+            {
+                var standings = t.State.Standings();
+                for (int i = 0; i < standings.Count; i++)
+                {
+                    var p = Profiles.Get(standings[i].PlayerId);
+                    bool champion = standings[i].PlayerId == t.State.ChampionId;
+                    if (champion) p.TournamentWins++;
+                    string cosmetic = champion ? def.championCosmeticId : i < def.finalistsCount ? def.finalistCosmeticId : null;
+                    if (cosmetic != null && FindCosmetic(cosmetic) != null && !p.OwnedCosmeticIds.Contains(cosmetic)) p.OwnedCosmeticIds.Add(cosmetic);
+                    Profiles.Save(p);
+                }
+                Log.Info("tournament", $"{def.name}: champion {t.State.ChampionId}");
+            }
+            if (slotDone)
+                foreach (var e in t.State.Entrants) if (_byPlayer.TryGetValue(e.PlayerId, out var s) && s.ConnectionId != null) SendTournament(s, t);
+        }
+
+        private TournamentDto BuildTournament(TournamentEngine t, string viewerId)
+        {
+            var def = t.Definition; var st = t.State;
+            var me = st.Find(viewerId);
+            var rounds = new List<TournamentRoundDto>();
+            for (int i = 0; i < def.rounds.Length; i++)
+            {
+                var r = def.rounds[i];
+                string state = st.Finished || i < st.RoundIndex ? (me != null && !me.Alive && i >= RoundOut(st, me) ? "Out" : "Advanced") : i == st.RoundIndex ? (st.Started ? "Now" : "Upcoming") : "Upcoming";
+                if (st.Finished && i == def.rounds.Length - 1) state = "Done";
+                rounds.Add(new TournamentRoundDto { Name = r.name, State = state, StartsUtc = r.startsUtc, Races = r.races, RaceIndex = i == st.RoundIndex ? st.RaceIndex : 0, Advance = r.advance });
+            }
+            var standings = new List<TournamentStandingDto>();
+            int pos = 0;
+            foreach (var e in st.Standings()) standings.Add(new TournamentStandingDto { Position = ++pos, PlayerId = e.PlayerId, DisplayName = Profiles.Get(e.PlayerId).DisplayName, Points = e.Points, Note = t.NoteFor(e), Alive = e.Alive });
+            long next = t.NextRaceAtUnixMs();
+            string roomCode = null;
+            if (_byPlayer.TryGetValue(viewerId, out var vs) && vs.Room != null && vs.Room.TournamentId == def.id) roomCode = vs.Room.Code;
+            return new TournamentDto
+            {
+                Id = def.id, Name = def.name, Entrants = st.Entrants.Count, MaxEntrants = def.maxEntrants, Entered = me != null, Started = st.Started, Finished = st.Finished, ChampionId = st.ChampionId,
+                CurrentRound = st.RoundIndex, Rounds = rounds.ToArray(), Standings = standings.ToArray(), MyPoints = me?.Points ?? 0, MyAlive = me?.Alive ?? false,
+                NextRaceInSeconds = next < 0 ? -1 : (int)Math.Max(0, (next - NowUnixMs()) / 1000), NextTrackId = def.trackIds != null && def.trackIds.Length > 0 ? def.trackIds[_tournamentRaceCounter % def.trackIds.Length] : Content.TrackIds[0],
+                Laps = def.laps, CoinsPerRace = def.coinsPerRace, ChampionRewardName = FindCosmetic(def.championCosmeticId ?? "")?.displayName, FinalistRewardName = FindCosmetic(def.finalistCosmeticId ?? "")?.displayName,
+                FinalistsCount = def.finalistsCount, RoomCode = roomCode
+            };
+            static int RoundOut(TournamentState s, TournamentEntrant e) => s.RoundIndex;   // eliminated entrants went out at the last completed round
+        }
+
+        private void BroadcastTournament(TournamentEngine t)
+        {
+            foreach (var e in t.State.Entrants) if (_byPlayer.TryGetValue(e.PlayerId, out var s) && s.ConnectionId != null) SendTournament(s, t);
+        }
+
+        private void SendTournament(Session s, TournamentEngine t) =>
+            _transport.Send(s.ConnectionId, new ServerEnvelope { Kind = ServerMessageKind.Tournament, Tournament = BuildTournament(t, s.PlayerId) });
 
         // ---- cosmetics & shop (looks only, PRD §37) ----
         private CosmeticDefinition FindCosmetic(string id) { foreach (var c in Content.Cosmetics.cosmetics) if (c.id == id) return c; return null; }

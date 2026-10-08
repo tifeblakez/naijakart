@@ -67,7 +67,7 @@ classes, so the video shows the designed UI over the generated world.
 | 14 | Profile | `GetProfile`: level, RP/rank label, stats, achievements of total, title, home city, racer code, best times, top rivalries | Served |
 | 15 | Leaderboards | `GetLeaderboard` metric rp/wins/streak/lastma/level/track with Scope friends/city/nigeria/global/track | Served |
 | 16 | Social | `GetFriends` (presence: Online / Racing · lap N / Private Room / Seen 2h ago, joinable room, needs-bail), `AddFriend` → `FriendRequest` → `AcceptFriend`/`DeclineFriend`, `BailRequest` at the 150-coin bail price, invite code = referral code | Served (party pending) |
-| 17 | Tournament | — | Pending |
+| 17 | Tournament | `GetTournament`/`EnterTournament`/`LeaveTournament` → `Tournament` (rounds with state, standings and notes, points, next race countdown, rewards, your room); server schedules rounds, seats grids with AI fill, awards points and cosmetics (tournaments.json, ADR-0011) | Served |
 | 18 | Season and challenges | `GetChallenges` (daily/weekly), Wahala calendar (`liveEvents.weekdayRules`), `GetSeasonPass`/`ClaimPassTier`/`BuyPremiumPass` (season-pass.json, season XP from every race) | Served |
 | 19 | Shop | `GetShop`: catalogue by kind, featured item with days left, Coins or P prices, level and pass locks; purchases are ledger debits with idempotency keys | Served |
 | 20 | Settings: data and performance | client; content packs manifest | Pending |

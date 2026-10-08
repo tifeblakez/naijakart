@@ -31,6 +31,9 @@ namespace NaijaKart.Server.Tests
             Content = json;
             Hub = new LoopbackTransportHub(seed);
             Server = new GameServer(Content, Hub.Server, null, seed: seed);
+            // Simulated time drives the clock too, so gaps, seasons and Rush Hour are deterministic in tests.
+            var start = new System.DateTime(2026, 10, 8, 12, 0, 0, System.DateTimeKind.Utc);
+            Server.UtcNow = () => start.AddSeconds(Server.Now);
             Track = new TrackGeometry(Content.GetTrack(Content.TrackIds[0]));
             _dt = Server.FixedDeltaTime;
         }
