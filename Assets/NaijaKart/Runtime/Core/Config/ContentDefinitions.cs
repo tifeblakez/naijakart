@@ -119,6 +119,62 @@ namespace NaijaKart.Core.Config
     }
 
     /// <summary>
+    /// Looks only (design 13.2, 19; PRD: no pay-to-win). Kinds: color, rims, trail, outfit, emote, horn,
+    /// banner, title, skin. A cosmetic is owned from the start when it has no price, no level and no pass tier.
+    /// </summary>
+    [Serializable]
+    public sealed class CosmeticDefinition
+    {
+        public string id;
+        public string kind = "color";
+        public string displayName;
+        public string description;
+        /// <summary>kart or racer.</summary>
+        public string appliesTo = "kart";
+        public long priceCoins;
+        public long pricePremium;
+        public int unlockLevel;
+        /// <summary>Granted by the season pass at this tier (0 = not a pass reward).</summary>
+        public int passTier;
+        public bool passPremium;
+        public string colorHex;
+        public bool featured;
+        /// <summary>ISO date; the shop shows "N days left" while it is in the future.</summary>
+        public string featuredUntilUtc;
+        public bool isNew;
+        /// <summary>Real-money price hint for the premium bundle on the featured card (copy only).</summary>
+        public string nairaPrice;
+    }
+
+    [Serializable]
+    public sealed class CosmeticLibrary
+    {
+        public CosmeticDefinition[] cosmetics = Array.Empty<CosmeticDefinition>();
+    }
+
+    /// <summary>Season pass (design 18): free and premium tracks of rewards unlocked by season XP.</summary>
+    [Serializable]
+    public sealed class SeasonPassTier
+    {
+        public int tier;
+        public long freeCoins;
+        public string freeCosmeticId;
+        public long premiumCoins;
+        public string premiumCosmeticId;
+    }
+
+    [Serializable]
+    public sealed class SeasonPassDefinition
+    {
+        public string seasonId = "s1";
+        /// <summary>Premium pass price in premium currency.</summary>
+        public long premiumPricePremium = 600;
+        /// <summary>Season XP per tier (every race's XP also counts as season XP).</summary>
+        public int xpPerTier = 1000;
+        public SeasonPassTier[] tiers = Array.Empty<SeasonPassTier>();
+    }
+
+    /// <summary>
     /// One mandatory gate the racer must cross, in order. A gate may have several alternative positions
     /// (main route, risk route, shortcut). Crossing any alternative satisfies the gate; shortcuts are
     /// therefore legal by construction and skipping a gate is impossible (PRD §14, §47).

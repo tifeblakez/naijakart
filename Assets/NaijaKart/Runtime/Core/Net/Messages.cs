@@ -58,7 +58,16 @@ namespace NaijaKart.Core.Net
         AcceptFriend,
         DeclineFriend,
         /// <summary>Friends with presence, incoming requests and sent requests.</summary>
-        GetFriends
+        GetFriends,
+        GetShop,
+        /// <summary>Text = cosmetic id. Coins or premium currency, as priced.</summary>
+        PurchaseCosmetic,
+        /// <summary>Text = cosmetic id (owned); equips it for its kind.</summary>
+        EquipCosmetic,
+        GetSeasonPass,
+        /// <summary>Laps = tier number; Flag = premium track.</summary>
+        ClaimPassTier,
+        BuyPremiumPass
     }
 
     [Serializable]
@@ -116,7 +125,61 @@ namespace NaijaKart.Core.Net
         RoomInvite,
         Friends,
         /// <summary>Someone wants to be your friend: PlayerId, Text = their name.</summary>
-        FriendRequest
+        FriendRequest,
+        Shop,
+        SeasonPass
+    }
+
+    [Serializable]
+    public sealed class CosmeticDto
+    {
+        public string Id;
+        public string Kind;
+        public string DisplayName;
+        public string Description;
+        public string AppliesTo;
+        public long PriceCoins;
+        public long PricePremium;
+        public int UnlockLevel;
+        public int PassTier;
+        public bool PassPremium;
+        public string ColorHex;
+        public bool Owned;
+        public bool Equipped;
+        public bool LevelReached;
+        public bool IsNew;
+        public bool Featured;
+        public int FeaturedDaysLeft;
+        public string NairaPrice;
+        /// <summary>Owned | Equipped | Coins | Premium | Level | Pass — the state chip in the design.</summary>
+        public string State;
+    }
+
+    [Serializable]
+    public sealed class PassTierDto
+    {
+        public int Tier;
+        public long FreeCoins;
+        public CosmeticDto FreeCosmetic;
+        public long PremiumCoins;
+        public CosmeticDto PremiumCosmetic;
+        /// <summary>Locked | Claimable | Claimed for each track.</summary>
+        public string FreeState;
+        public string PremiumState;
+    }
+
+    [Serializable]
+    public sealed class SeasonPassDto
+    {
+        public string SeasonId;
+        public string SeasonName;
+        public int DaysLeft;
+        public long SeasonXp;
+        public int XpPerTier;
+        public int CurrentTier;
+        public bool PremiumOwned;
+        public long PremiumPricePremium;
+        public PassTierDto[] Tiers = Array.Empty<PassTierDto>();
     }
 
     [Serializable]
@@ -400,5 +463,7 @@ namespace NaijaKart.Core.Net
         public FriendDto[] Friends;
         public FriendDto[] FriendRequests;
         public FriendDto[] SentRequests;
+        public CosmeticDto[] Cosmetics;
+        public SeasonPassDto SeasonPass;
     }
 }

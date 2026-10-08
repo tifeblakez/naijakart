@@ -63,13 +63,13 @@ classes, so the video shows the designed UI over the generated world.
 | 10 | Results | `RaceResults` + `SettledRewardDto` (XP, coins, RP delta, division before/after), stats | Served |
 | 11 | Network issue | reconnect by `Hello`; an AI stand-in drives the kart while away (`RoomState` member Status "AiDriving"), `ReconnectWindowSeconds`/`ReconnectAttempts`; DNF after the window = last | Served |
 | 12 | Rivalry | `GetRivalries`: wins, streaks, last 5, bails given/received, since, best times on the shared track, rank labels | Served |
-| 13–13.2 | Garage: karts, racers, style | `GetGarage`, `PurchaseVehicle/Character`; cosmetics (colours, rims, trails) | Cosmetics pending |
+| 13–13.2 | Garage: karts, racers, style | `GetGarage`, `PurchaseVehicle/Character`; `GetShop`/`PurchaseCosmetic`/`EquipCosmetic` for colours, rims, trails, outfits (cosmetics.json; Owned/Equipped/Coins/Premium/Level/Pass states) | Served |
 | 14 | Profile | `GetProfile`: level, RP/rank label, stats, achievements of total, title, home city, racer code, best times, top rivalries | Served |
 | 15 | Leaderboards | `GetLeaderboard` metric rp/wins/streak/lastma/level/track with Scope friends/city/nigeria/global/track | Served |
 | 16 | Social | `GetFriends` (presence: Online / Racing · lap N / Private Room / Seen 2h ago, joinable room, needs-bail), `AddFriend` → `FriendRequest` → `AcceptFriend`/`DeclineFriend`, `BailRequest` at the 150-coin bail price, invite code = referral code | Served (party pending) |
 | 17 | Tournament | — | Pending |
-| 18 | Season and challenges | `GetChallenges` (daily/weekly), Wahala calendar (`liveEvents.weekdayRules`); pass tiers | Pass pending |
-| 19 | Shop | premium currency in the ledger; cosmetics catalogue | Catalogue pending |
+| 18 | Season and challenges | `GetChallenges` (daily/weekly), Wahala calendar (`liveEvents.weekdayRules`), `GetSeasonPass`/`ClaimPassTier`/`BuyPremiumPass` (season-pass.json, season XP from every race) | Served |
+| 19 | Shop | `GetShop`: catalogue by kind, featured item with days left, Coins or P prices, level and pass locks; purchases are ledger debits with idempotency keys | Served |
 | 20 | Settings: data and performance | client; content packs manifest | Pending |
 | 21 | Save progress | `ClaimStart` / `ClaimVerify` / `ClaimWithProvider`, account bonus | Served (ADR-0009) |
 | 22–23 | Phone number, enter code | `ClaimStart` (Text = number, Flag = WhatsApp), `ClaimVerify`, resend timer | Served |

@@ -198,6 +198,24 @@ namespace NaijaKart.Server.Hosting
                 case ClientMessageKind.GetFriends:
                     SendFriends(s);
                     break;
+                case ClientMessageKind.GetShop:
+                    SendShop(s);
+                    break;
+                case ClientMessageKind.PurchaseCosmetic:
+                    HandlePurchaseCosmetic(s, msg.Text);
+                    break;
+                case ClientMessageKind.EquipCosmetic:
+                    HandleEquipCosmetic(s, msg.Text);
+                    break;
+                case ClientMessageKind.GetSeasonPass:
+                    SendSeasonPass(s);
+                    break;
+                case ClientMessageKind.ClaimPassTier:
+                    HandleClaimPassTier(s, msg.Laps, msg.Flag);
+                    break;
+                case ClientMessageKind.BuyPremiumPass:
+                    HandleBuyPremiumPass(s);
+                    break;
                 case ClientMessageKind.GetChallenges:
                     _transport.Send(connectionId, new ServerEnvelope { Kind = ServerMessageKind.Challenges, Challenges = BuildChallenges(s.PlayerId) });
                     break;
@@ -504,6 +522,7 @@ namespace NaijaKart.Server.Hosting
             if (profile.SeasonId != null) profile.RankedPoints = RankLadder.AfterSeasonReset(profile.RankedPoints);
             profile.SeasonId = season;
             profile.RecentRanked.Clear();
+            profile.SeasonXp = 0; profile.PremiumPass = false; profile.ClaimedPassTiers.Clear();
         }
 
         private SeasonDto BuildSeason()
@@ -538,6 +557,136 @@ namespace NaijaKart.Server.Hosting
                     RankedUnlocked = Accounts.RankedAllowed(s.PlayerId), AccountBonusCoins = cfg.accountBonusCoins, ReferralBonusCoins = cfg.referralBonusCoins, Cities = cfg.cities ?? Array.Empty<string>()
                 }
             });
+        }
+
+        // ---- cosmetics & shop (looks only, PRD §37) ----
+        private CosmeticDefinition FindCosmetic(string id) { foreach (var c in Content.Cosmetics.cosmetics) if (c.id == id) return c; return null; }
+
+        public bool OwnsCosmetic(PlayerProfile p, CosmeticDefinition c) =>
+            c != null && (p.OwnedCosmeticIds.Contains(c.id) || (c.priceCoins <= 0 && c.pricePremium <= 0 && c.unlockLevel <= 0 && c.passTier <= 0));
+
+        private CosmeticDto CosmeticDtoFor(PlayerProfile p, CosmeticDefinition c, int level)
+        {
+            bool owned = OwnsCosmetic(p, c);
+            bool equipped = p.EquippedCosmetics.TryGetValue(c.kind, out var eq) ? eq == c.id : owned && IsDefaultFor(p, c);
+            int daysLeft = 0;
+            if (c.featured && DateTime.TryParse(c.featuredUntilUtc ?? "", null, System.Globalization.DateTimeStyles.AdjustToUniversal | System.Globalization.DateTimeStyles.AssumeUniversal, out var until))
+                daysLeft = Math.Max(0, (int)Math.Ceiling((until - UtcNow()).TotalDays));
+            string state = equipped ? "Equipped" : owned ? "Owned" : c.passTier > 0 ? "Pass" : c.unlockLevel > level ? "Level" : c.pricePremium > 0 ? "Premium" : "Coins";
+            return new CosmeticDto
+            {
+                Id = c.id, Kind = c.kind, DisplayName = c.displayName, Description = c.description, AppliesTo = c.appliesTo, PriceCoins = c.priceCoins, PricePremium = c.pricePremium,
+                UnlockLevel = c.unlockLevel, PassTier = c.passTier, PassPremium = c.passPremium, ColorHex = c.colorHex, Owned = owned, Equipped = equipped, LevelReached = level >= c.unlockLevel,
+                IsNew = c.isNew, Featured = c.featured && (daysLeft > 0 || c.featuredUntilUtc == null), FeaturedDaysLeft = daysLeft, NairaPrice = c.nairaPrice, State = state
+            };
+        }
+
+        /// <summary>The first free cosmetic of a kind is the default look until something else is equipped.</summary>
+        private bool IsDefaultFor(PlayerProfile p, CosmeticDefinition c)
+        {
+            foreach (var other in Content.Cosmetics.cosmetics)
+                if (other.kind == c.kind && other.appliesTo == c.appliesTo && OwnsCosmetic(p, other)) return other.id == c.id;
+            return false;
+        }
+
+        private void SendShop(Session s)
+        {
+            var p = Profiles.Get(s.PlayerId);
+            int level = XpCurve.LevelForXp(p.TotalXp, Content.Game.progression);
+            var list = new List<CosmeticDto>();
+            foreach (var c in Content.Cosmetics.cosmetics) list.Add(CosmeticDtoFor(p, c, level));
+            _transport.Send(s.ConnectionId, new ServerEnvelope { Kind = ServerMessageKind.Shop, Cosmetics = list.ToArray(), Amount = Ledger.GetBalance(s.PlayerId), PremiumBalance = Ledger.GetBalance(s.PlayerId, Core.Economy.Currency.Premium) });
+        }
+
+        private void HandlePurchaseCosmetic(Session s, string id)
+        {
+            var c = FindCosmetic(id);
+            if (c == null) { SendError(s.PlayerId, "Unknown item"); return; }
+            var p = Profiles.Get(s.PlayerId);
+            int level = XpCurve.LevelForXp(p.TotalXp, Content.Game.progression);
+            if (OwnsCosmetic(p, c)) { SendError(s.PlayerId, c.displayName + " is already yours"); return; }
+            if (c.passTier > 0 && c.priceCoins <= 0 && c.pricePremium <= 0) { SendError(s.PlayerId, c.displayName + " comes with the Season Pass"); return; }
+            if (level < c.unlockLevel) { SendError(s.PlayerId, $"{c.displayName} unlocks at level {c.unlockLevel}"); return; }
+            string key = $"cosmetic:{s.PlayerId}:{id}";
+            if (c.pricePremium > 0)
+            {
+                if (Ledger.Debit(s.PlayerId, Core.Economy.Currency.Premium, c.pricePremium, "cosmetic:" + id, key, out _) != Core.Economy.TransactionResult.Ok) { SendError(s.PlayerId, $"Not enough P for {c.displayName} ({c.pricePremium} P)"); return; }
+            }
+            else if (c.priceCoins > 0 && Ledger.Debit(s.PlayerId, c.priceCoins, "cosmetic:" + id, key, out _) != Core.Economy.TransactionResult.Ok)
+            {
+                SendError(s.PlayerId, $"Not enough Coins for {c.displayName} ({c.priceCoins:N0} C)"); return;
+            }
+            p.OwnedCosmeticIds.Add(id);
+            p.EquippedCosmetics[c.kind] = id;
+            Profiles.Save(p);
+            Log.Info("shop", $"{s.PlayerId} bought {id}");
+            SendShop(s);
+        }
+
+        private void HandleEquipCosmetic(Session s, string id)
+        {
+            var c = FindCosmetic(id);
+            var p = Profiles.Get(s.PlayerId);
+            if (c == null || !OwnsCosmetic(p, c)) { SendError(s.PlayerId, "You don't own that"); return; }
+            p.EquippedCosmetics[c.kind] = id;
+            Profiles.Save(p);
+            SendShop(s);
+        }
+
+        // ---- season pass (design 18) ----
+        private SeasonPassDto BuildSeasonPass(PlayerProfile p)
+        {
+            var def = Content.SeasonPass;
+            int level = XpCurve.LevelForXp(p.TotalXp, Content.Game.progression);
+            int xpPerTier = Math.Max(1, def.xpPerTier);
+            int current = (int)Math.Min(def.tiers.Length, p.SeasonXp / xpPerTier);
+            var tiers = new List<PassTierDto>();
+            foreach (var t in def.tiers)
+            {
+                bool reached = t.tier <= current;
+                string free = p.ClaimedPassTiers.Contains("free:" + t.tier) ? "Claimed" : reached ? "Claimable" : "Locked";
+                string prem = p.ClaimedPassTiers.Contains("premium:" + t.tier) ? "Claimed" : reached && p.PremiumPass ? "Claimable" : "Locked";
+                var fc = t.freeCosmeticId != null ? FindCosmetic(t.freeCosmeticId) : null;
+                var pc = t.premiumCosmeticId != null ? FindCosmetic(t.premiumCosmeticId) : null;
+                tiers.Add(new PassTierDto { Tier = t.tier, FreeCoins = t.freeCoins, PremiumCoins = t.premiumCoins, FreeCosmetic = fc != null ? CosmeticDtoFor(p, fc, level) : null, PremiumCosmetic = pc != null ? CosmeticDtoFor(p, pc, level) : null, FreeState = free, PremiumState = prem });
+            }
+            var cfg = Content.Game.ranked;
+            return new SeasonPassDto { SeasonId = CurrentSeasonId(), SeasonName = cfg.seasonName, DaysLeft = SeasonClock.DaysLeft(cfg, UtcNow()), SeasonXp = p.SeasonXp, XpPerTier = xpPerTier, CurrentTier = current, PremiumOwned = p.PremiumPass, PremiumPricePremium = def.premiumPricePremium, Tiers = tiers.ToArray() };
+        }
+
+        private void SendSeasonPass(Session s) =>
+            _transport.Send(s.ConnectionId, new ServerEnvelope { Kind = ServerMessageKind.SeasonPass, SeasonPass = BuildSeasonPass(Profiles.Get(s.PlayerId)), Amount = Ledger.GetBalance(s.PlayerId), PremiumBalance = Ledger.GetBalance(s.PlayerId, Core.Economy.Currency.Premium) });
+
+        private void HandleClaimPassTier(Session s, int tier, bool premium)
+        {
+            var p = Profiles.Get(s.PlayerId);
+            var def = Content.SeasonPass;
+            SeasonPassTier t = null; foreach (var x in def.tiers) if (x.tier == tier) t = x;
+            if (t == null) { SendError(s.PlayerId, "No such tier"); return; }
+            int current = (int)Math.Min(def.tiers.Length, p.SeasonXp / Math.Max(1, def.xpPerTier));
+            if (tier > current) { SendError(s.PlayerId, $"Tier {tier} needs more season XP"); return; }
+            if (premium && !p.PremiumPass) { SendError(s.PlayerId, "Get the Premium Pass first"); return; }
+            string key = (premium ? "premium:" : "free:") + tier;
+            if (p.ClaimedPassTiers.Contains(key)) { SendError(s.PlayerId, "Already claimed"); return; }
+            long coins = premium ? t.premiumCoins : t.freeCoins;
+            string cosmeticId = premium ? t.premiumCosmeticId : t.freeCosmeticId;
+            if (coins > 0) Ledger.Credit(s.PlayerId, coins, "season_pass:" + key, $"pass:{CurrentSeasonId()}:{s.PlayerId}:{key}", out _);
+            if (cosmeticId != null && !p.OwnedCosmeticIds.Contains(cosmeticId)) p.OwnedCosmeticIds.Add(cosmeticId);
+            p.ClaimedPassTiers.Add(key);
+            Profiles.Save(p);
+            SendSeasonPass(s);
+        }
+
+        private void HandleBuyPremiumPass(Session s)
+        {
+            var p = Profiles.Get(s.PlayerId);
+            if (p.PremiumPass) { SendError(s.PlayerId, "You already have the Premium Pass"); return; }
+            long price = Content.SeasonPass.premiumPricePremium;
+            if (price > 0 && Ledger.Debit(s.PlayerId, Core.Economy.Currency.Premium, price, "premium_pass", $"pass:{CurrentSeasonId()}:{s.PlayerId}:premium", out _) != Core.Economy.TransactionResult.Ok)
+            { SendError(s.PlayerId, $"Not enough P for the Premium Pass ({price} P)"); return; }
+            p.PremiumPass = true;
+            Profiles.Save(p);
+            SendSeasonPass(s);
         }
 
         // ---- garage ----

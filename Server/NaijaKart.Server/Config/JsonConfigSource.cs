@@ -28,6 +28,8 @@ namespace NaijaKart.Server.Config
         public VehicleRoster Vehicles { get; private set; }
         public CharacterRoster Characters { get; private set; }
         public NaijaKart.Core.Challenges.ChallengeLibrary Challenges { get; private set; }
+        public CosmeticLibrary Cosmetics { get; private set; }
+        public SeasonPassDefinition SeasonPass { get; private set; }
         public string[] TrackIds => new List<string>(_tracks.Keys).ToArray();
         public string RootDirectory { get; }
 
@@ -39,6 +41,8 @@ namespace NaijaKart.Server.Config
             Vehicles = Load<VehicleRoster>(Path.Combine(configDirectory, "vehicles.json")) ?? new VehicleRoster();
             Characters = Load<CharacterRoster>(Path.Combine(configDirectory, "characters.json")) ?? new CharacterRoster();
             Challenges = Load<NaijaKart.Core.Challenges.ChallengeLibrary>(Path.Combine(configDirectory, "challenges.json")) ?? new NaijaKart.Core.Challenges.ChallengeLibrary();
+            Cosmetics = Load<CosmeticLibrary>(Path.Combine(configDirectory, "cosmetics.json")) ?? new CosmeticLibrary();
+            SeasonPass = Load<SeasonPassDefinition>(Path.Combine(configDirectory, "season-pass.json")) ?? new SeasonPassDefinition();
             string tracksDir = Path.Combine(configDirectory, "tracks");
             if (Directory.Exists(tracksDir))
             {

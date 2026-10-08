@@ -1,0 +1,232 @@
+{
+  "cosmetics": [
+    {
+      "id": "color_danfo_yellow",
+      "kind": "color",
+      "displayName": "Danfo yellow",
+      "description": "The classic.",
+      "appliesTo": "kart",
+      "colorHex": "#ffc20e"
+    },
+    {
+      "id": "color_lagoon_teal",
+      "kind": "color",
+      "displayName": "Lagoon teal",
+      "description": "Lagos water on a sunny day.",
+      "appliesTo": "kart",
+      "colorHex": "#16c79a"
+    },
+    {
+      "id": "color_night_blue",
+      "kind": "color",
+      "displayName": "Night blue",
+      "description": "Island after dark.",
+      "appliesTo": "kart",
+      "colorHex": "#2a3f7a"
+    },
+    {
+      "id": "color_eko_red",
+      "kind": "color",
+      "displayName": "Eko red",
+      "description": "Hot like pepper.",
+      "appliesTo": "kart",
+      "colorHex": "#ff3b4e",
+      "priceCoins": 1200
+    },
+    {
+      "id": "color_owambe_gold",
+      "kind": "color",
+      "displayName": "Owambe gold",
+      "description": "Party colour.",
+      "appliesTo": "kart",
+      "colorHex": "#e8b84a",
+      "pricePremium": 200
+    },
+    {
+      "id": "color_chrome",
+      "kind": "color",
+      "displayName": "Chrome",
+      "description": "Mirror finish.",
+      "appliesTo": "kart",
+      "colorHex": "#b9c4e0",
+      "unlockLevel": 15
+    },
+    {
+      "id": "rims_stock",
+      "kind": "rims",
+      "displayName": "Stock rims",
+      "description": "As delivered.",
+      "appliesTo": "kart"
+    },
+    {
+      "id": "rims_chrome_okada",
+      "kind": "rims",
+      "displayName": "Chrome okada",
+      "description": "Shiny spokes.",
+      "appliesTo": "kart",
+      "priceCoins": 2000
+    },
+    {
+      "id": "rims_gold_spokes",
+      "kind": "rims",
+      "displayName": "Gold spokes",
+      "description": "Big man rims.",
+      "appliesTo": "kart",
+      "pricePremium": 150
+    },
+    {
+      "id": "rims_neon_blue",
+      "kind": "rims",
+      "displayName": "Neon blue",
+      "description": "Glow when you drift.",
+      "appliesTo": "kart"
+    },
+    {
+      "id": "rims_keke_slicks",
+      "kind": "rims",
+      "displayName": "Keke slicks",
+      "description": "Thin and fast-looking.",
+      "appliesTo": "kart",
+      "priceCoins": 900
+    },
+    {
+      "id": "rims_fire",
+      "kind": "rims",
+      "displayName": "Fire rims",
+      "description": "Season 1 Premium Pass.",
+      "appliesTo": "kart",
+      "passTier": 5,
+      "passPremium": true
+    },
+    {
+      "id": "trail_jollof_smoke",
+      "kind": "trail",
+      "displayName": "Jollof smoke trail",
+      "description": "Red smoke off your tyres.",
+      "appliesTo": "kart",
+      "pricePremium": 250,
+      "isNew": true
+    },
+    {
+      "id": "trail_pure_water",
+      "kind": "trail",
+      "displayName": "Pure water splash",
+      "description": "Cool splashes behind you.",
+      "appliesTo": "kart",
+      "priceCoins": 1500
+    },
+    {
+      "id": "outfit_owambe_agbada",
+      "kind": "outfit",
+      "displayName": "Owambe agbada",
+      "description": "Dress for the party.",
+      "appliesTo": "racer",
+      "pricePremium": 400
+    },
+    {
+      "id": "outfit_racing_jacket",
+      "kind": "outfit",
+      "displayName": "Racing jacket",
+      "description": "Starter fit.",
+      "appliesTo": "racer"
+    },
+    {
+      "id": "horn_agbero_whistle",
+      "kind": "horn",
+      "displayName": "Agbero whistle",
+      "description": "Comot for road!",
+      "appliesTo": "kart",
+      "priceCoins": 1500
+    },
+    {
+      "id": "horn_danfo",
+      "kind": "horn",
+      "displayName": "Danfo horn",
+      "description": "Standard issue.",
+      "appliesTo": "kart"
+    },
+    {
+      "id": "emote_shaku_shaku",
+      "kind": "emote",
+      "displayName": "Shaku shaku",
+      "description": "Celebrate on the podium.",
+      "appliesTo": "racer",
+      "pricePremium": 150
+    },
+    {
+      "id": "emote_wave",
+      "kind": "emote",
+      "displayName": "Wave",
+      "description": "Say hi.",
+      "appliesTo": "racer"
+    },
+    {
+      "id": "banner_eko_for_show",
+      "kind": "banner",
+      "displayName": "Eko for show",
+      "description": "Profile banner.",
+      "appliesTo": "racer",
+      "pricePremium": 200
+    },
+    {
+      "id": "banner_plain",
+      "kind": "banner",
+      "displayName": "Plain navy",
+      "description": "Profile banner.",
+      "appliesTo": "racer"
+    },
+    {
+      "id": "skin_molue_danfo",
+      "kind": "skin",
+      "displayName": "Molue Danfo skin",
+      "description": "Old-school Lagos molue livery, chrome bumpers.",
+      "appliesTo": "kart",
+      "pricePremium": 600,
+      "featured": true,
+      "featuredUntilUtc": "2026-10-31T00:00:00Z",
+      "nairaPrice": "₦[price]"
+    },
+    {
+      "id": "sticker_pack_lagos",
+      "kind": "skin",
+      "displayName": "Lagos stickers",
+      "description": "Sticker pack for your kart.",
+      "appliesTo": "kart",
+      "passTier": 4
+    },
+    {
+      "id": "horn_season_free",
+      "kind": "horn",
+      "displayName": "Keke horn",
+      "description": "Season 1 free pass horn.",
+      "appliesTo": "kart",
+      "passTier": 2
+    },
+    {
+      "id": "banner_season_free",
+      "kind": "banner",
+      "displayName": "Third Mainland banner",
+      "description": "Season 1 free pass banner.",
+      "appliesTo": "racer",
+      "passTier": 6
+    },
+    {
+      "id": "outfit_owambe_fit",
+      "kind": "outfit",
+      "displayName": "Owambe fit",
+      "description": "Season 1 Premium Pass.",
+      "appliesTo": "racer",
+      "passTier": 3,
+      "passPremium": true
+    },
+    {
+      "id": "title_ajebo",
+      "kind": "title",
+      "displayName": "Ajebo",
+      "description": "Season 1 Premium Pass title.",
+      "appliesTo": "racer",
+      "passTier": 6,
+      "passPremium": true
+    }
+  ]
+}

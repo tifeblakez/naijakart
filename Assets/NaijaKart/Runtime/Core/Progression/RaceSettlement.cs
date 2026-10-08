@@ -154,6 +154,7 @@ namespace NaijaKart.Core.Progression
                 }
 
                 profile.TotalXp += reward.Xp;
+                profile.SeasonXp += reward.Xp;
                 profile.Races++;
                 if (e.FinishPosition == 1 && e.Finished)
                 {

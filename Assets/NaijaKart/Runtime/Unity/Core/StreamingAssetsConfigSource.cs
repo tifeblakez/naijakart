@@ -28,14 +28,18 @@ namespace NaijaKart.Unity
         public VehicleRoster Vehicles { get; private set; } = new VehicleRoster();
         public CharacterRoster Characters { get; private set; } = new CharacterRoster();
         public NaijaKart.Core.Challenges.ChallengeLibrary Challenges { get; private set; } = new NaijaKart.Core.Challenges.ChallengeLibrary();
+        public CosmeticLibrary Cosmetics { get; private set; } = new CosmeticLibrary();
+        public SeasonPassDefinition SeasonPass { get; private set; } = new SeasonPassDefinition();
         public string[] TrackIds { get { var ids = new string[_tracks.Count]; _tracks.Keys.CopyTo(ids, 0); return ids; } }
         public TrackDefinition GetTrack(string trackId) => _tracks.TryGetValue(trackId ?? "", out var t) ? t : null;
 
         public static string ConfigRoot => Path.Combine(Application.streamingAssetsPath, "NaijaKart", "Config");
 
         /// <summary>Populates from already-read JSON text (works on every platform).</summary>
-        public void LoadFromText(string gameJson, string itemsJson, string vehiclesJson, string charactersJson, IEnumerable<string> trackJsons, string challengesJson = null)
+        public void LoadFromText(string gameJson, string itemsJson, string vehiclesJson, string charactersJson, IEnumerable<string> trackJsons, string challengesJson = null, string cosmeticsJson = null, string seasonPassJson = null)
         {
+            if (!string.IsNullOrEmpty(cosmeticsJson)) Cosmetics = JsonConvert.DeserializeObject<CosmeticLibrary>(cosmeticsJson, JsonSettings);
+            if (!string.IsNullOrEmpty(seasonPassJson)) SeasonPass = JsonConvert.DeserializeObject<SeasonPassDefinition>(seasonPassJson, JsonSettings);
             if (!string.IsNullOrEmpty(challengesJson)) Challenges = JsonConvert.DeserializeObject<NaijaKart.Core.Challenges.ChallengeLibrary>(challengesJson, JsonSettings);
             if (!string.IsNullOrEmpty(gameJson)) Game = JsonConvert.DeserializeObject<GameConfig>(gameJson, JsonSettings);
             if (!string.IsNullOrEmpty(itemsJson)) Items = JsonConvert.DeserializeObject<ItemLibrary>(itemsJson, JsonSettings);

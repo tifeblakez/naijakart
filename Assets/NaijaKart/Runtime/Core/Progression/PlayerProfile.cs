@@ -48,6 +48,13 @@ namespace NaijaKart.Core.Progression
         public long LastSeenUnixMs;
         /// <summary>Best finished race time per track ("Best: Third Mainland 3:18.40").</summary>
         public Dictionary<string, float> TrackBestTimes = new Dictionary<string, float>();
+        /// <summary>Cosmetics (looks only): owned ids and the equipped id per kind.</summary>
+        public List<string> OwnedCosmeticIds = new List<string>();
+        public Dictionary<string, string> EquippedCosmetics = new Dictionary<string, string>();
+        /// <summary>Season pass: XP this season, premium pass owned, claimed tiers ("free:3", "premium:3").</summary>
+        public long SeasonXp;
+        public bool PremiumPass;
+        public List<string> ClaimedPassTiers = new List<string>();
         public List<string> TracksWon = new List<string>();
         public string SelectedVehicleId;
         public string SelectedCharacterId;

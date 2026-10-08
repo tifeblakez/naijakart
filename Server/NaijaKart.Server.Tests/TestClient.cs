@@ -42,6 +42,8 @@ namespace NaijaKart.Server.Tests
         public ServerEnvelope Invite { get; private set; }
         public ServerEnvelope QueueStatus { get; private set; }
         public ServerEnvelope FriendsMsg { get; private set; }
+        public ServerEnvelope Shop { get; private set; }
+        public SeasonPassDto Pass { get; private set; }
         public List<ServerEnvelope> FriendRequestsReceived { get; } = new List<ServerEnvelope>();
         public long LastBalance { get; private set; }
         /// <summary>What to do when pulled over: "pay", "bail", "penalty" or null (let the timer decide).</summary>
@@ -105,6 +107,8 @@ namespace NaijaKart.Server.Tests
                 case ServerMessageKind.RoomInvite: Invite = m; break;
                 case ServerMessageKind.QueueStatus: QueueStatus = m; break;
                 case ServerMessageKind.Friends: FriendsMsg = m; break;
+                case ServerMessageKind.Shop: Shop = m; break;
+                case ServerMessageKind.SeasonPass: Pass = m.SeasonPass; break;
                 case ServerMessageKind.FriendRequest: FriendRequestsReceived.Add(m); break;
                 case ServerMessageKind.RaceResults:
                     if (Results != null && m.Results != null && Results.RaceId == m.Results.RaceId) break; // re-sent copy

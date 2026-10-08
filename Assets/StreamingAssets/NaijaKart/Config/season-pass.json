@@ -1,0 +1,37 @@
+{
+  "seasonId": "s1",
+  "premiumPricePremium": 600,
+  "xpPerTier": 1000,
+  "tiers": [
+    {
+      "tier": 1,
+      "freeCoins": 300,
+      "premiumCosmeticId": "skin_molue_danfo"
+    },
+    {
+      "tier": 2,
+      "freeCosmeticId": "horn_season_free",
+      "premiumCosmeticId": "trail_jollof_smoke"
+    },
+    {
+      "tier": 3,
+      "freeCoins": 500,
+      "premiumCosmeticId": "outfit_owambe_fit"
+    },
+    {
+      "tier": 4,
+      "freeCosmeticId": "sticker_pack_lagos",
+      "premiumCosmeticId": "emote_shaku_shaku"
+    },
+    {
+      "tier": 5,
+      "freeCoins": 300,
+      "premiumCosmeticId": "rims_fire"
+    },
+    {
+      "tier": 6,
+      "freeCosmeticId": "banner_season_free",
+      "premiumCosmeticId": "title_ajebo"
+    }
+  ]
+}

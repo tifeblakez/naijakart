@@ -11,6 +11,8 @@ namespace NaijaKart.Core.Config
         VehicleRoster Vehicles { get; }
         CharacterRoster Characters { get; }
         Challenges.ChallengeLibrary Challenges { get; }
+        CosmeticLibrary Cosmetics { get; }
+        SeasonPassDefinition SeasonPass { get; }
         TrackDefinition GetTrack(string trackId);
         string[] TrackIds { get; }
     }
@@ -25,6 +27,8 @@ namespace NaijaKart.Core.Config
         public VehicleRoster Vehicles { get; set; } = new VehicleRoster();
         public CharacterRoster Characters { get; set; } = new CharacterRoster();
         public Challenges.ChallengeLibrary Challenges { get; set; } = new Challenges.ChallengeLibrary();
+        public CosmeticLibrary Cosmetics { get; set; } = new CosmeticLibrary();
+        public SeasonPassDefinition SeasonPass { get; set; } = new SeasonPassDefinition();
 
         public string[] TrackIds
         {
@@ -93,6 +97,24 @@ namespace NaijaKart.Core.Config
                     else if (!seenC.Add(c.id)) errors.Add("duplicate challenge id " + c.id);
                     if (c.target <= 0) errors.Add("challenge " + c.id + " target must be > 0");
                 }
+            }
+            if (source.Cosmetics != null && source.Cosmetics.cosmetics != null)
+            {
+                var kinds = new System.Collections.Generic.HashSet<string> { "color", "rims", "trail", "outfit", "emote", "horn", "banner", "title", "skin" };
+                var seenK = new System.Collections.Generic.HashSet<string>();
+                foreach (var c in source.Cosmetics.cosmetics)
+                {
+                    if (string.IsNullOrEmpty(c.id)) errors.Add("cosmetic with empty id");
+                    else if (!seenK.Add(c.id)) errors.Add("duplicate cosmetic id " + c.id);
+                    if (!kinds.Contains(c.kind ?? "")) errors.Add("cosmetic " + c.id + " has unknown kind " + c.kind);
+                    if (c.priceCoins < 0 || c.pricePremium < 0) errors.Add("cosmetic " + c.id + " negative price");
+                }
+                if (source.SeasonPass != null)
+                    foreach (var t in source.SeasonPass.tiers ?? System.Array.Empty<SeasonPassTier>())
+                    {
+                        if (t.freeCosmeticId != null && !seenK.Contains(t.freeCosmeticId)) errors.Add("season pass tier " + t.tier + " free cosmetic unknown: " + t.freeCosmeticId);
+                        if (t.premiumCosmeticId != null && !seenK.Contains(t.premiumCosmeticId)) errors.Add("season pass tier " + t.tier + " premium cosmetic unknown: " + t.premiumCosmeticId);
+                    }
             }
             if (g.liveEvents != null && g.liveEvents.weekdayRules != null)
             {
