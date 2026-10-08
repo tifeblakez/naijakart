@@ -11,10 +11,13 @@ How each designed screen is wired. Share a new screen and the matching presenter
 | Race HUD | `RaceHudPresenter`, `MinimapPresenter`, `TouchControlsPresenter`, `TouchSteerZone` | `RaceSnapshot` (position/total, lap, time, speed, boost charges, 4 item slots, standings), `RaceEvent`s (ticker, shortcut banner) | Input frames (steer, drift, item+slot, boost) |
 | PULL OVER! | `LastmaPromptPresenter` | `LastmaCaught` event + `LastmaOptions` message (fine, friends online, fines/bail allowed) | TakePenalty, PayFine, RequestBail; PayBail from friends |
 | Results | `ResultsPresenter` | `RaceResults`, rewards, highlights, challenge completions | VoteRematch, LeaveRoom |
-| Social | (next) | Rivalries, friends leaderboard, bail stats | AddFriend, GetRivalries, GetLeaderboard |
-| Profile | (next) | `ProfileDto` | GetProfile |
+| Social | (presenter next; `NetworkClient.FriendsReceived`, `FriendRequestReceived`, `RivalriesReceived`, `LeaderboardReceived`) | Rivalries, friends leaderboard, bail stats | AddFriend, AcceptFriend, DeclineFriend, GetRivalries, GetLeaderboard |
+| Profile | (presenter next; `NetworkClient.ProfileReceived`) | `ProfileDto` | GetProfile |
 
-Copy lives in `NaijaCopy`. Speeds are shown in km/h (`m/s × 3.6`). Positions are 1-based ordinals.
+Copy lives in `NaijaCopy`. Design system values live in `DesignTokens` (generated from
+`design/canvas/ds/naijakart/tokens.json`; regenerate rather than edit). Every server message of
+the new screens is exposed as a `NetworkClient` event and every intent as a method, so a
+presenter only binds and never computes. Speeds are shown in km/h (`m/s × 3.6`). Positions are 1-based ordinals.
 
 ## Gameplay environment reference (board shared 2026-10-08)
 
