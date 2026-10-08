@@ -49,6 +49,21 @@ namespace NaijaKart.Unity.Net
         public event Action<string, string> LiveEvent;
         public long PremiumBalance { get; private set; }
         public event Action<string> ServerError;
+        // Screens from the design canvas (docs/UI_MAPPING.md)
+        public event Action<ServerEnvelope> QueueStatusReceived;
+        public event Action<ServerEnvelope> ProfileReceived;
+        public event Action<ServerEnvelope> LeaderboardReceived;
+        public event Action<ServerEnvelope> RivalriesReceived;
+        public event Action<ServerEnvelope> ChallengesReceived;
+        public event Action<AccountDto, long> AccountReceived;
+        public event Action<SeasonDto> SeasonReceived;
+        public event Action<ServerEnvelope> FriendsReceived;
+        public event Action<string, string> FriendRequestReceived;
+        public event Action<RoomStateDto, string, string> RoomInviteReceived;
+        public event Action<ServerEnvelope> ShopReceived;
+        public event Action<SeasonPassDto> SeasonPassReceived;
+        public event Action<TournamentDto> TournamentReceived;
+        public AccountDto Account { get; private set; }
 
         private void Awake()
         {
@@ -163,6 +178,32 @@ namespace NaijaKart.Unity.Net
         public void PayBail(string targetPlayerId) => Send(new ClientEnvelope { Kind = ClientMessageKind.PayBail, TargetPlayerId = targetPlayerId });
         public void VoteRematch() => Send(new ClientEnvelope { Kind = ClientMessageKind.VoteRematch });
         public void Ping() => Send(new ClientEnvelope { Kind = ClientMessageKind.Ping });
+        // Accounts (screens 21–25)
+        public void ClaimStart(string phone, bool whatsApp) => Send(new ClientEnvelope { Kind = ClientMessageKind.ClaimStart, Text = phone, Flag = whatsApp });
+        public void ClaimVerify(string code) => Send(new ClientEnvelope { Kind = ClientMessageKind.ClaimVerify, Text = code });
+        public void ClaimWithProvider(string provider, string subject) => Send(new ClientEnvelope { Kind = ClientMessageKind.ClaimWithProvider, Text = provider, AuthToken = subject });
+        public void SetRacer(string name, string lookId, string city) => Send(new ClientEnvelope { Kind = ClientMessageKind.SetRacer, DisplayName = name, CharacterId = lookId, Text = city });
+        public void CheckName(string name) => Send(new ClientEnvelope { Kind = ClientMessageKind.CheckName, Text = name });
+        public void ApplyReferral(string code) => Send(new ClientEnvelope { Kind = ClientMessageKind.ApplyReferral, Text = code });
+        public void GetAccount() => Send(new ClientEnvelope { Kind = ClientMessageKind.GetAccount });
+        // Ranked hub, rooms, social, shop, pass, tournament
+        public void GetSeason() => Send(new ClientEnvelope { Kind = ClientMessageKind.GetSeason });
+        public void SetRoomOptions(string trackId, int laps, string lastmaMode, string itemsMode, bool fillWithAi) => Send(new ClientEnvelope { Kind = ClientMessageKind.SetRoomOptions, TrackId = trackId, Laps = laps, LastmaMode = lastmaMode, ItemsMode = itemsMode, FillWithAi = fillWithAi });
+        public void InviteFriend(string playerId) => Send(new ClientEnvelope { Kind = ClientMessageKind.InviteFriend, TargetPlayerId = playerId });
+        public void AcceptFriend(string playerId) => Send(new ClientEnvelope { Kind = ClientMessageKind.AcceptFriend, TargetPlayerId = playerId });
+        public void DeclineFriend(string playerId) => Send(new ClientEnvelope { Kind = ClientMessageKind.DeclineFriend, TargetPlayerId = playerId });
+        public void RemoveFriend(string playerId) => Send(new ClientEnvelope { Kind = ClientMessageKind.RemoveFriend, TargetPlayerId = playerId });
+        public void GetFriends() => Send(new ClientEnvelope { Kind = ClientMessageKind.GetFriends });
+        public void GetLeaderboard(string metric, string scope, string trackId = null) => Send(new ClientEnvelope { Kind = ClientMessageKind.GetLeaderboard, Text = metric, Scope = scope, TrackId = trackId });
+        public void GetShop() => Send(new ClientEnvelope { Kind = ClientMessageKind.GetShop });
+        public void PurchaseCosmetic(string id) => Send(new ClientEnvelope { Kind = ClientMessageKind.PurchaseCosmetic, Text = id });
+        public void EquipCosmetic(string id) => Send(new ClientEnvelope { Kind = ClientMessageKind.EquipCosmetic, Text = id });
+        public void GetSeasonPass() => Send(new ClientEnvelope { Kind = ClientMessageKind.GetSeasonPass });
+        public void ClaimPassTier(int tier, bool premium) => Send(new ClientEnvelope { Kind = ClientMessageKind.ClaimPassTier, Laps = tier, Flag = premium });
+        public void BuyPremiumPass() => Send(new ClientEnvelope { Kind = ClientMessageKind.BuyPremiumPass });
+        public void GetTournament(string id = null) => Send(new ClientEnvelope { Kind = ClientMessageKind.GetTournament, Text = id });
+        public void EnterTournament(string id = null) => Send(new ClientEnvelope { Kind = ClientMessageKind.EnterTournament, Text = id });
+        public void LeaveTournament(string id = null) => Send(new ClientEnvelope { Kind = ClientMessageKind.LeaveTournament, Text = id });
 
         private void OnMessage(ServerEnvelope m)
         {
@@ -219,6 +260,30 @@ namespace NaijaKart.Unity.Net
                 case ServerMessageKind.Pong:
                     LastRttMs = NowMs() - m.ClientTimeMs;
                     break;
+                case ServerMessageKind.QueueStatus: QueueStatusReceived?.Invoke(m); break;
+                case ServerMessageKind.Profile: ProfileReceived?.Invoke(m); break;
+                case ServerMessageKind.Leaderboard: LeaderboardReceived?.Invoke(m); break;
+                case ServerMessageKind.Rivalries: RivalriesReceived?.Invoke(m); break;
+                case ServerMessageKind.Challenges: ChallengesReceived?.Invoke(m); break;
+                case ServerMessageKind.Account:
+                    Account = m.Account;
+                    CoinBalance = m.Amount;
+                    if (m.Account?.SignInPlayerId != null) Debug.Log("[NK:net] this phone belongs to " + m.Account.SignInPlayerId + ": say Hello as that player to sign in");
+                    AccountReceived?.Invoke(m.Account, m.Amount);
+                    break;
+                case ServerMessageKind.Season: SeasonReceived?.Invoke(m.Season); break;
+                case ServerMessageKind.Friends: FriendsReceived?.Invoke(m); break;
+                case ServerMessageKind.FriendRequest: FriendRequestReceived?.Invoke(m.PlayerId, m.Text); break;
+                case ServerMessageKind.RoomInvite: RoomInviteReceived?.Invoke(m.Room, m.PlayerId, m.Text); break;
+                case ServerMessageKind.Shop:
+                    CoinBalance = m.Amount; PremiumBalance = m.PremiumBalance;
+                    ShopReceived?.Invoke(m);
+                    break;
+                case ServerMessageKind.SeasonPass:
+                    CoinBalance = m.Amount; PremiumBalance = m.PremiumBalance;
+                    SeasonPassReceived?.Invoke(m.SeasonPass);
+                    break;
+                case ServerMessageKind.Tournament: TournamentReceived?.Invoke(m.Tournament); break;
             }
         }
 
