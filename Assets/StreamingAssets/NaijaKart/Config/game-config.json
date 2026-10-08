@@ -223,54 +223,39 @@
     "ratingSpread": 400,
     "ranks": [
       {
-        "id": "newbie",
-        "displayName": "Newbie",
+        "id": "jjc",
+        "displayName": "JJC",
         "minRating": 0
       },
       {
-        "id": "sharp_guy",
-        "displayName": "Sharp Guy",
-        "minRating": 1050
-      },
-      {
-        "id": "correct_guy",
-        "displayName": "Correct Guy",
-        "minRating": 1120
+        "id": "sharp_sharp",
+        "displayName": "Sharp Sharp",
+        "minRating": 300
       },
       {
         "id": "no_dull",
         "displayName": "No Dull",
-        "minRating": 1200
+        "minRating": 600
       },
       {
-        "id": "omo",
-        "displayName": "Omo!",
-        "minRating": 1290
-      },
-      {
-        "id": "na_you_sabi",
-        "displayName": "Na You Sabi",
-        "minRating": 1390
+        "id": "sabi",
+        "displayName": "Sabi",
+        "minRating": 900
       },
       {
         "id": "odogwu",
         "displayName": "Odogwu",
-        "minRating": 1500
+        "minRating": 1200
       },
       {
         "id": "chairman",
         "displayName": "Chairman",
-        "minRating": 1620
+        "minRating": 1500
       },
       {
-        "id": "wahala_dey",
-        "displayName": "Wahala Dey",
-        "minRating": 1750
-      },
-      {
-        "id": "untouchable",
-        "displayName": "Untouchable",
-        "minRating": 1900
+        "id": "oga_patapata",
+        "displayName": "Oga Patapata",
+        "minRating": 1800
       }
     ]
   },
@@ -299,6 +284,31 @@
       "Other"
     ],
     "rankedRequiresAccount": true
+  },
+  "ranked": {
+    "rpByPosition": [
+      24,
+      19,
+      14,
+      9,
+      5,
+      0,
+      -6,
+      -12
+    ],
+    "divisionsPerTier": 3,
+    "rpPerDivision": 100,
+    "minRealPlayers": 4,
+    "rushHourStartHour": 19,
+    "rushHourEndHour": 22,
+    "rushHourMultiplier": 1.25,
+    "timezoneOffsetHours": 1,
+    "seasonId": "s1",
+    "seasonName": "Season 1 \u00B7 Lagos",
+    "seasonStartUtc": "2026-10-01T00:00:00Z",
+    "seasonLengthDays": 30,
+    "resetDropTiers": 1,
+    "recentResultsKept": 5
   },
   "antiCheat": {
     "absoluteMinLapSeconds": 20,

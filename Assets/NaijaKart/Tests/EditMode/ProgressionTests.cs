@@ -34,10 +34,10 @@ namespace NaijaKart.Tests
         public void RankLadderComesFromConfig()
         {
             var ladder = new RankLadder(_cfg);
-            Assert.That(ladder.TierFor(0).id, Is.EqualTo("newbie"));
-            Assert.That(ladder.TierFor(1000).id, Is.EqualTo("newbie"));
-            Assert.That(ladder.TierFor(1620).id, Is.EqualTo("chairman"));
-            Assert.That(ladder.TierFor(5000).id, Is.EqualTo("untouchable"));
+            Assert.That(ladder.TierFor(0).id, Is.EqualTo("jjc"));
+            Assert.That(ladder.TierFor(299).id, Is.EqualTo("jjc"));
+            Assert.That(ladder.TierFor(1500).id, Is.EqualTo("chairman"));
+            Assert.That(ladder.TierFor(5000).id, Is.EqualTo("oga_patapata"));
             var custom = new ProgressionConfig { ranks = new[] { new RankTierConfig("a", "A", 0), new RankTierConfig("b", "B", 10) } };
             Assert.That(new RankLadder(custom).TierFor(10).id, Is.EqualTo("b"));
         }
@@ -93,7 +93,7 @@ namespace NaijaKart.Tests
             Assert.That(w.TotalXp, Is.GreaterThan(0));
             Assert.That(w.Rating, Is.GreaterThan(content.Game.progression.ratingStart));
             Assert.That(ledger.GetBalance(winner), Is.EqualTo(content.Game.economy.startingBalance + rewards[0].Coins));
-            Assert.That(rewards[0].RankIdBefore, Is.EqualTo("newbie"));
+            Assert.That(rewards[0].RankIdBefore, Is.EqualTo("jjc"));
             var loser = sim.Results.Entries[2].PlayerId;
             Assert.That(profiles.Get(loser).Rating, Is.LessThan(content.Game.progression.ratingStart));
 

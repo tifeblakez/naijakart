@@ -3,6 +3,14 @@ using System.Collections.Generic;
 
 namespace NaijaKart.Core.Progression
 {
+    [Serializable]
+    public sealed class RankedResultRecord
+    {
+        public int Position;
+        public int RpDelta;
+        public bool RushHour;
+    }
+
     /// <summary>Persisted player identity and progression (PRD §44, §92). Coins live in the ledger, not here.</summary>
     [Serializable]
     public sealed class PlayerProfile
@@ -10,7 +18,14 @@ namespace NaijaKart.Core.Progression
         public string PlayerId;
         public string DisplayName;
         public long TotalXp;
+        /// <summary>Hidden skill rating (Elo) used for matchmaking.</summary>
         public int Rating;
+        /// <summary>Ranked Points: the displayed ladder (tiers and divisions, ADR-0010).</summary>
+        public int RankedPoints;
+        /// <summary>Season the profile was last reset for.</summary>
+        public string SeasonId;
+        /// <summary>Most recent ranked results, newest last: finishing position and RP delta.</summary>
+        public List<RankedResultRecord> RecentRanked = new List<RankedResultRecord>();
         public int Races;
         public int Wins;
         public int Podiums;

@@ -48,7 +48,9 @@ namespace NaijaKart.Core.Net
         CheckName,
         /// <summary>Text = a friend's referral code.</summary>
         ApplyReferral,
-        GetAccount
+        GetAccount,
+        /// <summary>Season, Rush Hour and ranked rules for the Ranked hub.</summary>
+        GetSeason
     }
 
     [Serializable]
@@ -94,7 +96,28 @@ namespace NaijaKart.Core.Net
         /// <summary>Sent to the caught racer with LastmaCaught: fine, friends online, what is allowed.</summary>
         LastmaOptions,
         Garage,
-        Account
+        Account,
+        Season
+    }
+
+    [Serializable]
+    public sealed class SeasonDto
+    {
+        public string Id;
+        public string Name;
+        public int DaysLeft;
+        public string EndsUtc;
+        public bool RushHourActive;
+        public float RushHourMultiplier;
+        /// <summary>Seconds until Rush Hour ends (active) or starts (inactive).</summary>
+        public int RushHourSecondsTo;
+        public int RushHourStartHour;
+        public int RushHourEndHour;
+        public int MinRealPlayers;
+        public int RpForWin;
+        public int RpForLast;
+        public int RpPerDivision;
+        public int DivisionsPerTier;
     }
 
     [Serializable]
@@ -184,6 +207,13 @@ namespace NaijaKart.Core.Net
         public float LevelProgress;
         public int Rating;
         public string RankId;
+        public string RankLabel;
+        public int RankedPoints;
+        public int Division;
+        public int RpInDivision;
+        public int RpToNextDivision;
+        public int[] RecentPositions = Array.Empty<int>();
+        public int[] RecentRpDeltas = Array.Empty<int>();
         public string Title;
         public int Races;
         public int Wins;
@@ -238,6 +268,11 @@ namespace NaijaKart.Core.Net
         public long Coins;
         public int RatingDelta;
         public int NewRating;
+        public int RpDelta;
+        public int RpAfter;
+        public bool RushHour;
+        public int DivisionBefore;
+        public int DivisionAfter;
         public string RankIdBefore;
         public string RankIdAfter;
         public int LevelBefore;
@@ -285,5 +320,6 @@ namespace NaijaKart.Core.Net
         public GarageItemDto[] Characters;
         public long PremiumBalance;
         public AccountDto Account;
+        public SeasonDto Season;
     }
 }

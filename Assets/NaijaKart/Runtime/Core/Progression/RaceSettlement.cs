@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using NaijaKart.Core.Config;
 using NaijaKart.Core.Economy;
@@ -83,15 +84,31 @@ namespace NaijaKart.Core.Progression
         private readonly IProfileStore _profiles;
         private readonly IRivalryStore _rivalries;
         private readonly RankLadder _ladder;
+        private readonly Func<DateTime> _utcNow;
         private readonly HashSet<string> _settledRaces = new HashSet<string>();
 
-        public RaceSettlementService(GameConfig cfg, CoinLedger ledger, IProfileStore profiles, IRivalryStore rivalries)
+        public RaceSettlementService(GameConfig cfg, CoinLedger ledger, IProfileStore profiles, IRivalryStore rivalries, Func<DateTime> utcNow = null)
         {
             _cfg = cfg;
             _ledger = ledger;
             _profiles = profiles;
             _rivalries = rivalries;
-            _ladder = new RankLadder(cfg.progression);
+            _ladder = new RankLadder(cfg.progression, cfg.ranked);
+            _utcNow = utcNow ?? (() => DateTime.UtcNow);
+        }
+
+        /// <summary>
+        /// Ranked Points for a real racer's finishing position among the real racers (AI never changes
+        /// RP): the table is for a full grid, so fewer real racers spread across it.
+        /// </summary>
+        public static int RpDeltaFor(int positionAmongReal, int realCount, RankedConfig cfg, bool rushHour)
+        {
+            var table = cfg.rpByPosition ?? Array.Empty<int>();
+            if (table.Length == 0 || realCount <= 0) return 0;
+            int index = realCount <= 1 ? 0 : (int)System.Math.Round((positionAmongReal - 1) * (double)(table.Length - 1) / (realCount - 1));
+            int rp = table[System.Math.Max(0, System.Math.Min(table.Length - 1, index))];
+            if (rushHour && rp > 0) rp = (int)System.Math.Round(rp * cfg.rushHourMultiplier);
+            return rp;
         }
 
         public bool HasSettled(string raceId) => _settledRaces.Contains(raceId);
@@ -111,6 +128,11 @@ namespace NaijaKart.Core.Progression
                 ratingEntries.Add(new RatingCalculator.Entry { PlayerId = e.PlayerId, Rating = profile.Rating, FinishPosition = e.FinishPosition });
             }
             var deltas = ranked ? RatingCalculator.ComputeDeltas(ratingEntries, _cfg.progression) : new Dictionary<string, int>();
+            bool rushHour = ranked && SeasonClock.IsRushHour(_cfg.ranked, _utcNow());
+            // Position among real racers (sorted by finish position): AI never changes RP.
+            var realOrder = new List<RaceResultEntry>();
+            foreach (var e in results.Entries) if (!e.IsBot) realOrder.Add(e);
+            realOrder.Sort((a, b) => a.FinishPosition.CompareTo(b.FinishPosition));
 
             foreach (var e in results.Entries)
             {
@@ -119,7 +141,17 @@ namespace NaijaKart.Core.Progression
                 var reward = RewardCalculator.Compute(e.FinishPosition, e.Finished, e.LapsCompleted, e.Stats, _cfg);
                 if (xpMultiplier > 0f && xpMultiplier != 1f) reward.Xp = (int)System.Math.Round(reward.Xp * xpMultiplier);
                 int levelBefore = XpCurve.LevelForXp(profile.TotalXp, _cfg.progression);
-                string rankBefore = _ladder.TierFor(profile.Rating).id;
+                string rankBefore = _ladder.TierFor(profile.RankedPoints).id;
+                int divisionBefore = _ladder.DivisionFor(profile.RankedPoints);
+                int rpDelta = 0;
+                if (ranked)
+                {
+                    int posAmongReal = realOrder.IndexOf(e) + 1;
+                    rpDelta = RpDeltaFor(posAmongReal, realOrder.Count, _cfg.ranked, rushHour);
+                    profile.RankedPoints = System.Math.Max(0, profile.RankedPoints + rpDelta);
+                    profile.RecentRanked.Add(new RankedResultRecord { Position = e.FinishPosition, RpDelta = rpDelta, RushHour = rushHour });
+                    while (profile.RecentRanked.Count > System.Math.Max(1, _cfg.ranked.recentResultsKept)) profile.RecentRanked.RemoveAt(0);
+                }
 
                 profile.TotalXp += reward.Xp;
                 profile.Races++;
@@ -156,8 +188,13 @@ namespace NaijaKart.Core.Progression
                     Coins = reward.Coins,
                     RatingDelta = delta,
                     NewRating = profile.Rating,
+                    RpDelta = rpDelta,
+                    RpAfter = profile.RankedPoints,
+                    RushHour = rushHour,
+                    DivisionBefore = divisionBefore,
+                    DivisionAfter = _ladder.DivisionFor(profile.RankedPoints),
                     RankIdBefore = rankBefore,
-                    RankIdAfter = _ladder.TierFor(profile.Rating).id,
+                    RankIdAfter = _ladder.TierFor(profile.RankedPoints).id,
                     LevelBefore = levelBefore,
                     LevelAfter = XpCurve.LevelForXp(profile.TotalXp, _cfg.progression),
                     CoinBalance = _ledger.GetBalance(e.PlayerId)

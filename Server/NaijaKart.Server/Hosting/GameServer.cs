@@ -70,8 +70,8 @@ namespace NaijaKart.Server.Hosting
             Wallet = new LedgerWallet(Ledger);
             Profiles = profiles ?? new InMemoryProfileStore(content.Game.progression);
             Rivalries = rivalries ?? new InMemoryRivalryStore();
-            Settlement = new RaceSettlementService(content.Game, Ledger, Profiles, Rivalries);
-            RankLadder = new RankLadder(content.Game.progression);
+            Settlement = new RaceSettlementService(content.Game, Ledger, Profiles, Rivalries, () => UtcNow());
+            RankLadder = new RankLadder(content.Game.progression, content.Game.ranked);
             ChallengeProgress = challengeProgress ?? new InMemoryChallengeProgressStore();
             Challenges = new ChallengeEvaluator(content.Challenges, ChallengeProgress, Ledger, () => UtcNow());
             OtpSender = otpSender ?? new RecordingOtpSender();
@@ -234,6 +234,9 @@ namespace NaijaKart.Server.Hosting
                 case ClientMessageKind.GetAccount:
                     SendAccount(s, "Ok");
                     break;
+                case ClientMessageKind.GetSeason:
+                    _transport.Send(connectionId, new ServerEnvelope { Kind = ServerMessageKind.Season, Season = BuildSeason() });
+                    break;
                 case ClientMessageKind.PurchaseVehicle:
                     HandlePurchase(s, msg.VehicleId, isVehicle: true);
                     break;
@@ -269,6 +272,7 @@ namespace NaijaKart.Server.Hosting
             Ledger.EnsureAccount(playerId);
             var profile = Profiles.Get(playerId);
             profile.DisplayName = s.DisplayName;
+            ApplySeasonReset(profile);
             Profiles.Save(profile);
             _transport.Send(s.ConnectionId, new ServerEnvelope
             {
@@ -276,7 +280,7 @@ namespace NaijaKart.Server.Hosting
                 PlayerId = playerId,
                 Amount = Ledger.GetBalance(playerId),
                 PremiumBalance = Ledger.GetBalance(playerId, Core.Economy.Currency.Premium),
-                Text = RankLadder.TierFor(profile.Rating).id,
+                Text = RankLadder.TierFor(profile.RankedPoints).id,
                 ServerTimeMs = NowMs()
             });
             var live = TodayRule();
@@ -330,7 +334,8 @@ namespace NaijaKart.Server.Hosting
                 foreach (var s in _queue) if (s.QueuedMode == mode) { group.Add(s); if (s.QueuedAt < oldest) oldest = s.QueuedAt; }
                 if (group.Count == 0) continue;
                 bool full = group.Count >= max;
-                bool waitedEnough = group.Count >= rules.minPlayersToStart && _now - oldest >= rules.matchmakingWaitSeconds;
+                int minToStart = mode == RaceMode.Ranked ? Math.Max(rules.minPlayersToStart, Content.Game.ranked.minRealPlayers) : rules.minPlayersToStart;
+                bool waitedEnough = group.Count >= minToStart && _now - oldest >= rules.matchmakingWaitSeconds;
                 if (!full && !waitedEnough) continue;
 
                 // Ranked: sort by rating so the grid is close in skill (simple first pass; see ADR-0005).
@@ -424,6 +429,41 @@ namespace NaijaKart.Server.Hosting
         }
 
         public WeekdayRule TodayRule() => Content.Game.liveEvents?.RuleFor((int)UtcNow().DayOfWeek);
+
+        // ---- ranked seasons ----
+        /// <summary>Current season id: the configured one, or configured id + "+N" once it has rolled over N times.</summary>
+        public string CurrentSeasonId()
+        {
+            var cfg = Content.Game.ranked;
+            var now = UtcNow();
+            if (!SeasonClock.SeasonEnded(cfg, now)) return cfg.seasonId;
+            int rolls = (int)Math.Floor((now - SeasonClock.SeasonStart(cfg)).TotalDays / Math.Max(1, cfg.seasonLengthDays));
+            return cfg.seasonId + "+" + rolls;
+        }
+
+        /// <summary>Applies the season reset lazily when a profile is seen in a new season (everyone drops a tier).</summary>
+        public void ApplySeasonReset(PlayerProfile profile)
+        {
+            string season = CurrentSeasonId();
+            if (profile.SeasonId == season) return;
+            if (profile.SeasonId != null) profile.RankedPoints = RankLadder.AfterSeasonReset(profile.RankedPoints);
+            profile.SeasonId = season;
+            profile.RecentRanked.Clear();
+        }
+
+        private SeasonDto BuildSeason()
+        {
+            var cfg = Content.Game.ranked; var now = UtcNow();
+            var table = cfg.rpByPosition ?? Array.Empty<int>();
+            return new SeasonDto
+            {
+                Id = CurrentSeasonId(), Name = cfg.seasonName, DaysLeft = SeasonClock.DaysLeft(cfg, now), EndsUtc = SeasonClock.SeasonEnd(cfg).ToString("o"),
+                RushHourActive = SeasonClock.IsRushHour(cfg, now), RushHourMultiplier = cfg.rushHourMultiplier, RushHourSecondsTo = SeasonClock.RushHourSecondsTo(cfg, now),
+                RushHourStartHour = cfg.rushHourStartHour, RushHourEndHour = cfg.rushHourEndHour, MinRealPlayers = cfg.minRealPlayers,
+                RpForWin = table.Length > 0 ? table[0] : 0, RpForLast = table.Length > 0 ? table[table.Length - 1] : 0,
+                RpPerDivision = cfg.rpPerDivision, DivisionsPerTier = cfg.divisionsPerTier
+            };
+        }
 
         // ---- accounts ----
         private void SendAccount(Session s, string result, string signInPlayerId = null, string nameStatus = null)
@@ -635,9 +675,10 @@ namespace NaijaKart.Server.Hosting
                     "streak" => p.BestWinStreak,
                     "lastma" => p.LastmaEscapes,
                     "level" => p.TotalXp,
-                    _ => p.Rating
+                    "rp" => p.RankedPoints,
+                    _ => p.RankedPoints
                 };
-                rows.Add(new LeaderboardRowDto { PlayerId = p.PlayerId, DisplayName = p.DisplayName, Value = value, RankId = RankLadder.TierFor(p.Rating).id });
+                rows.Add(new LeaderboardRowDto { PlayerId = p.PlayerId, DisplayName = p.DisplayName, Value = value, RankId = RankLadder.TierFor(p.RankedPoints).id });
             }
             rows.Sort((a, b) => b.Value.CompareTo(a.Value) != 0 ? b.Value.CompareTo(a.Value) : string.CompareOrdinal(a.PlayerId, b.PlayerId));
             if (rows.Count > limit) rows.RemoveRange(limit, rows.Count - limit);
@@ -681,7 +722,14 @@ namespace NaijaKart.Server.Hosting
                 Level = XpCurve.LevelForXp(p.TotalXp, prog),
                 LevelProgress = XpCurve.LevelProgress(p.TotalXp, prog),
                 Rating = p.Rating,
-                RankId = RankLadder.TierFor(p.Rating).id,
+                RankId = RankLadder.TierFor(p.RankedPoints).id,
+                RankLabel = RankLadder.Label(p.RankedPoints),
+                RankedPoints = p.RankedPoints,
+                Division = RankLadder.DivisionFor(p.RankedPoints),
+                RpInDivision = RankLadder.RpInDivision(p.RankedPoints),
+                RpToNextDivision = RankLadder.RpToNextDivision(p.RankedPoints),
+                RecentPositions = p.RecentRanked.ConvertAll(r => r.Position).ToArray(),
+                RecentRpDeltas = p.RecentRanked.ConvertAll(r => r.RpDelta).ToArray(),
                 Title = p.Title,
                 Races = p.Races,
                 Wins = p.Wins,

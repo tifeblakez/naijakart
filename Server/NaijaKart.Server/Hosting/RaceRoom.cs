@@ -403,7 +403,7 @@ namespace NaijaKart.Server.Hosting
                     CharacterId = p.Character?.id,
                     Ready = p.IsReady,
                     Level = XpCurve.LevelForXp(profile.TotalXp, _cfg.progression),
-                    RankId = _server.RankLadder.TierFor(profile.Rating).id,
+                    RankId = _server.RankLadder.TierFor(profile.RankedPoints).id,
                     Title = profile.Title
                 };
             }

@@ -22,8 +22,8 @@ namespace NaijaKart.Server.Tests
             Assert.That(json.Vehicles.vehicles.Length, Is.EqualTo(10), "PRD §20: ten vehicles");
             Assert.That(json.Characters.characters.Length, Is.EqualTo(8), "PRD §21: eight characters");
             Assert.That(json.TrackIds, Does.Contain("third_mainland_rush"));
-            Assert.That(json.Game.progression.ranks.Length, Is.EqualTo(10), "PRD §7: ten ranks");
-            Assert.That(json.Game.progression.ranks[7].displayName, Is.EqualTo("Chairman"));
+            Assert.That(json.Game.progression.ranks.Length, Is.EqualTo(7), "design system: seven tiers with three divisions (ADR-0010 supersedes PRD §7 names)");
+            Assert.That(json.Game.progression.ranks[5].displayName, Is.EqualTo("Chairman"));
             Assert.That(json.Game.lastma.fineAmount, Is.EqualTo(200), "PULL OVER design: 200 Coins (configurable)");
         }
 
@@ -59,7 +59,7 @@ namespace NaijaKart.Server.Tests
             h.Run(0.1f, c);
             Assert.That(c.Welcome, Is.Not.Null);
             Assert.That(c.Welcome.Amount, Is.EqualTo(h.Content.Game.economy.startingBalance));
-            Assert.That(c.Welcome.Text, Is.EqualTo("newbie"));
+            Assert.That(c.Welcome.Text, Is.EqualTo("jjc"));
             Assert.That(h.Server.Profiles.Get("tife").DisplayName, Is.EqualTo("Tife"));
         }
 
@@ -154,6 +154,20 @@ namespace NaijaKart.Server.Tests
             var winner = clients[0].Results.Entries[0].PlayerId;
             Assert.That(rewards.First(r => r.PlayerId == winner).RatingDelta, Is.GreaterThan(0));
             Assert.That(rewards.Sum(r => r.RatingDelta), Is.InRange(-8, 8));
+            // Ranked Points: the displayed ladder (ADR-0010). Winner +24, last -12 but never below 0.
+            Assert.That(rewards.First(r => r.PlayerId == winner).RpDelta, Is.EqualTo(h.Content.Game.ranked.rpByPosition[0]));
+            Assert.That(rewards.First(r => r.PlayerId == winner).RpAfter, Is.EqualTo(h.Content.Game.ranked.rpByPosition[0]));
+            var last = clients[0].Results.Entries.Last(e => !e.IsBot).PlayerId;
+            Assert.That(rewards.First(r => r.PlayerId == last).RpDelta, Is.LessThan(0));
+            Assert.That(rewards.First(r => r.PlayerId == last).RpAfter, Is.EqualTo(0));
+            clients[0].Send(new ClientEnvelope { Kind = ClientMessageKind.GetProfile });
+            clients[0].Send(new ClientEnvelope { Kind = ClientMessageKind.GetSeason });
+            h.Run(0.2f, arr);
+            Assert.That(clients[0].Profile.RecentPositions.Length, Is.EqualTo(1), "last 5 races list");
+            Assert.That(clients[0].Profile.RankLabel, Does.StartWith("JJC"));
+            Assert.That(clients[0].Season.DaysLeft, Is.GreaterThanOrEqualTo(0));
+            Assert.That(clients[0].Season.RpForWin, Is.EqualTo(24));
+            Assert.That(clients[0].Season.MinRealPlayers, Is.EqualTo(h.Content.Game.ranked.minRealPlayers));
         }
 
         [Test]

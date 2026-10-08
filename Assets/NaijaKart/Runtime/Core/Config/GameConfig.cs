@@ -25,6 +25,7 @@ namespace NaijaKart.Core.Config
         public EconomyConfig economy = new EconomyConfig();
         public ProgressionConfig progression = new ProgressionConfig();
         public AccountsConfig accounts = new AccountsConfig();
+        public RankedConfig ranked = new RankedConfig();
         public AntiCheatConfig antiCheat = new AntiCheatConfig();
         public LiveEventsConfig liveEvents = new LiveEventsConfig();
     }
@@ -401,20 +402,47 @@ namespace NaijaKart.Core.Config
         public int ratingStart = 1000;
         public float ratingK = 24f;
         public float ratingSpread = 400f;
-        /// <summary>Competitive ranks ordered from lowest. Thresholds are rating floors. Data, not code (PRD §7).</summary>
+        /// <summary>
+        /// Competitive ranks ordered from lowest (design system: seven tiers, each with three divisions).
+        /// Thresholds are Ranked Points floors: a tier spans ranked.divisionsPerTier × ranked.rpPerDivision.
+        /// Data, not code (PRD §7). Names are pending validation with Nigerian players.
+        /// </summary>
         public RankTierConfig[] ranks =
         {
-            new RankTierConfig("newbie", "Newbie", 0),
-            new RankTierConfig("sharp_guy", "Sharp Guy", 1050),
-            new RankTierConfig("correct_guy", "Correct Guy", 1120),
-            new RankTierConfig("no_dull", "No Dull", 1200),
-            new RankTierConfig("omo", "Omo!", 1290),
-            new RankTierConfig("na_you_sabi", "Na You Sabi", 1390),
-            new RankTierConfig("odogwu", "Odogwu", 1500),
-            new RankTierConfig("chairman", "Chairman", 1620),
-            new RankTierConfig("wahala_dey", "Wahala Dey", 1750),
-            new RankTierConfig("untouchable", "Untouchable", 1900),
+            new RankTierConfig("jjc", "JJC", 0),
+            new RankTierConfig("sharp_sharp", "Sharp Sharp", 300),
+            new RankTierConfig("no_dull", "No Dull", 600),
+            new RankTierConfig("sabi", "Sabi", 900),
+            new RankTierConfig("odogwu", "Odogwu", 1200),
+            new RankTierConfig("chairman", "Chairman", 1500),
+            new RankTierConfig("oga_patapata", "Oga Patapata", 1800),
         };
+    }
+
+    /// <summary>Ranked Points, divisions, Rush Hour and seasons (design screens 03.1, 10, 15).</summary>
+    [Serializable]
+    public sealed class RankedConfig
+    {
+        /// <summary>RP by finishing position among real racers, 1st first. AI racers never change RP.</summary>
+        public int[] rpByPosition = { 24, 19, 14, 9, 5, 0, -6, -12 };
+        public int divisionsPerTier = 3;
+        public int rpPerDivision = 100;
+        /// <summary>At least this many real racers before a ranked grid starts; AI fills the rest.</summary>
+        public int minRealPlayers = 4;
+        /// <summary>Rush Hour: more RP while most racers are online (local hours, 24h clock).</summary>
+        public int rushHourStartHour = 19;
+        public int rushHourEndHour = 22;
+        public float rushHourMultiplier = 1.25f;
+        /// <summary>Local time offset for Rush Hour and the Wahala calendar (Lagos = UTC+1).</summary>
+        public int timezoneOffsetHours = 1;
+        public string seasonId = "s1";
+        public string seasonName = "Season 1 · Lagos";
+        public string seasonStartUtc = "2026-10-01T00:00:00Z";
+        public int seasonLengthDays = 30;
+        /// <summary>Everyone drops this many tiers at season reset.</summary>
+        public int resetDropTiers = 1;
+        /// <summary>How many recent ranked results the profile keeps ("Last 5 races").</summary>
+        public int recentResultsKept = 5;
     }
 
     [Serializable]
