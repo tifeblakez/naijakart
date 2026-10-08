@@ -61,7 +61,7 @@ namespace NaijaKart.Core.Simulation
             _log = log ?? NullLogger.Instance;
             _trackDef = content.GetTrack(setup.TrackId) ?? throw new ArgumentException("Unknown track " + setup.TrackId);
             _track = new TrackGeometry(_trackDef);
-            _vehicleModel = new ArcadeVehicleModel(_cfg);
+            _vehicleModel = new ArcadeVehicleModel(_cfg, setup.DriftBoostMultiplier);
             _hazards = new HazardSystem(_cfg.items);
             _rng = new DeterministicRandom(setup.Seed);
             _dt = 1f / _cfg.simulation.tickRate;
@@ -69,7 +69,7 @@ namespace NaijaKart.Core.Simulation
             _roadEvents = new RoadEventScheduler(this);
             _itemEffects = new ItemEffectSystem(this, _roadEvents);
             _itemRoller = new ItemRoller(content.Items, setup.AllowedItemIds);
-            _lastma = new LastmaSystem(this, wallet ?? new PracticeWallet());
+            _lastma = new LastmaSystem(this, wallet ?? new PracticeWallet(), setup.LastmaIntervalMultiplier);
             _boxRespawn = new float[_trackDef.itemBoxes.Length];
             _sm.Transitioned += (from, to) => Emit(RaceEventType.StateChanged, null, null, to.ToString(), (int)to);
         }

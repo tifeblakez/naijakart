@@ -29,7 +29,7 @@ tools/                            Content generators (e.g. Third Mainland Rush g
 dotnet test NaijaKart.sln                                   # core + server test suites
 dotnet run --project Server/NaijaKart.Server -- validate-config
 dotnet run --project Server/NaijaKart.Server -- simulate --players 8    # headless 8-bot race on Third Mainland Rush
-dotnet run --project Server/NaijaKart.Server -- run --port 7777         # start the authoritative server
+dotnet run --project Server/NaijaKart.Server -- run --port 7777 --data state.json   # authoritative server with file persistence
 ```
 
 ## Quick start (Unity)

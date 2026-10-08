@@ -25,7 +25,13 @@ namespace NaijaKart.Core.Net
         RequestBail,
         PayBail,
         VoteRematch,
-        Ping
+        Ping,
+        AddFriend,
+        RemoveFriend,
+        GetChallenges,
+        GetLeaderboard,
+        GetRivalries,
+        GetProfile
     }
 
     [Serializable]
@@ -47,6 +53,8 @@ namespace NaijaKart.Core.Net
         public bool LastmaEnabled = true;
         public PlayerInputFrame Input;
         public long ClientTimeMs;
+        /// <summary>Free text argument (leaderboard metric, etc.).</summary>
+        public string Text;
     }
 
     public enum ServerMessageKind
@@ -59,7 +67,74 @@ namespace NaijaKart.Core.Net
         RaceEvent,
         RaceResults,
         BailRequest,
-        Pong
+        Pong,
+        ChallengeCompleted,
+        Challenges,
+        Leaderboard,
+        Rivalries,
+        Profile,
+        LiveEvent
+    }
+
+    [Serializable]
+    public sealed class ChallengeProgressDto
+    {
+        public string ChallengeId;
+        public string DisplayName;
+        public string Description;
+        public string Cadence;
+        public int Value;
+        public int Target;
+        public bool Completed;
+        public long RewardCoins;
+        public int RewardXp;
+    }
+
+    [Serializable]
+    public sealed class LeaderboardRowDto
+    {
+        public int Rank;
+        public string PlayerId;
+        public string DisplayName;
+        public long Value;
+        public string RankId;
+    }
+
+    [Serializable]
+    public sealed class RivalryDto
+    {
+        public string OpponentId;
+        public string OpponentName;
+        public int MyWins;
+        public int TheirWins;
+        public int TotalRaces;
+        public float MyFastestLap;
+        public float TheirFastestLap;
+        public string LastWinner;
+        public int MyStreak;
+        public int TheirStreak;
+    }
+
+    [Serializable]
+    public sealed class ProfileDto
+    {
+        public string PlayerId;
+        public string DisplayName;
+        public int Level;
+        public float LevelProgress;
+        public int Rating;
+        public string RankId;
+        public string Title;
+        public int Races;
+        public int Wins;
+        public int Podiums;
+        public float WinRate;
+        public int LastmaEscapes;
+        public int CurrentWinStreak;
+        public int BestWinStreak;
+        public long Coins;
+        public string[] Achievements = Array.Empty<string>();
+        public string[] FriendIds = Array.Empty<string>();
     }
 
     [Serializable]
@@ -122,5 +197,9 @@ namespace NaijaKart.Core.Net
         public string PlayerId;
         public long Amount;
         public long ClientTimeMs;
+        public ChallengeProgressDto[] Challenges;
+        public LeaderboardRowDto[] Leaderboard;
+        public RivalryDto[] Rivalries;
+        public ProfileDto Profile;
     }
 }

@@ -41,7 +41,7 @@ namespace NaijaKart.Unity
                 var src = new StreamingAssetsConfigSource();
                 string root = StreamingAssetsConfigSource.ConfigRoot;
                 var texts = new Dictionary<string, string>();
-                var files = new List<string> { "game-config.json", "items.json", "vehicles.json", "characters.json" };
+                var files = new List<string> { "game-config.json", "items.json", "vehicles.json", "characters.json", "challenges.json" };
                 foreach (var t in _trackFiles) files.Add("tracks/" + t);
                 foreach (var f in files)
                 {
@@ -52,7 +52,7 @@ namespace NaijaKart.Unity
                 }
                 var tracks = new List<string>();
                 foreach (var t in _trackFiles) if (texts.TryGetValue("tracks/" + t, out var json) && json != null) tracks.Add(json);
-                src.LoadFromText(texts["game-config.json"], texts["items.json"], texts["vehicles.json"], texts["characters.json"], tracks);
+                src.LoadFromText(texts["game-config.json"], texts["items.json"], texts["vehicles.json"], texts["characters.json"], tracks, texts["challenges.json"]);
                 Content = src;
             }
             else

@@ -27,14 +27,16 @@ namespace NaijaKart.Unity
         public ItemLibrary Items { get; private set; } = new ItemLibrary();
         public VehicleRoster Vehicles { get; private set; } = new VehicleRoster();
         public CharacterRoster Characters { get; private set; } = new CharacterRoster();
+        public NaijaKart.Core.Challenges.ChallengeLibrary Challenges { get; private set; } = new NaijaKart.Core.Challenges.ChallengeLibrary();
         public string[] TrackIds { get { var ids = new string[_tracks.Count]; _tracks.Keys.CopyTo(ids, 0); return ids; } }
         public TrackDefinition GetTrack(string trackId) => _tracks.TryGetValue(trackId ?? "", out var t) ? t : null;
 
         public static string ConfigRoot => Path.Combine(Application.streamingAssetsPath, "NaijaKart", "Config");
 
         /// <summary>Populates from already-read JSON text (works on every platform).</summary>
-        public void LoadFromText(string gameJson, string itemsJson, string vehiclesJson, string charactersJson, IEnumerable<string> trackJsons)
+        public void LoadFromText(string gameJson, string itemsJson, string vehiclesJson, string charactersJson, IEnumerable<string> trackJsons, string challengesJson = null)
         {
+            if (!string.IsNullOrEmpty(challengesJson)) Challenges = JsonConvert.DeserializeObject<NaijaKart.Core.Challenges.ChallengeLibrary>(challengesJson, JsonSettings);
             if (!string.IsNullOrEmpty(gameJson)) Game = JsonConvert.DeserializeObject<GameConfig>(gameJson, JsonSettings);
             if (!string.IsNullOrEmpty(itemsJson)) Items = JsonConvert.DeserializeObject<ItemLibrary>(itemsJson, JsonSettings);
             if (!string.IsNullOrEmpty(vehiclesJson)) Vehicles = JsonConvert.DeserializeObject<VehicleRoster>(vehiclesJson, JsonSettings);
@@ -55,7 +57,7 @@ namespace NaijaKart.Unity
             var tracks = new List<string>();
             string tracksDir = Path.Combine(root, "tracks");
             if (Directory.Exists(tracksDir)) foreach (var f in Directory.GetFiles(tracksDir, "*.json")) tracks.Add(File.ReadAllText(f));
-            src.LoadFromText(Read("game-config.json"), Read("items.json"), Read("vehicles.json"), Read("characters.json"), tracks);
+            src.LoadFromText(Read("game-config.json"), Read("items.json"), Read("vehicles.json"), Read("characters.json"), tracks, Read("challenges.json"));
             return src;
         }
     }

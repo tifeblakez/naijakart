@@ -8,6 +8,7 @@ using NaijaKart.Core.Simulation;
 using NaijaKart.Core.Util;
 using NaijaKart.Server.Config;
 using NaijaKart.Server.Hosting;
+using NaijaKart.Server.Persistence;
 using NaijaKart.Server.Transport;
 
 namespace NaijaKart.Server
@@ -31,9 +32,9 @@ namespace NaijaKart.Server
                 case "simulate":
                     return Simulate(configDir, log, int.Parse(GetOption(args, "--players") ?? "8"), GetOption(args, "--track"));
                 case "run":
-                    return Run(configDir, log, int.Parse(GetOption(args, "--port") ?? "7777"));
+                    return Run(configDir, log, int.Parse(GetOption(args, "--port") ?? "7777"), GetOption(args, "--data"));
                 default:
-                    Console.Error.WriteLine("Usage: naijakart-server [run|simulate|validate-config|export-defaults] [--config DIR] [--port N] [--players N] [--track ID] [--verbose]");
+                    Console.Error.WriteLine("Usage: naijakart-server [run|simulate|validate-config|export-defaults] [--config DIR] [--port N] [--data FILE.json] [--players N] [--track ID] [--verbose]");
                     return 2;
             }
         }
@@ -79,13 +80,17 @@ namespace NaijaKart.Server
             return 0;
         }
 
-        private static int Run(string configDir, ILogger log, int port)
+        private static int Run(string configDir, ILogger log, int port, string dataFile)
         {
             var content = new JsonConfigSource(configDir);
             using var transport = new TcpJsonServerTransport(port, log);
             transport.Start();
-            var server = new GameServer(content, transport, log);
-            log.Info("server", $"Naija Kart server listening on TCP {transport.Port}, tick {content.Game.simulation.tickRate} Hz, config {configDir}");
+            using var state = dataFile != null ? new JsonFileStateStore(dataFile, content.Game.progression) : null;
+            var server = state != null
+                ? new GameServer(content, transport, log, state.Coins, state.Profiles, state.Rivalries, challengeProgress: state.Challenges)
+                : new GameServer(content, transport, log);
+            log.Info("server", $"Naija Kart server listening on TCP {transport.Port}, tick {content.Game.simulation.tickRate} Hz, config {configDir}, data {(dataFile ?? "in-memory")}");
+            if (state != null) log.Info("server", $"Loaded {state.PlayerCount} player profiles");
 
             var running = true;
             Console.CancelKeyPress += (_, e) => { e.Cancel = true; running = false; };
@@ -98,6 +103,7 @@ namespace NaijaKart.Server
                 if (now >= next)
                 {
                     server.Tick();
+                    state?.Tick();
                     next += tickMs;
                     if (now - next > tickMs * 10) next = now; // fell far behind: resync rather than spiral
                 }

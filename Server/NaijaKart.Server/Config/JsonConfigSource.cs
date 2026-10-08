@@ -26,6 +26,7 @@ namespace NaijaKart.Server.Config
         public ItemLibrary Items { get; private set; }
         public VehicleRoster Vehicles { get; private set; }
         public CharacterRoster Characters { get; private set; }
+        public NaijaKart.Core.Challenges.ChallengeLibrary Challenges { get; private set; }
         public string[] TrackIds => new List<string>(_tracks.Keys).ToArray();
         public string RootDirectory { get; }
 
@@ -36,6 +37,7 @@ namespace NaijaKart.Server.Config
             Items = Load<ItemLibrary>(Path.Combine(configDirectory, "items.json")) ?? new ItemLibrary();
             Vehicles = Load<VehicleRoster>(Path.Combine(configDirectory, "vehicles.json")) ?? new VehicleRoster();
             Characters = Load<CharacterRoster>(Path.Combine(configDirectory, "characters.json")) ?? new CharacterRoster();
+            Challenges = Load<NaijaKart.Core.Challenges.ChallengeLibrary>(Path.Combine(configDirectory, "challenges.json")) ?? new NaijaKart.Core.Challenges.ChallengeLibrary();
             string tracksDir = Path.Combine(configDirectory, "tracks");
             if (Directory.Exists(tracksDir))
             {

@@ -176,6 +176,8 @@ namespace NaijaKart.Unity.Net
                     RaceEventReceived?.Invoke(m.Event);
                     break;
                 case ServerMessageKind.RaceResults:
+                    // The server re-sends results while the room idles; only the first copy matters.
+                    if (LatestResults != null && m.Results != null && LatestResults.RaceId == m.Results.RaceId) break;
                     LatestResults = m.Results;
                     LatestRewards = m.Rewards;
                     foreach (var r in m.Rewards ?? Array.Empty<SettledRewardDto>())

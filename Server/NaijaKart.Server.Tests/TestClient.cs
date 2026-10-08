@@ -29,6 +29,12 @@ namespace NaijaKart.Server.Tests
         public List<RaceEvent> Events { get; } = new List<RaceEvent>();
         public List<string> Errors { get; } = new List<string>();
         public List<ServerEnvelope> BailRequests { get; } = new List<ServerEnvelope>();
+        public List<ServerEnvelope> Completed { get; } = new List<ServerEnvelope>();
+        public ChallengeProgressDto[] ChallengeList { get; private set; }
+        public LeaderboardRowDto[] LeaderboardRows { get; private set; }
+        public RivalryDto[] RivalryList { get; private set; }
+        public ProfileDto Profile { get; private set; }
+        public string LiveEventName { get; private set; }
         public int SnapshotsReceived { get; private set; }
         public bool AutoPayFine = true;
         public bool AutoBailOthers = false;
@@ -75,7 +81,14 @@ namespace NaijaKart.Server.Tests
                 case ServerMessageKind.RoomState: Room = m.Room; break;
                 case ServerMessageKind.RaceSnapshot: LastSnapshot = m.Snapshot; SnapshotsReceived++; break;
                 case ServerMessageKind.RaceEvent: Events.Add(m.Event); break;
+                case ServerMessageKind.ChallengeCompleted: Completed.Add(m); break;
+                case ServerMessageKind.Challenges: ChallengeList = m.Challenges; break;
+                case ServerMessageKind.Leaderboard: LeaderboardRows = m.Leaderboard; break;
+                case ServerMessageKind.Rivalries: RivalryList = m.Rivalries; break;
+                case ServerMessageKind.Profile: Profile = m.Profile; break;
+                case ServerMessageKind.LiveEvent: LiveEventName = m.Text; break;
                 case ServerMessageKind.RaceResults:
+                    if (Results != null && m.Results != null && Results.RaceId == m.Results.RaceId) break; // re-sent copy
                     Results = m.Results;
                     Rewards = m.Rewards;
                     if (AutoVoteRematch) Send(new ClientEnvelope { Kind = ClientMessageKind.VoteRematch });

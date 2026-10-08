@@ -25,6 +25,56 @@ namespace NaijaKart.Core.Config
         public EconomyConfig economy = new EconomyConfig();
         public ProgressionConfig progression = new ProgressionConfig();
         public AntiCheatConfig antiCheat = new AntiCheatConfig();
+        public LiveEventsConfig liveEvents = new LiveEventsConfig();
+    }
+
+    /// <summary>
+    /// Wahala Calendar (PRD §59): a weekly rhythm of rule tweaks for public races. Entries are matched
+    /// by UTC weekday (0 = Sunday … 6 = Saturday). Missing weekday = normal rules. Replaceable by a
+    /// live-ops feed later; the shape is the contract.
+    /// </summary>
+    [Serializable]
+    public sealed class LiveEventsConfig
+    {
+        public bool enabled = true;
+        public WeekdayRule[] weekdayRules =
+        {
+            new WeekdayRule { weekday = 1, id = "no_item_race", displayName = "No Item Race", itemsEnabled = false },
+            new WeekdayRule { weekday = 2, id = "lastma_madness", displayName = "LASTMA Madness", lastmaIntervalMultiplier = 0.5f },
+            new WeekdayRule { weekday = 3, id = "danfo_madness", displayName = "Danfo Madness", allowedItemIds = new[] { "danfo", "okada", "generator_shield", "no_wahala", "jollof_boost" } },
+            new WeekdayRule { weekday = 4, id = "drift_night", displayName = "Drift Night", driftBoostMultiplier = 1.25f },
+            new WeekdayRule { weekday = 5, id = "night_rush", displayName = "Night Rush", preferredTrackId = "third_mainland_rush" },
+            new WeekdayRule { weekday = 6, id = "city_cup", displayName = "City Cup", rankedXpMultiplier = 1.5f },
+            new WeekdayRule { weekday = 0, id = "chill_race", displayName = "Chill Race", lastmaEnabled = false },
+        };
+
+        public WeekdayRule RuleFor(int weekday)
+        {
+            if (!enabled || weekdayRules == null) return null;
+            foreach (var r in weekdayRules) if (r.weekday == weekday && !r.disabled) return r;
+            return null;
+        }
+    }
+
+    [Serializable]
+    public sealed class WeekdayRule
+    {
+        public int weekday;
+        public string id;
+        public string displayName;
+        public bool disabled;
+        public bool itemsEnabled = true;
+        public bool lastmaEnabled = true;
+        /// <summary>Restrict the item roll to these ids (null/empty = all).</summary>
+        public string[] allowedItemIds;
+        /// <summary>Scales LASTMA min/max trigger intervals (0.5 = twice as often).</summary>
+        public float lastmaIntervalMultiplier = 1f;
+        /// <summary>Scales drift-release boost duration.</summary>
+        public float driftBoostMultiplier = 1f;
+        /// <summary>Scales XP for ranked races on this day.</summary>
+        public float rankedXpMultiplier = 1f;
+        /// <summary>If set and loaded, public races prefer this track.</summary>
+        public string preferredTrackId;
     }
 
     [Serializable]
@@ -35,6 +85,8 @@ namespace NaijaKart.Core.Config
         public int maxPlayersPerRace = 8;
         /// <summary>Snapshots sent to clients per second (may be lower than tick rate).</summary>
         public int snapshotRate = 15;
+        /// <summary>While a room shows results, re-send them this often so no client misses them.</summary>
+        public float resultsResendSeconds = 2f;
     }
 
     [Serializable]

@@ -28,5 +28,9 @@ namespace NaijaKart.Core.Simulation
         /// <summary>Optional item allow-list for event rules (Wahala Calendar). Null = library default.</summary>
         public List<string> AllowedItemIds;
         public int MaxPlayers = 8;
+        /// <summary>Live-event id applied to this race (Wahala Calendar), for results/analytics. Null = none.</summary>
+        public string LiveEventId;
+        public float LastmaIntervalMultiplier = 1f;
+        public float DriftBoostMultiplier = 1f;
     }
 }

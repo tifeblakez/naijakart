@@ -11,12 +11,15 @@ namespace NaijaKart.Core.Progression
     {
         PlayerProfile Get(string playerId);
         void Save(PlayerProfile profile);
+        /// <summary>Snapshot of all profiles (leaderboards). Small-scale only; a database adapter pages/sorts server-side.</summary>
+        IEnumerable<PlayerProfile> All();
     }
 
     public interface IRivalryStore
     {
         Rivalry GetOrCreate(string a, string b);
         void Save(Rivalry rivalry);
+        IEnumerable<Rivalry> For(string playerId);
     }
 
     public sealed class InMemoryProfileStore : IProfileStore
@@ -40,6 +43,7 @@ namespace NaijaKart.Core.Progression
         }
 
         public void Save(PlayerProfile profile) => _profiles[profile.PlayerId] = profile;
+        public IEnumerable<PlayerProfile> All() => new List<PlayerProfile>(_profiles.Values);
     }
 
     public sealed class InMemoryRivalryStore : IRivalryStore
@@ -58,6 +62,13 @@ namespace NaijaKart.Core.Progression
         }
 
         public void Save(Rivalry rivalry) => _rivalries[Rivalry.KeyFor(rivalry.PlayerA, rivalry.PlayerB)] = rivalry;
+
+        public IEnumerable<Rivalry> For(string playerId)
+        {
+            var list = new List<Rivalry>();
+            foreach (var r in _rivalries.Values) if (r.PlayerA == playerId || r.PlayerB == playerId) list.Add(r);
+            return list;
+        }
     }
 
     /// <summary>
@@ -85,7 +96,7 @@ namespace NaijaKart.Core.Progression
 
         public bool HasSettled(string raceId) => _settledRaces.Contains(raceId);
 
-        public List<SettledRewardDto> Settle(RaceResults results)
+        public List<SettledRewardDto> Settle(RaceResults results, float xpMultiplier = 1f)
         {
             var rewards = new List<SettledRewardDto>();
             if (results == null || results.Cancelled || _settledRaces.Contains(results.RaceId)) return rewards;
@@ -106,6 +117,7 @@ namespace NaijaKart.Core.Progression
                 if (e.IsBot) continue;
                 var profile = _profiles.Get(e.PlayerId);
                 var reward = RewardCalculator.Compute(e.FinishPosition, e.Finished, e.LapsCompleted, e.Stats, _cfg);
+                if (xpMultiplier > 0f && xpMultiplier != 1f) reward.Xp = (int)System.Math.Round(reward.Xp * xpMultiplier);
                 int levelBefore = XpCurve.LevelForXp(profile.TotalXp, _cfg.progression);
                 string rankBefore = _ladder.TierFor(profile.Rating).id;
 

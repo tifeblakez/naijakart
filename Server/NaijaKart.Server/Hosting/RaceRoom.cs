@@ -28,8 +28,11 @@ namespace NaijaKart.Server.Hosting
         private readonly Dictionary<string, (string vehicle, string character)> _loadouts = new Dictionary<string, (string, string)>();
         private float _snapshotAccumulator;
         private float _resultsTime;
+        private float _resultsResendTimer;
+        private SettledRewardDto[] _lastRewards = System.Array.Empty<SettledRewardDto>();
         private int _raceCounter;
         private ulong _seed;
+        private WeekdayRule _liveEvent;
 
         public string Code { get; }
         public string HostPlayerId { get; private set; }
@@ -72,7 +75,11 @@ namespace NaijaKart.Server.Hosting
                 ItemsEnabled = ItemsEnabled,
                 LastmaEnabled = LastmaEnabled,
                 RoadEventsEnabled = true,
-                MaxPlayers = _cfg.simulation.maxPlayersPerRace
+                MaxPlayers = _cfg.simulation.maxPlayersPerRace,
+                LiveEventId = _liveEvent?.id,
+                AllowedItemIds = _liveEvent?.allowedItemIds != null && _liveEvent.allowedItemIds.Length > 0 ? new List<string>(_liveEvent.allowedItemIds) : null,
+                LastmaIntervalMultiplier = _liveEvent?.lastmaIntervalMultiplier ?? 1f,
+                DriftBoostMultiplier = _liveEvent?.driftBoostMultiplier ?? 1f
             };
             Race = new RaceSimulation(setup, _content, _server.Wallet, _log);
             Settled = false;
@@ -157,6 +164,18 @@ namespace NaijaKart.Server.Hosting
             return true;
         }
 
+        /// <summary>Applies a Wahala Calendar rule (public races only). Must be called before the race starts.</summary>
+        public void ApplyLiveEvent(WeekdayRule rule)
+        {
+            if (rule == null || (Race.State != RaceState.Lobby && Race.State != RaceState.Waiting)) return;
+            _liveEvent = rule;
+            ItemsEnabled = rule.itemsEnabled;
+            LastmaEnabled = rule.lastmaEnabled;
+            CreateRace();
+        }
+
+        public WeekdayRule LiveEvent => _liveEvent;
+
         public void Configure(string trackId, int laps, bool items, bool lastma)
         {
             if (Race.State != RaceState.Lobby) return;
@@ -203,15 +222,24 @@ namespace NaijaKart.Server.Hosting
             if (Race.State == RaceState.Results && !Settled)
             {
                 Settled = true;
-                var rewards = _server.Settlement.Settle(Race.Results);
-                var env = new ServerEnvelope { Kind = ServerMessageKind.RaceResults, Results = Race.Results, Rewards = rewards.ToArray(), Tick = Race.Tick };
-                SendToMembers(env);
+                float xpMul = _liveEvent != null && Mode == RaceMode.Ranked ? _liveEvent.rankedXpMultiplier : 1f;
+                var rewards = _server.Settlement.Settle(Race.Results, xpMul);
+                _lastRewards = rewards.ToArray();
+                SendResults();
                 _server.OnRaceSettled(this, Race.Results);
             }
 
             if (Race.State == RaceState.Results)
             {
                 _resultsTime += dt;
+                // Results are the one message a client must not miss; re-send while the room idles here
+                // so a lossy transport (or a late reconnect) still delivers them. Clients de-duplicate by RaceId.
+                _resultsResendTimer -= dt;
+                if (_resultsResendTimer <= 0f)
+                {
+                    _resultsResendTimer = _cfg.simulation.resultsResendSeconds;
+                    SendResults();
+                }
                 if (Race.RematchRequested || (_resultsTime >= _cfg.raceRules.rematchVoteSeconds && AnyRematchVote()))
                 {
                     _log.Info("room", $"Room {Code}: RUN AM BACK → new race");
@@ -352,6 +380,12 @@ namespace NaijaKart.Server.Hosting
                 };
             }
             return dto;
+        }
+
+        private void SendResults()
+        {
+            SendToMembers(new ServerEnvelope { Kind = ServerMessageKind.RaceResults, Results = Race.Results, Rewards = _lastRewards, Tick = Race.Tick });
+            _resultsResendTimer = _cfg.simulation.resultsResendSeconds;
         }
 
         private void BroadcastRoomState() => SendToMembers(new ServerEnvelope { Kind = ServerMessageKind.RoomState, Room = ToDto(), Tick = Race.Tick });

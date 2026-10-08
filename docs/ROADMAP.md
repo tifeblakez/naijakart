@@ -11,8 +11,8 @@ Phases follow the PRD (§85). Gates (§106) are questions answered by playtestin
 | 4 Items | boxes, inventory, use, 10 effects, position-weighted balance, VFX/audio hooks | **Done + tested**; VFX/audio assets pending |
 | 5 LASTMA | targeting, warning, pursuit, escape, fine, Coins, bail, arrest, spectate | **Done + tested** end to end (incl. over the wire) |
 | 6 Multiplayer | authoritative server, rooms, matchmaking, prediction/reconciliation, disconnect/reconnect, 8 players | **Done over loopback + TCP transport**; UDP transport and hosted deployment pending (ADR-0003) |
-| 7 Progression | XP, Coins, level, rank tiers, rating, rewards, settlement | **Done + tested**; achievements/challenges data model pending |
-| 8 Social | rivalries, rematch, private rooms, invites, bail from friends, sharing | **Rivalries, rematch, rooms, bail done**; friends list persistence + share deep links pending |
+| 7 Progression | XP, Coins, level, rank tiers, rating, rewards, settlement, achievements, daily/weekly challenges | **Done + tested** (17 challenge/achievement rules shipped as data) |
+| 8 Social | rivalries, rematch, private rooms, invites, bail from friends, friends list, leaderboards, sharing | **Done except share deep links** (friends are a symmetric first pass, ADR-0006) |
 | 9 Full content | 8 characters, 10 vehicles, 6 tracks, item library, customisation, tournaments, seasons | Data for 8 characters / 10 vehicles / 10 items shipped; 5 tracks, cosmetics, tournaments, seasons pending |
 | 10 Polish | VFX, audio, animation, UI, camera, performance, onboarding | Pending |
 | 11 QA | network matrix, devices, exploits, crashes | Automated matrix exists in tests; device QA pending |
@@ -22,6 +22,5 @@ Phases follow the PRD (§85). Gates (§106) are questions answered by playtestin
 1. Open in Unity 6, scaffold scenes, build greybox, drive with tilt on a device. **Gate 1: is driving fun?** Tune `driving`/`drift` in `game-config.json` only.
 2. Deploy `NaijaKart.Server` (any Linux box; `dotnet run -- run --port 7777`) and race 8 phones through it. **Gate 5.**
 3. Replace JSON/TCP with a UDP binary transport behind `ITransport` once Gate 5 passes with real latency numbers.
-4. Persistence adapters (`ICoinStore`, `IProfileStore`, `IRivalryStore`) on a managed database; guest → account linking.
-5. Achievements and daily/weekly challenges as data rows evaluated from `ParticipantStats` at settlement.
-6. Production art for Third Mainland Rush, one vehicle (Danfo) and one character (Tunde) — the vertical slice visual target.
+4. Replace the JSON-file persistence (`--data state.json`) with a managed database adapter behind the same interfaces; guest → account linking.
+5. Production art for Third Mainland Rush, one vehicle (Danfo) and one character (Tunde) — the vertical slice visual target.

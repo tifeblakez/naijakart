@@ -10,6 +10,7 @@ namespace NaijaKart.Core.Config
         ItemLibrary Items { get; }
         VehicleRoster Vehicles { get; }
         CharacterRoster Characters { get; }
+        Challenges.ChallengeLibrary Challenges { get; }
         TrackDefinition GetTrack(string trackId);
         string[] TrackIds { get; }
     }
@@ -23,6 +24,7 @@ namespace NaijaKart.Core.Config
         public ItemLibrary Items { get; set; } = new ItemLibrary();
         public VehicleRoster Vehicles { get; set; } = new VehicleRoster();
         public CharacterRoster Characters { get; set; } = new CharacterRoster();
+        public Challenges.ChallengeLibrary Challenges { get; set; } = new Challenges.ChallengeLibrary();
 
         public string[] TrackIds
         {
@@ -82,6 +84,21 @@ namespace NaijaKart.Core.Config
                 }
             }
             if (source.Vehicles == null || source.Vehicles.vehicles == null || source.Vehicles.vehicles.Length == 0) errors.Add("VehicleRoster empty");
+            if (source.Challenges != null && source.Challenges.challenges != null)
+            {
+                var seenC = new System.Collections.Generic.HashSet<string>();
+                foreach (var c in source.Challenges.challenges)
+                {
+                    if (string.IsNullOrEmpty(c.id)) errors.Add("challenge with empty id");
+                    else if (!seenC.Add(c.id)) errors.Add("duplicate challenge id " + c.id);
+                    if (c.target <= 0) errors.Add("challenge " + c.id + " target must be > 0");
+                }
+            }
+            if (g.liveEvents != null && g.liveEvents.weekdayRules != null)
+            {
+                foreach (var r in g.liveEvents.weekdayRules)
+                    if (r.weekday < 0 || r.weekday > 6) errors.Add("liveEvents rule " + r.id + " weekday out of range");
+            }
             foreach (var trackId in source.TrackIds)
             {
                 var t = source.GetTrack(trackId);

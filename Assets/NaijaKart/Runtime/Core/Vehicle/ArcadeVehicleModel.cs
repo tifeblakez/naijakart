@@ -13,10 +13,12 @@ namespace NaijaKart.Core.Vehicle
     public sealed class ArcadeVehicleModel
     {
         private readonly GameConfig _cfg;
+        private readonly float _driftBoostDurationMul;
 
-        public ArcadeVehicleModel(GameConfig cfg)
+        public ArcadeVehicleModel(GameConfig cfg, float driftBoostDurationMultiplier = 1f)
         {
             _cfg = cfg;
+            _driftBoostDurationMul = driftBoostDurationMultiplier > 0f ? driftBoostDurationMultiplier : 1f;
         }
 
         public VehicleStepEvents Step(ref VehicleState s, in PlayerInputFrame input, VehicleStats stats,
@@ -229,7 +231,7 @@ namespace NaijaKart.Core.Vehicle
                 return;
             }
             int idx = (int)level - 1;
-            float duration = _cfg.drift.levelBoostDuration[idx] * stats.BoostDurationScale;
+            float duration = _cfg.drift.levelBoostDuration[idx] * stats.BoostDurationScale * _driftBoostDurationMul;
             float mul = _cfg.drift.levelBoostMultiplier[idx];
             bool wasBoosting = s.IsBoosting;
             ApplyBoost(ref s, duration, mul);

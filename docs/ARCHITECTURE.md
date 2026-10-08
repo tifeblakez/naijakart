@@ -71,15 +71,25 @@ race in the same room with the voters). Settlement (`RaceSettlementService`) run
 XP, Coins (ledger credit with idempotency key `raceId:reward:playerId`), rating (multiplayer Elo for
 ranked/tournament only), win streaks, rivalries.
 
-Persistence is behind `ICoinStore`, `IProfileStore`, `IRivalryStore`; in-memory implementations ship
-now, a database adapter is the next step (ADR-0004).
+After settlement, `ChallengeEvaluator` applies the race to every daily/weekly/achievement rule in
+`challenges.json` and pays rewards through the ledger (ADR-0006). Results are re-sent every
+`simulation.resultsResendSeconds` while a room shows them, so a lossy transport cannot lose them.
+
+Persistence is behind `ICoinStore`, `IProfileStore`, `IRivalryStore`, `IChallengeProgressStore`.
+In-memory implementations are the default; `--data state.json` switches to `JsonFileStateStore`
+(atomic, debounced writes) so balances, the transaction log, profiles, rivalries and challenge
+progress survive restarts. A database adapter is the next step (ADR-0004).
+
+Social and live-ops endpoints: `AddFriend`/`RemoveFriend`, `GetProfile`, `GetRivalries`,
+`GetLeaderboard` (rating/wins/streak/lastma/level, optional friends filter) and the Wahala Calendar
+(`liveEvents.weekdayRules`) applied to public rooms via `RaceRoom.ApplyLiveEvent`.
 
 ## 6. Data
 
 `Assets/StreamingAssets/NaijaKart/Config/`:
 
 * `game-config.json` — `GameConfig`: simulation, driving, drift, boost, tilt, race rules, collision, items, road events, LASTMA, economy, progression (ranks), anti-cheat. Regenerate defaults with `naijakart-server export-defaults`.
-* `items.json`, `vehicles.json`, `characters.json` — content rows.
+* `items.json`, `vehicles.json`, `characters.json`, `challenges.json` — content rows.
 * `tracks/*.json` — `TrackDefinition`: closed centreline, road width, shortcut roads, ordered checkpoints with alternative gates, item boxes, road-event anchors.
 
 `ConfigValidator` runs at server boot, at client boot and in tests.

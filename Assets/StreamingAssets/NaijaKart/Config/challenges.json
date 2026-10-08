@@ -1,0 +1,21 @@
+{
+  "challenges": [
+    { "id": "daily_races_3", "displayName": "Three Runs", "description": "Complete 3 races", "cadence": "Daily", "metric": "RacesCompleted", "target": 3, "rewardCoins": 300, "rewardXp": 120 },
+    { "id": "daily_drift_20", "displayName": "Slide Master", "description": "Drift 20 times", "cadence": "Daily", "metric": "Drifts", "target": 20, "rewardCoins": 250, "rewardXp": 100 },
+    { "id": "daily_lastma_2", "displayName": "Can't Catch Me", "description": "Escape LASTMA twice", "cadence": "Daily", "metric": "LastmaEscapes", "target": 2, "rewardCoins": 400, "rewardXp": 150 },
+    { "id": "daily_overtake_15", "displayName": "Omo, Shift!", "description": "Overtake 15 racers", "cadence": "Daily", "metric": "Overtakes", "target": 15, "rewardCoins": 250, "rewardXp": 100 },
+    { "id": "daily_top3", "displayName": "Podium Guy", "description": "Finish top 3", "cadence": "Daily", "metric": "TopThreeFinishes", "target": 1, "rewardCoins": 300, "rewardXp": 120 },
+    { "id": "daily_items_10", "displayName": "Pure Water Seller", "description": "Use 10 items", "cadence": "Daily", "metric": "ItemsUsed", "target": 10, "rewardCoins": 250, "rewardXp": 100 },
+    { "id": "weekly_wins_10", "displayName": "Ten Over Ten", "description": "Win 10 races", "cadence": "Weekly", "metric": "Wins", "target": 10, "rewardCoins": 2500, "rewardXp": 900 },
+    { "id": "weekly_friends_3", "displayName": "Who Get Mouth?", "description": "Beat 3 friends", "cadence": "Weekly", "metric": "FriendsBeaten", "target": 3, "rewardCoins": 1500, "rewardXp": 600 },
+    { "id": "weekly_top3_5", "displayName": "Regular Customer", "description": "Finish top 3 five times", "cadence": "Weekly", "metric": "TopThreeFinishes", "target": 5, "rewardCoins": 1500, "rewardXp": 600 },
+    { "id": "weekly_tracks_3", "displayName": "Tourist", "description": "Win on 3 tracks", "cadence": "Weekly", "metric": "DistinctTracksWon", "target": 3, "rewardCoins": 2000, "rewardXp": 700 },
+    { "id": "weekly_lastma_5", "displayName": "Untouchable Week", "description": "Escape LASTMA 5 times", "cadence": "Weekly", "metric": "LastmaEscapes", "target": 5, "rewardCoins": 2000, "rewardXp": 700 },
+    { "id": "ach_lastma_survivor", "displayName": "LASTMA Survivor", "description": "Escape LASTMA 10 times", "cadence": "Achievement", "metric": "LastmaEscapes", "target": 10, "rewardCoins": 3000, "rewardXp": 1000, "rewardTitle": "LASTMA Survivor" },
+    { "id": "ach_no_dull", "displayName": "No Dull", "description": "Win without using an item", "cadence": "Achievement", "metric": "WinsWithoutItems", "target": 1, "rewardCoins": 2000, "rewardXp": 800, "rewardTitle": "No Dull" },
+    { "id": "ach_area_boy", "displayName": "Area Boy", "description": "Hit 5 opponents with attack items", "cadence": "Achievement", "metric": "ItemHitsLanded", "target": 5, "rewardCoins": 1500, "rewardXp": 600, "rewardTitle": "Area Boy" },
+    { "id": "ach_chairman", "displayName": "Chairman", "description": "Win a tournament", "cadence": "Achievement", "metric": "TournamentWins", "target": 1, "rewardCoins": 10000, "rewardXp": 3000, "rewardTitle": "Chairman" },
+    { "id": "ach_omo", "displayName": "Omo!", "description": "Win after starting the final lap in last place", "cadence": "Achievement", "metric": "WinsFromLastOnFinalLap", "target": 1, "rewardCoins": 5000, "rewardXp": 1500, "rewardTitle": "Omo!" },
+    { "id": "ach_good_samaritan", "displayName": "Good Samaritan", "description": "Bail 5 friends out", "cadence": "Achievement", "metric": "BailGiven", "target": 5, "rewardCoins": 2500, "rewardXp": 800, "rewardTitle": "Good Samaritan" }
+  ]
+}

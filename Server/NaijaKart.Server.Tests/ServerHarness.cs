@@ -38,7 +38,15 @@ namespace NaijaKart.Server.Tests
         public TestClient NewClient(string id = null, float skill = 0.6f)
         {
             id = id ?? "player" + (++_clients);
-            return new TestClient(id, Hub.CreateClient(id), Track, (ulong)id.GetHashCode(), skill);
+            return new TestClient(id, Hub.CreateClient(id), Track, StableSeed(id), skill);
+        }
+
+        /// <summary>string.GetHashCode is randomised per process in .NET; tests need a stable seed.</summary>
+        public static ulong StableSeed(string s)
+        {
+            ulong h = 14695981039346656037UL;
+            foreach (char c in s) { h ^= c; h *= 1099511628211UL; }
+            return h == 0 ? 1UL : h;
         }
 
         /// <summary>Advances server and clients by one tick.</summary>

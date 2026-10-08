@@ -46,15 +46,17 @@ namespace NaijaKart.Core.Lastma
         private readonly Dictionary<string, float> _cooldownUntil = new Dictionary<string, float>();
         private float _nextTriggerAt;
         private int _eventCounter;
+        private readonly float _intervalMul;
 
         public IReadOnlyList<LastmaEvent> Events => _events;
 
-        public LastmaSystem(IRaceContext ctx, IWallet wallet)
+        public LastmaSystem(IRaceContext ctx, IWallet wallet, float intervalMultiplier = 1f)
         {
             _ctx = ctx;
             _cfg = ctx.Config.lastma;
             _wallet = wallet;
-            _nextTriggerAt = _cfg.firstTriggerMinSeconds + ctx.Rng.Range(0f, _cfg.maxIntervalSeconds - _cfg.minIntervalSeconds);
+            _intervalMul = intervalMultiplier > 0f ? intervalMultiplier : 1f;
+            _nextTriggerAt = _cfg.firstTriggerMinSeconds * _intervalMul + ctx.Rng.Range(0f, (_cfg.maxIntervalSeconds - _cfg.minIntervalSeconds) * _intervalMul);
         }
 
         public LastmaEvent EventFor(string playerId)
@@ -69,7 +71,7 @@ namespace NaijaKart.Core.Lastma
             UpdateEvents(dt);
             if (_ctx.RaceTime >= _nextTriggerAt && ActiveCount() < _cfg.maxActiveEvents)
             {
-                _nextTriggerAt = _ctx.RaceTime + _ctx.Rng.Range(_cfg.minIntervalSeconds, _cfg.maxIntervalSeconds);
+                _nextTriggerAt = _ctx.RaceTime + _ctx.Rng.Range(_cfg.minIntervalSeconds, _cfg.maxIntervalSeconds) * _intervalMul;
                 var target = PickTarget();
                 if (target != null) Trigger(target);
             }

@@ -21,7 +21,7 @@
 | 17 | Player can be eliminated | Done + tested (arrest → spectate) | `LastmaSystem`, `RaceSimulation.Eliminate` |
 | 18 | Race completes correctly | Done + tested | `RaceSimulation.CheckFinishConditions` |
 | 19 | Finish order is authoritative | Done + tested (no client path) | `RaceSimulation`, `ClientCannotDeclareItselfFinished` test |
-| 20 | XP and Coins are awarded | Done + tested (idempotent) | `RaceSettlementService` |
+| 20 | XP and Coins are awarded | Done + tested (idempotent; challenges/achievements too) | `RaceSettlementService`, `ChallengeEvaluator` |
 | 21 | Rank changes correctly | Done + tested (rating → tier from data) | `RatingCalculator`, `RankLadder` |
 | 22 | Results screen appears | Presenter done; layout/prefab pending | `ResultsPresenter` |
 | 23 | Player can rematch | Done + tested ("RUN AM BACK") | `RaceRoom.Tick` |
