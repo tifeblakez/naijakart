@@ -57,9 +57,13 @@ namespace NaijaKart.Server.Tests
             h.Run(0.1f, a, b);
             a.Send(new ClientEnvelope { Kind = ClientMessageKind.AddFriend, TargetPlayerId = "b" });
             h.Run(0.1f, a, b);
+            b.Send(new ClientEnvelope { Kind = ClientMessageKind.AcceptFriend, TargetPlayerId = "a" });
+            h.Run(0.1f, a, b);
+            a.Send(new ClientEnvelope { Kind = ClientMessageKind.GetProfile });
+            h.Run(0.1f, a, b);
             Assert.That(a.Profile, Is.Not.Null);
             Assert.That(a.Profile.FriendIds, Does.Contain("b"));
-            Assert.That(h.Server.Profiles.Get("b").FriendIds, Does.Contain("a"), "symmetric first pass");
+            Assert.That(h.Server.Profiles.Get("b").FriendIds, Does.Contain("a"), "friends after accept");
 
             a.Send(new ClientEnvelope { Kind = ClientMessageKind.CreateRoom, Mode = RaceMode.PrivateRoom, Laps = 1 });
             h.Run(0.1f, a, b);
@@ -135,6 +139,8 @@ namespace NaijaKart.Server.Tests
                     a.Connect(); b.Connect();
                     for (int i = 0; i < 3; i++) Tick();
                     a.Send(new ClientEnvelope { Kind = ClientMessageKind.AddFriend, TargetPlayerId = "b" });
+                    for (int i = 0; i < 3; i++) Tick();
+                    b.Send(new ClientEnvelope { Kind = ClientMessageKind.AcceptFriend, TargetPlayerId = "a" });
                     a.Send(new ClientEnvelope { Kind = ClientMessageKind.CreateRoom, Mode = RaceMode.PrivateRoom, Laps = 1 });
                     for (int i = 0; i < 3; i++) Tick();
                     b.Send(new ClientEnvelope { Kind = ClientMessageKind.JoinRoom, RoomCode = a.Room.RoomCode });

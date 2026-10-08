@@ -117,6 +117,7 @@ namespace NaijaKart.Server.Hosting
             _byConnection.Remove(connectionId);
             if (s.PlayerId == null) return;
             _queue.Remove(s);
+            var seen = Profiles.Get(s.PlayerId); seen.LastSeenUnixMs = new DateTimeOffset(UtcNow()).ToUnixTimeMilliseconds(); Profiles.Save(seen);
             s.Room?.OnPlayerDisconnected(s.PlayerId);
             // Keep the player session for reconnect while the room keeps them; drop it otherwise.
             if (s.Room == null || !s.Room.HasMember(s.PlayerId)) _byPlayer.Remove(s.PlayerId);
@@ -184,11 +185,24 @@ namespace NaijaKart.Server.Hosting
                 case ClientMessageKind.RemoveFriend:
                     HandleRemoveFriend(s, msg.TargetPlayerId);
                     break;
+                case ClientMessageKind.AcceptFriend:
+                    HandleAcceptFriend(s, msg.TargetPlayerId);
+                    break;
+                case ClientMessageKind.DeclineFriend:
+                {
+                    var me = Profiles.Get(s.PlayerId); me.FriendRequestsIn.Remove(msg.TargetPlayerId ?? ""); Profiles.Save(me);
+                    if (msg.TargetPlayerId != null) { var them = Profiles.Get(msg.TargetPlayerId); them.FriendRequestsOut.Remove(s.PlayerId); Profiles.Save(them); }
+                    SendFriends(s);
+                    break;
+                }
+                case ClientMessageKind.GetFriends:
+                    SendFriends(s);
+                    break;
                 case ClientMessageKind.GetChallenges:
                     _transport.Send(connectionId, new ServerEnvelope { Kind = ServerMessageKind.Challenges, Challenges = BuildChallenges(s.PlayerId) });
                     break;
                 case ClientMessageKind.GetLeaderboard:
-                    _transport.Send(connectionId, new ServerEnvelope { Kind = ServerMessageKind.Leaderboard, Text = msg.Text ?? "rating", Leaderboard = BuildLeaderboard(msg.Text, msg.Flag ? s.PlayerId : null) });
+                    _transport.Send(connectionId, new ServerEnvelope { Kind = ServerMessageKind.Leaderboard, Text = msg.Text ?? "rp", Leaderboard = BuildLeaderboard(msg.Text, msg.Flag ? "friends" : msg.Scope, s.PlayerId, msg.TrackId) });
                     break;
                 case ClientMessageKind.GetRivalries:
                     _transport.Send(connectionId, new ServerEnvelope { Kind = ServerMessageKind.Rivalries, Rivalries = BuildRivalries(s.PlayerId) });
@@ -651,14 +665,98 @@ namespace NaijaKart.Server.Hosting
 
         private void HandleAddFriend(Session s, string targetId)
         {
-            // First pass: symmetric friendship on request (ADR-0006: request/accept flow comes with accounts).
+            // Request/accept flow (design 16, ADR-0006 follow-up). A request answered by a request is an accept.
             if (string.IsNullOrWhiteSpace(targetId) || targetId == s.PlayerId) { SendError(s.PlayerId, "Invalid friend id"); return; }
             var me = Profiles.Get(s.PlayerId);
             var them = Profiles.Get(targetId);
-            if (!me.FriendIds.Contains(targetId)) me.FriendIds.Add(targetId);
-            if (!them.FriendIds.Contains(s.PlayerId)) them.FriendIds.Add(s.PlayerId);
+            if (me.FriendIds.Contains(targetId)) { SendFriends(s); return; }
+            if (!Content.Game.social.friendRequestsRequireAccept || me.FriendRequestsIn.Contains(targetId))
+            {
+                Befriend(me, them);
+                SendFriends(s);
+                if (_byPlayer.TryGetValue(targetId, out var ts) && ts.ConnectionId != null) SendFriends(ts);
+                return;
+            }
+            if (!me.FriendRequestsOut.Contains(targetId)) me.FriendRequestsOut.Add(targetId);
+            if (!them.FriendRequestsIn.Contains(s.PlayerId)) them.FriendRequestsIn.Add(s.PlayerId);
             Profiles.Save(me); Profiles.Save(them);
-            _transport.Send(s.ConnectionId, new ServerEnvelope { Kind = ServerMessageKind.Profile, Profile = BuildProfile(s.PlayerId) });
+            SendTo(targetId, new ServerEnvelope { Kind = ServerMessageKind.FriendRequest, PlayerId = s.PlayerId, Text = s.DisplayName });
+            SendFriends(s);
+        }
+
+        private void HandleAcceptFriend(Session s, string targetId)
+        {
+            var me = Profiles.Get(s.PlayerId);
+            if (targetId == null || !me.FriendRequestsIn.Contains(targetId)) { SendError(s.PlayerId, "No request from that racer"); return; }
+            Befriend(me, Profiles.Get(targetId));
+            SendFriends(s);
+            if (_byPlayer.TryGetValue(targetId, out var ts) && ts.ConnectionId != null) SendFriends(ts);
+        }
+
+        private void Befriend(PlayerProfile me, PlayerProfile them)
+        {
+            if (!me.FriendIds.Contains(them.PlayerId)) me.FriendIds.Add(them.PlayerId);
+            if (!them.FriendIds.Contains(me.PlayerId)) them.FriendIds.Add(me.PlayerId);
+            me.FriendRequestsIn.Remove(them.PlayerId); me.FriendRequestsOut.Remove(them.PlayerId);
+            them.FriendRequestsIn.Remove(me.PlayerId); them.FriendRequestsOut.Remove(me.PlayerId);
+            Profiles.Save(me); Profiles.Save(them);
+        }
+
+        /// <summary>Presence for the Social screen: Online, Racing · lap N, Private Room, Seen 2h ago.</summary>
+        public FriendDto FriendDtoFor(string playerId)
+        {
+            var p = Profiles.Get(playerId);
+            var dto = new FriendDto
+            {
+                PlayerId = playerId, DisplayName = p.DisplayName, RankId = RankLadder.TierFor(p.RankedPoints).id, RankLabel = RankLadder.Label(p.RankedPoints),
+                Level = XpCurve.LevelForXp(p.TotalXp, Content.Game.progression), LastSeenUnixMs = p.LastSeenUnixMs, BailCost = Content.Game.lastma.bailAmount > 0 ? Content.Game.lastma.bailAmount : Content.Game.lastma.fineAmount
+            };
+            bool online = _byPlayer.TryGetValue(playerId, out var s) && s.ConnectionId != null;
+            if (!online)
+            {
+                dto.Presence = "Offline";
+                long ago = p.LastSeenUnixMs > 0 ? new DateTimeOffset(UtcNow()).ToUnixTimeMilliseconds() - p.LastSeenUnixMs : -1;
+                dto.PresenceText = ago < 0 ? "Seen a while ago" : ago < 3600_000 ? $"Seen {Math.Max(1, ago / 60_000)}m ago" : ago < 86_400_000 ? $"Seen {ago / 3600_000}h ago" : ago < 2 * 86_400_000 ? "Seen yesterday" : $"Seen {ago / 86_400_000} days ago";
+                return dto;
+            }
+            var room = s.Room;
+            if (room != null && (room.Race.StateMachine.IsRacing || room.Race.State == Core.Race.RaceState.Countdown))
+            {
+                var part = room.Race.Find(playerId);
+                int lap = Math.Min(room.Laps, (part?.Checkpoints?.LapsCompleted ?? 0) + 1);
+                dto.Presence = "Racing"; dto.PresenceText = $"Racing · lap {lap}";
+                var le = room.Race.LastmaFor(playerId);
+                dto.NeedsBail = le != null && le.BailRequested && le.BailPaidBy == null && (le.Phase == Core.Lastma.LastmaPhase.FinePending || le.Phase == Core.Lastma.LastmaPhase.Penalty);
+            }
+            else if (room != null && room.Mode == RaceMode.PrivateRoom)
+            {
+                dto.Presence = "PrivateRoom"; dto.PresenceText = "Private Room"; dto.RoomCode = room.Code;
+            }
+            else { dto.Presence = "Online"; dto.PresenceText = "Online"; }
+            return dto;
+        }
+
+        private void SendFriends(Session s)
+        {
+            var me = Profiles.Get(s.PlayerId);
+            var friends = me.FriendIds.ConvertAll(FriendDtoFor);
+            friends.Sort((a, b) => Rank(a).CompareTo(Rank(b)) != 0 ? Rank(a).CompareTo(Rank(b)) : string.CompareOrdinal(a.DisplayName, b.DisplayName));
+            _transport.Send(s.ConnectionId, new ServerEnvelope
+            {
+                Kind = ServerMessageKind.Friends,
+                Friends = friends.ToArray(),
+                FriendRequests = me.FriendRequestsIn.ConvertAll(FriendDtoFor).ToArray(),
+                SentRequests = me.FriendRequestsOut.ConvertAll(FriendDtoFor).ToArray()
+            });
+            static int Rank(FriendDto f) => f.NeedsBail ? 0 : f.Presence == "Racing" ? 1 : f.Presence == "PrivateRoom" ? 2 : f.Presence == "Online" ? 3 : 4;
+        }
+
+        /// <summary>A friend paid bail: count it on the rivalry ("He bailed you 4 times").</summary>
+        public void RecordBail(string payerId, string targetId)
+        {
+            var r = Rivalries.GetOrCreate(payerId, targetId);
+            r.RecordBail(payerId);
+            Rivalries.Save(r);
         }
 
         private void HandleRemoveFriend(Session s, string targetId)
@@ -698,33 +796,58 @@ namespace NaijaKart.Server.Hosting
         }
 
         /// <summary>Leaderboard metrics: rating (default), wins, streak, lastma. friendsOf restricts to a player's friends (+ self).</summary>
-        private LeaderboardRowDto[] BuildLeaderboard(string metric, string friendsOf, int limit = 50)
+        /// <summary>Leaderboards (design 15): metric rp|wins|streak|lastma|level|track, scope friends|city|nigeria|global|track.</summary>
+        private LeaderboardRowDto[] BuildLeaderboard(string metric, string scope, string requester, string trackId, int limit = 50)
         {
-            metric = (metric ?? "rating").ToLowerInvariant();
+            metric = (metric ?? "rp").ToLowerInvariant();
+            scope = (scope ?? "global").ToLowerInvariant();
+            if (scope == "track" || metric == "track") { metric = "track"; scope = "track"; trackId ??= Content.TrackIds[0]; }
             HashSet<string> filter = null;
-            if (friendsOf != null)
-            {
-                filter = new HashSet<string>(Profiles.Get(friendsOf).FriendIds) { friendsOf };
-            }
+            string city = null;
+            if (scope == "friends") filter = new HashSet<string>(Profiles.Get(requester).FriendIds) { requester };
+            if (scope == "city") city = Accounts.Get(requester).HomeCity ?? "Other";
             var rows = new List<LeaderboardRowDto>();
             foreach (var p in Profiles.All())
             {
                 if (filter != null && !filter.Contains(p.PlayerId)) continue;
-                long value = metric switch
+                var acc = Accounts.Get(p.PlayerId);
+                if (city != null && !string.Equals(acc.HomeCity, city, StringComparison.OrdinalIgnoreCase)) continue;
+                long value;
+                float seconds = 0f;
+                if (metric == "track")
+                {
+                    if (!p.TrackBestTimes.TryGetValue(trackId, out seconds)) continue;
+                    value = (long)Math.Round(seconds * 1000f);
+                }
+                else value = metric switch
                 {
                     "wins" => p.Wins,
                     "streak" => p.BestWinStreak,
                     "lastma" => p.LastmaEscapes,
                     "level" => p.TotalXp,
-                    "rp" => p.RankedPoints,
                     _ => p.RankedPoints
                 };
-                rows.Add(new LeaderboardRowDto { PlayerId = p.PlayerId, DisplayName = p.DisplayName, Value = value, RankId = RankLadder.TierFor(p.RankedPoints).id });
+                rows.Add(new LeaderboardRowDto { PlayerId = p.PlayerId, DisplayName = p.DisplayName, Value = value, Seconds = seconds, City = acc.HomeCity, RankId = RankLadder.TierFor(p.RankedPoints).id, RankLabel = RankLadder.Label(p.RankedPoints) });
             }
-            rows.Sort((a, b) => b.Value.CompareTo(a.Value) != 0 ? b.Value.CompareTo(a.Value) : string.CompareOrdinal(a.PlayerId, b.PlayerId));
+            if (metric == "track") rows.Sort((a, b) => a.Value.CompareTo(b.Value) != 0 ? a.Value.CompareTo(b.Value) : string.CompareOrdinal(a.PlayerId, b.PlayerId));
+            else rows.Sort((a, b) => b.Value.CompareTo(a.Value) != 0 ? b.Value.CompareTo(a.Value) : string.CompareOrdinal(a.PlayerId, b.PlayerId));
             if (rows.Count > limit) rows.RemoveRange(limit, rows.Count - limit);
             for (int i = 0; i < rows.Count; i++) rows[i].Rank = i + 1;
             return rows.ToArray();
+        }
+
+        private int CountAchievements()
+        {
+            int n = 0;
+            foreach (var c in Content.Challenges.challenges) if (c.cadence == ChallengeCadence.Achievement) n++;
+            return n;
+        }
+
+        private RivalryDto[] TopRivalries(string playerId, int n)
+        {
+            var all = BuildRivalries(playerId);
+            if (all.Length > n) Array.Resize(ref all, n);
+            return all;
         }
 
         private RivalryDto[] BuildRivalries(string playerId)
@@ -745,8 +868,17 @@ namespace NaijaKart.Server.Hosting
                     TheirFastestLap = iAmA ? r.FastestLapB : r.FastestLapA,
                     LastWinner = r.LastWinner,
                     MyStreak = r.StreakFor(playerId),
-                    TheirStreak = r.StreakFor(other)
+                    TheirStreak = r.StreakFor(other),
+                    RecentIWon = r.RecentWinners.ConvertAll(w => w == playerId).ToArray(),
+                    BailsTheyGaveMe = r.BailsGivenBy(other),
+                    BailsIGaveThem = r.BailsGivenBy(playerId),
+                    SinceUnixMs = r.SinceUnixMs,
+                    OpponentRankLabel = RankLadder.Label(Profiles.Get(other).RankedPoints)
                 });
+                // The track you two race most, with both best times
+                var mine = r.BestTimesFor(playerId); var theirs = r.BestTimesFor(other);
+                foreach (var kv in mine)
+                    if (theirs.TryGetValue(kv.Key, out float t)) { var dto = list[list.Count - 1]; dto.BestTrackId = kv.Key; dto.MyBestTime = kv.Value; dto.TheirBestTime = t; break; }
             }
             list.Sort((a, b) => b.TotalRaces.CompareTo(a.TotalRaces));
             return list.ToArray();
@@ -771,6 +903,13 @@ namespace NaijaKart.Server.Hosting
                 RpToNextDivision = RankLadder.RpToNextDivision(p.RankedPoints),
                 RecentPositions = p.RecentRanked.ConvertAll(r => r.Position).ToArray(),
                 RecentRpDeltas = p.RecentRanked.ConvertAll(r => r.RpDelta).ToArray(),
+                HomeCity = Accounts.Get(playerId).HomeCity,
+                RacerCode = Accounts.Get(playerId).ReferralCode,
+                AchievementsTotal = CountAchievements(),
+                LastSeenUnixMs = p.LastSeenUnixMs,
+                BestTrackIds = new List<string>(p.TrackBestTimes.Keys).ToArray(),
+                BestTrackTimes = new List<float>(p.TrackBestTimes.Values).ToArray(),
+                TopRivalries = TopRivalries(playerId, 2),
                 Title = p.Title,
                 Races = p.Races,
                 Wins = p.Wins,

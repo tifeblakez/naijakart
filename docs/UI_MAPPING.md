@@ -62,11 +62,11 @@ classes, so the video shows the designed UI over the generated world.
 | 09 | Caught: recovery choice | `LastmaOptions`, intents `TakePenalty` / `PayFine` / `RequestBail` | Served |
 | 10 | Results | `RaceResults` + `SettledRewardDto` (XP, coins, RP delta, division before/after), stats | Served |
 | 11 | Network issue | reconnect by `Hello`; an AI stand-in drives the kart while away (`RoomState` member Status "AiDriving"), `ReconnectWindowSeconds`/`ReconnectAttempts`; DNF after the window = last | Served |
-| 12 | Rivalry | `GetRivalries` (wins, streaks, fastest laps); bails count, last-5 | Extra stats pending |
+| 12 | Rivalry | `GetRivalries`: wins, streaks, last 5, bails given/received, since, best times on the shared track, rank labels | Served |
 | 13–13.2 | Garage: karts, racers, style | `GetGarage`, `PurchaseVehicle/Character`; cosmetics (colours, rims, trails) | Cosmetics pending |
-| 14 | Profile | `GetProfile` (level, rank, stats, achievements, title) | Served (share code via accounts) |
-| 15 | Leaderboards | `GetLeaderboard` (rating/wins/streak/lastma/level, friends filter); Nigeria/Global/Track scopes | Scopes pending |
-| 16 | Social | friends (`AddFriend`/`RemoveFriend`), `BailRequest`; presence, requests, party | Presence/requests pending |
+| 14 | Profile | `GetProfile`: level, RP/rank label, stats, achievements of total, title, home city, racer code, best times, top rivalries | Served |
+| 15 | Leaderboards | `GetLeaderboard` metric rp/wins/streak/lastma/level/track with Scope friends/city/nigeria/global/track | Served |
+| 16 | Social | `GetFriends` (presence: Online / Racing · lap N / Private Room / Seen 2h ago, joinable room, needs-bail), `AddFriend` → `FriendRequest` → `AcceptFriend`/`DeclineFriend`, `BailRequest` at the 150-coin bail price, invite code = referral code | Served (party pending) |
 | 17 | Tournament | — | Pending |
 | 18 | Season and challenges | `GetChallenges` (daily/weekly), Wahala calendar (`liveEvents.weekdayRules`); pass tiers | Pass pending |
 | 19 | Shop | premium currency in the ledger; cosmetics catalogue | Catalogue pending |

@@ -177,6 +177,7 @@
     "finesAllowedInRanked": false,
     "bailAllowedInRanked": false,
     "bailResumeSeconds": 0.5,
+    "bailAmount": 150,
     "pulledOverSpeedMultiplier": 0,
     "resumeStunSeconds": 1,
     "shieldBlocksCatch": true
@@ -316,7 +317,9 @@
     "shareLinkBase": "https://naijakart.ng/r/",
     "roomCodeLetters": 3,
     "roomCodeDigits": 3,
-    "lastmaMadnessIntervalMultiplier": 0.5
+    "lastmaMadnessIntervalMultiplier": 0.5,
+    "friendRequestsRequireAccept": true,
+    "rivalryRecentKept": 5
   },
   "antiCheat": {
     "absoluteMinLapSeconds": 20,

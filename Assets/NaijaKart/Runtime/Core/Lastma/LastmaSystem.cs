@@ -144,7 +144,7 @@ namespace NaijaKart.Core.Lastma
             e.BailRequested = true;
             var p = _ctx.Find(playerId);
             if (p != null) p.Telemetry.BailRequested++;
-            _ctx.Emit(RaceEventType.LastmaBailRequested, playerId, null, e.Id, 0, (float)e.FineAmount);
+            _ctx.Emit(RaceEventType.LastmaBailRequested, playerId, null, e.Id, 0, (float)(_cfg.bailAmount > 0 ? _cfg.bailAmount : e.FineAmount));
             return true;
         }
 
@@ -154,7 +154,8 @@ namespace NaijaKart.Core.Lastma
             var e = EventFor(targetPlayerId);
             if (e == null || (e.Phase != LastmaPhase.FinePending && e.Phase != LastmaPhase.Penalty) || !e.BailRequested) return false;
             if (payerId == targetPlayerId) return false;
-            if (!_wallet.TryDebit(payerId, e.FineAmount, "lastma_bail", e.Id + ":bail:" + payerId)) return false;
+            long bail = _cfg.bailAmount > 0 ? _cfg.bailAmount : e.FineAmount;
+            if (!_wallet.TryDebit(payerId, bail, "lastma_bail", e.Id + ":bail:" + payerId)) return false;
             e.BailPaidBy = payerId;
             var target = _ctx.Find(targetPlayerId);
             if (target != null) target.Telemetry.BailReceived++;

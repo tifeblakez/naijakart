@@ -390,6 +390,7 @@ namespace NaijaKart.Server.Hosting
                 case ClientMessageKind.PayBail:
                     if (!_server.CanBail(playerId, msg.TargetPlayerId, this)) { _server.SendError(playerId, "You can only bail friends or racers in your room"); break; }
                     if (!Race.PayBail(playerId, msg.TargetPlayerId)) _server.SendError(playerId, "Bail failed (no request, or not enough Coins)");
+                    else _server.RecordBail(playerId, msg.TargetPlayerId);
                     break;
                 case ClientMessageKind.VoteRematch:
                     Race.VoteRematch(playerId);

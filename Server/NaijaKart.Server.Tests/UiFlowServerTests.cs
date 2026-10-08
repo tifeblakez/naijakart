@@ -29,6 +29,8 @@ namespace NaijaKart.Server.Tests
             a.Connect(); b.Connect();
             h.Run(0.1f, a, b);
             a.Send(new ClientEnvelope { Kind = ClientMessageKind.AddFriend, TargetPlayerId = "b" });
+            h.Run(0.1f, a, b);
+            b.Send(new ClientEnvelope { Kind = ClientMessageKind.AcceptFriend, TargetPlayerId = "a" });
             a.Send(new ClientEnvelope { Kind = ClientMessageKind.CreateRoom, Mode = RaceMode.PrivateRoom, Laps = 3 });
             h.Run(0.1f, a, b);
             b.Send(new ClientEnvelope { Kind = ClientMessageKind.JoinRoom, RoomCode = a.Room.RoomCode });

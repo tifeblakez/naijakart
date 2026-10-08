@@ -47,6 +47,10 @@ namespace NaijaKart.Core.Config
         public int roomCodeDigits = 3;
         /// <summary>LASTMA "Madness" option in private rooms multiplies the patrol interval.</summary>
         public float lastmaMadnessIntervalMultiplier = 0.5f;
+        /// <summary>Friendship needs the other racer's accept (design 16: Requests tab). Off = symmetric on request.</summary>
+        public bool friendRequestsRequireAccept = true;
+        /// <summary>How many rivalry results are kept for "Last 5".</summary>
+        public int rivalryRecentKept = 5;
     }
 
     /// <summary>Guest-first accounts: phone/social claim, racer names, referrals (design screens 21–25, ADR-0009).</summary>
@@ -378,6 +382,8 @@ namespace NaijaKart.Core.Config
         public bool bailAllowedInRanked = false;
         /// <summary>Seconds a bailed-out racer waits before resuming (bail "frees you early" relative to the penalty).</summary>
         public float bailResumeSeconds = 0.5f;
+        /// <summary>What a friend pays to bail you ("Bail am? Costs 150 of your Coins"). 0 = same as the fine.</summary>
+        public long bailAmount = 150;
         /// <summary>Speed multiplier while stopped by LASTMA (fine pending).</summary>
         public float pulledOverSpeedMultiplier = 0f;
         /// <summary>After paying the fine, "back in" this many seconds.</summary>

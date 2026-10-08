@@ -173,6 +173,8 @@ namespace NaijaKart.Core.Progression
                 }
                 int delta = deltas.TryGetValue(e.PlayerId, out int d) ? d : 0;
                 profile.Rating = System.Math.Max(0, profile.Rating + delta);
+                if (e.Finished && e.TotalTime > 0f && (!profile.TrackBestTimes.TryGetValue(results.TrackId, out float best) || e.TotalTime < best))
+                    profile.TrackBestTimes[results.TrackId] = e.TotalTime;
                 _profiles.Save(profile);
 
                 _ledger.EnsureAccount(e.PlayerId);
@@ -217,9 +219,9 @@ namespace NaijaKart.Core.Progression
                     var b = humans[j];
                     var r = _rivalries.GetOrCreate(a.PlayerId, b.PlayerId);
                     string winner = a.FinishPosition < b.FinishPosition ? a.PlayerId : b.PlayerId;
-                    float lapA = r.PlayerA == a.PlayerId ? a.BestLap : b.BestLap;
-                    float lapB = r.PlayerA == a.PlayerId ? b.BestLap : a.BestLap;
-                    r.Record(winner, lapA, lapB);
+                    var ea = r.PlayerA == a.PlayerId ? a : b; var eb = r.PlayerA == a.PlayerId ? b : a;
+                    long nowMs = new DateTimeOffset(_utcNow()).ToUnixTimeMilliseconds();
+                    r.Record(winner, ea.BestLap, eb.BestLap, results.TrackId, ea.Finished ? ea.TotalTime : 0f, eb.Finished ? eb.TotalTime : 0f, nowMs, _cfg.social.rivalryRecentKept);
                     _rivalries.Save(r);
                 }
             }

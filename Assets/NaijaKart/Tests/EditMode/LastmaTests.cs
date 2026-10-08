@@ -154,7 +154,7 @@ namespace NaijaKart.Tests
             Assert.That(_sim.PayBail("a", "a"), Is.False, "cannot bail yourself");
             long bBefore = _ledger.GetBalance("b");
             Assert.That(_sim.PayBail("b", "a"), Is.True);
-            Assert.That(_ledger.GetBalance("b"), Is.EqualTo(bBefore - _content.Game.lastma.fineAmount));
+            Assert.That(_ledger.GetBalance("b"), Is.EqualTo(bBefore - (_content.Game.lastma.bailAmount > 0 ? _content.Game.lastma.bailAmount : _content.Game.lastma.fineAmount)), "bail costs the bail amount (150)");
             Assert.That(_ledger.GetBalance("a"), Is.EqualTo(10), "the bailed player pays nothing");
             Assert.That(_sim.Find("a").State.IsImmobilised, Is.False);
             Assert.That(_sim.Find("b").Telemetry.BailGiven, Is.EqualTo(1));

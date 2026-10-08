@@ -54,7 +54,11 @@ namespace NaijaKart.Core.Net
         /// <summary>Host changes private-room options: TrackId, Laps, LastmaMode, ItemsMode, FillWithAi.</summary>
         SetRoomOptions,
         /// <summary>Invite a friend to the room: TargetPlayerId.</summary>
-        InviteFriend
+        InviteFriend,
+        AcceptFriend,
+        DeclineFriend,
+        /// <summary>Friends with presence, incoming requests and sent requests.</summary>
+        GetFriends
     }
 
     [Serializable]
@@ -82,6 +86,8 @@ namespace NaijaKart.Core.Net
         public long ClientTimeMs;
         /// <summary>Free text argument (leaderboard metric, etc.).</summary>
         public string Text;
+        /// <summary>Leaderboard scope: friends | city | nigeria | global | track (TrackId).</summary>
+        public string Scope;
     }
 
     public enum ServerMessageKind
@@ -107,7 +113,30 @@ namespace NaijaKart.Core.Net
         Account,
         Season,
         /// <summary>A friend invited you: Room = the room, PlayerId = host, Text = host name.</summary>
-        RoomInvite
+        RoomInvite,
+        Friends,
+        /// <summary>Someone wants to be your friend: PlayerId, Text = their name.</summary>
+        FriendRequest
+    }
+
+    [Serializable]
+    public sealed class FriendDto
+    {
+        public string PlayerId;
+        public string DisplayName;
+        public string RankId;
+        public string RankLabel;
+        public int Level;
+        /// <summary>Online, Racing, PrivateRoom, Offline.</summary>
+        public string Presence;
+        /// <summary>"Online", "Racing · lap 2", "Private Room", "Seen 2h ago".</summary>
+        public string PresenceText;
+        public long LastSeenUnixMs;
+        /// <summary>Joinable room code when the friend hosts or sits in a private room lobby.</summary>
+        public string RoomCode;
+        /// <summary>The friend is in LASTMA's hands right now and asked for bail.</summary>
+        public bool NeedsBail;
+        public long BailCost;
     }
 
     [Serializable]
@@ -191,6 +220,10 @@ namespace NaijaKart.Core.Net
         public string DisplayName;
         public long Value;
         public string RankId;
+        public string RankLabel;
+        public string City;
+        /// <summary>Track scope: best time in seconds (Value holds it in milliseconds).</summary>
+        public float Seconds;
     }
 
     [Serializable]
@@ -206,6 +239,15 @@ namespace NaijaKart.Core.Net
         public string LastWinner;
         public int MyStreak;
         public int TheirStreak;
+        /// <summary>Newest last: true where I won.</summary>
+        public bool[] RecentIWon = Array.Empty<bool>();
+        public int BailsTheyGaveMe;
+        public int BailsIGaveThem;
+        public long SinceUnixMs;
+        public string BestTrackId;
+        public float MyBestTime;
+        public float TheirBestTime;
+        public string OpponentRankLabel;
     }
 
     [Serializable]
@@ -240,6 +282,13 @@ namespace NaijaKart.Core.Net
         public string[] UnlockedCharacterIds = Array.Empty<string>();
         public string SelectedVehicleId;
         public string SelectedCharacterId;
+        public string HomeCity;
+        public string RacerCode;
+        public int AchievementsTotal;
+        public long LastSeenUnixMs;
+        public string[] BestTrackIds = Array.Empty<string>();
+        public float[] BestTrackTimes = Array.Empty<float>();
+        public RivalryDto[] TopRivalries = Array.Empty<RivalryDto>();
     }
 
     [Serializable]
@@ -348,5 +397,8 @@ namespace NaijaKart.Core.Net
         public int QueueFound;
         public int QueueMax;
         public int QueueSecondsToAi;
+        public FriendDto[] Friends;
+        public FriendDto[] FriendRequests;
+        public FriendDto[] SentRequests;
     }
 }

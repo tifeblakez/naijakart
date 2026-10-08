@@ -257,14 +257,15 @@ namespace NaijaKart.Server.Tests
 
             Assert.That(h.RunUntil(() => friend.BailRequests.Count > 0, 60f, broke, friend), Is.True, "friend receives 'needs bail'");
             Assert.That(friend.BailRequests[0].PlayerId, Is.EqualTo("broke"));
-            Assert.That(friend.BailRequests[0].Amount, Is.EqualTo(h.Content.Game.lastma.fineAmount));
+            Assert.That(friend.BailRequests[0].Amount, Is.EqualTo(h.Content.Game.lastma.bailAmount > 0 ? h.Content.Game.lastma.bailAmount : h.Content.Game.lastma.fineAmount), "the prompt shows what bail costs");
             Assert.That(h.RunUntil(() => broke.Events.Any(e => e.Type == RaceEventType.LastmaBailed), 10f, broke, friend), Is.True);
             var bailed = broke.Events.First(e => e.Type == RaceEventType.LastmaBailed);
             Assert.That(bailed.TargetPlayerId, Is.EqualTo("friend"));
             long fine = h.Content.Game.lastma.fineAmount;
+            long bail = h.Content.Game.lastma.bailAmount > 0 ? h.Content.Game.lastma.bailAmount : fine;
             long friendPaid = friendBefore - h.Server.Ledger.GetBalance("friend");
-            Assert.That(friendPaid, Is.GreaterThanOrEqualTo(fine), "friend paid the bail (and possibly their own fine)");
-            Assert.That(friendPaid % fine, Is.EqualTo(0));
+            Assert.That(friendPaid, Is.GreaterThanOrEqualTo(bail), "friend paid the bail (and possibly their own fine)");
+            Assert.That((friendPaid - bail) % fine, Is.EqualTo(0));
             Assert.That(h.Server.Ledger.GetBalance("broke"), Is.EqualTo(100), "the bailed player pays nothing");
             Assert.That(h.Server.Ledger.History("friend").Any(t => t.Source == "lastma_bail"), Is.True);
             Assert.That(broke.Errors, Is.Empty);

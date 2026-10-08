@@ -41,6 +41,13 @@ namespace NaijaKart.Core.Progression
         public List<string> UnlockedCharacterIds = new List<string>();
         public List<string> Achievements = new List<string>();
         public List<string> FriendIds = new List<string>();
+        /// <summary>Pending friend requests received / sent (design 16: Requests tab).</summary>
+        public List<string> FriendRequestsIn = new List<string>();
+        public List<string> FriendRequestsOut = new List<string>();
+        /// <summary>Last time the player was connected (presence: "Seen 2h ago").</summary>
+        public long LastSeenUnixMs;
+        /// <summary>Best finished race time per track ("Best: Third Mainland 3:18.40").</summary>
+        public Dictionary<string, float> TrackBestTimes = new Dictionary<string, float>();
         public List<string> TracksWon = new List<string>();
         public string SelectedVehicleId;
         public string SelectedCharacterId;
