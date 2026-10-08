@@ -113,13 +113,33 @@ transaction idempotency, and `MovementValidator` for any future soft-trust path.
 ## 9. Generated world (no imported art)
 
 The visible world is code. `Core/World/WorldBuilder` turns a `TrackDefinition` into `MeshBatch`es
-(flat-shaded triangles grouped by material and colour) plus mesh templates for every kart and hazard:
-road with lane marks and Lagos kerbs, bridge deck with parapets, pillars and street lights over the
-lagoon, ground and water, three building districts (Island towers, mainland mid-rise, hairpin shops),
-palms, sign gantries, billboards, market stalls, item boxes. Deterministic per seed.
+(triangles grouped by material hint and colour), `SignInstance`s (text content for gantries,
+billboards, shop fronts, plates, bus boards, the item box "?") and mesh templates for every kart and
+hazard. Third Mainland Rush: a three-lane road with Lagos kerbs and markings; two bridge decks
+climbing to 8 m over a lagoon with piers, jersey barriers, guard rails, cable-stay pylons, lamp posts
+and gantries; Lagos Island towers, mainland low-rise with shops, a far skyline, islands across the
+water; boats, jetties, shore crowds, umbrellas, grandstands, market stalls, power lines, trees, bus
+stops and parked danfos. Deterministic per seed. `MeshBuilder` offers Box, Frustum, Cylinder, Cone,
+Wheel, Sphere, Beam, Ribbon and Plane; the look comes from composition, PBR materials and shader
+detail, not sculpted assets.
+
+Material hints (`MeshBatch.material`) are the contract between generator and renderers: `road`,
+`concrete`, `barrier`, `metal`, `chrome`, `glass`, `tower`, `water`, `foliage`, `trunk`, `paint`,
+`rubber`, `sign`, `ground`, `sand`, `grass`, `skin`, `cloth`, `emissive`, `hologram`. Each renderer
+adds procedural surface detail in world space for a hint (asphalt grain and tar lines, concrete
+stains, tower window grids with lit cells, animated water normals, foliage variation), so no texture
+files exist anywhere in the project.
 
 Consumers:
-* Unity: `TrackWorldBuilder` builds Mesh objects from the batches and instantiates templates for karts
-  without an art prefab.
-* Preview: `tools/world-preview` renders the same JSON in three.js headless and records a race replay
-  (`simulate --replay`) to MP4. This is how the world is reviewed before any Unity session.
+* Preview (`tools/world-preview`): three.js in headless Chromium renders the exported world and a
+  race replay (`simulate --replay`) through PBR materials, a sky dome that also feeds reflections,
+  soft shadows, bloom and colour grading, with drift sparks, tyre smoke, boost flames and the Race
+  HUD from the design. `still.js` renders single frames for look development; `render.js` makes the
+  MP4. This is the reference look: what is approved here is what Unity must match.
+* Unity: `TrackWorldBuilder` builds Mesh objects from the batches, quads plus `TextMesh` for signs,
+  and instantiates templates for karts without an art prefab. The GLSL in the previewer is the
+  specification for the URP shader graphs keyed by the same hint names.
+
+The quality bar is the Race HUD concept (docs/UI_MAPPING.md): a sunlit, saturated Lagos with the
+lagoon on both sides of the bridge, a dense skyline, crowds and signage. Every look-development
+round renders stills against that reference before a video is produced.

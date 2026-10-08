@@ -35,8 +35,10 @@ namespace NaijaKart.Unity.View
                 go.transform.rotation = Quaternion.Euler(0f, p.yaw * Mathf.Rad2Deg, 0f);
                 go.transform.localScale = Vector3.one * p.scale;
                 foreach (var b in t.batches) CreateBatch(b, go.transform, Vector3.zero, 0f, 1f);
+                foreach (var sign in t.signs) CreateSign(sign, go.transform);
                 _built.Add(go);
             }
+            foreach (var sign in _world.signs) _built.Add(CreateSign(sign, transform));
             RenderSettings.fog = true;
             RenderSettings.fogMode = FogMode.Linear;
             RenderSettings.fogStartDistance = _world.fogStart;
@@ -54,6 +56,48 @@ namespace NaijaKart.Unity.View
             var go = new GameObject(templateName);
             go.transform.SetParent(parent, false);
             foreach (var b in t.batches) CreateBatch(b, go.transform, Vector3.zero, 0f, 1f);
+            foreach (var sign in t.signs) CreateSign(sign, go.transform);
+            return go;
+        }
+
+        /// <summary>
+        /// Signs are text content, not textures: a backing quad plus a TextMesh. The web previewer
+        /// rasterises the same SignInstance to a canvas; both read identical copy from the model.
+        /// </summary>
+        private GameObject CreateSign(SignInstance sign, Transform parent)
+        {
+            var go = new GameObject("Sign_" + sign.style);
+            go.transform.SetParent(parent, false);
+            go.transform.localPosition = sign.position.ToUnity();
+            go.transform.localRotation = Quaternion.Euler(0f, sign.yaw * Mathf.Rad2Deg, 0f);
+            if (sign.style != "hologram")
+            {
+                var quad = GameObject.CreatePrimitive(PrimitiveType.Quad);
+                quad.name = "Board";
+                quad.transform.SetParent(go.transform, false);
+                quad.transform.localScale = new Vector3(sign.width, sign.height, 1f);
+                quad.transform.localRotation = Quaternion.Euler(0f, 180f, 0f); // Unity quads face -Z; signs face +Z (their yaw direction)
+                var mr = quad.GetComponent<MeshRenderer>();
+                mr.sharedMaterial = MaterialFor(new MeshBatch { material = "sign", r = sign.background[0], g = sign.background[1], b = sign.background[2] });
+                mr.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+                if (quad.TryGetComponent<Collider>(out var col)) Destroy(col);
+            }
+            bool twoLines = !string.IsNullOrEmpty(sign.subText);
+            var text = new GameObject("Text").AddComponent<TextMesh>();
+            text.transform.SetParent(go.transform, false);
+            text.transform.localPosition = new Vector3(0f, twoLines ? sign.height * 0.14f : 0f, 0.01f);
+            text.text = sign.text;
+            text.anchor = TextAnchor.MiddleCenter; text.alignment = TextAlignment.Center; text.fontStyle = FontStyle.Bold;
+            text.characterSize = sign.height * (twoLines ? 0.045f : 0.065f); text.fontSize = 64;
+            text.color = new Color(sign.foreground[0], sign.foreground[1], sign.foreground[2]);
+            if (twoLines)
+            {
+                var sub = new GameObject("Sub").AddComponent<TextMesh>();
+                sub.transform.SetParent(go.transform, false);
+                sub.transform.localPosition = new Vector3(0f, -sign.height * 0.24f, 0.01f);
+                sub.text = sign.subText; sub.anchor = TextAnchor.MiddleCenter; sub.alignment = TextAlignment.Center; sub.fontStyle = FontStyle.Bold;
+                sub.characterSize = sign.height * 0.03f; sub.fontSize = 64; sub.color = text.color;
+            }
             return go;
         }
 
@@ -77,8 +121,9 @@ namespace NaijaKart.Unity.View
             go.AddComponent<MeshFilter>().sharedMesh = mesh;
             var mr = go.AddComponent<MeshRenderer>();
             mr.sharedMaterial = MaterialFor(b);
-            mr.shadowCastingMode = _castShadows && b.material != "water" && b.material != "ground" ? UnityEngine.Rendering.ShadowCastingMode.On : UnityEngine.Rendering.ShadowCastingMode.Off;
-            if (b.material == "road" || b.material == "concrete" || b.material == "ground") go.AddComponent<MeshCollider>().sharedMesh = mesh;
+            bool noShadow = b.material == "water" || b.material == "ground" || b.material == "sand" || b.material == "grass" || b.material == "road";
+            mr.shadowCastingMode = _castShadows && !noShadow ? UnityEngine.Rendering.ShadowCastingMode.On : UnityEngine.Rendering.ShadowCastingMode.Off;
+            if (b.material == "road" || b.material == "concrete" || b.material == "ground" || b.material == "barrier") go.AddComponent<MeshCollider>().sharedMesh = mesh;
             return go;
         }
 
@@ -90,11 +135,26 @@ namespace NaijaKart.Unity.View
             m = new Material(shader) { name = key };
             var color = new Color(b.r, b.g, b.b, b.opacity);
             m.SetColor("_BaseColor", color); m.SetColor("_Color", color);
-            float smooth = b.material == "glass" || b.material == "water" ? 0.9f : b.material == "metal" || b.material == "paint" ? 0.6f : 0.1f;
+            // Material hints → URP Lit parameters. Procedural surface detail (asphalt grain, tower windows,
+            // water waves) lives in shader graphs keyed by the same hint names; the previewer's GLSL is the reference.
+            float smooth, metallic;
+            switch (b.material)
+            {
+                case "glass": smooth = 0.95f; metallic = 0.1f; break;
+                case "water": smooth = 0.92f; metallic = 0f; break;
+                case "chrome": smooth = 0.9f; metallic = 1f; break;
+                case "metal": smooth = 0.6f; metallic = 0.85f; break;
+                case "paint": smooth = 0.65f; metallic = 0.15f; break;
+                case "tower": smooth = 0.5f; metallic = 0.2f; break;
+                case "hologram": smooth = 0.9f; metallic = 0.3f; break;
+                case "skin": smooth = 0.45f; metallic = 0f; break;
+                case "road": smooth = 0.15f; metallic = 0f; break;
+                default: smooth = 0.1f; metallic = 0f; break;
+            }
             m.SetFloat("_Smoothness", smooth); m.SetFloat("_Glossiness", smooth);
-            m.SetFloat("_Metallic", b.material == "metal" ? 0.7f : b.material == "glass" ? 0.5f : b.material == "paint" ? 0.15f : 0f);
+            m.SetFloat("_Metallic", metallic);
             if (b.emissive > 0f) { m.EnableKeyword("_EMISSION"); m.SetColor("_EmissionColor", color * b.emissive); }
-            if (b.opacity < 1f || b.material == "water")
+            if (b.opacity < 1f || b.material == "water" || b.material == "hologram")
             {
                 m.SetFloat("_Surface", 1f); m.SetFloat("_Blend", 0f); m.renderQueue = 3000;
                 m.SetInt("_SrcBlend", (int)UnityEngine.Rendering.BlendMode.SrcAlpha); m.SetInt("_DstBlend", (int)UnityEngine.Rendering.BlendMode.OneMinusSrcAlpha);

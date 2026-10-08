@@ -32,7 +32,13 @@ dotnet run --project Server/NaijaKart.Server -- simulate --players 8    # headle
 dotnet run --project Server/NaijaKart.Server -- run --port 7777 --data state.json   # authoritative server with file persistence
 ```
 
-## Preview the world as a video (no Unity needed)
+## Preview the world as a video
+
+Look development happens in `tools/world-preview` (see ADR-0008). After `npm install && npm run setup`,
+`node still.js --t=12,20 --mode=chase --out=frame.png` renders single frames and `node render.js`
+makes the MP4; `NK_CHROME` points at a Chromium binary when the bundled one is unavailable.
+
+### Original notes (no Unity needed)
 
 ```bash
 dotnet run --project Server/NaijaKart.Server -- export-world --track third_mainland_rush --out tools/world-preview/public/world.json
