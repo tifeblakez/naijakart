@@ -32,6 +32,14 @@ dotnet run --project Server/NaijaKart.Server -- simulate --players 8    # headle
 dotnet run --project Server/NaijaKart.Server -- run --port 7777 --data state.json   # authoritative server with file persistence
 ```
 
+## Preview the world as a video (no Unity needed)
+
+```bash
+dotnet run --project Server/NaijaKart.Server -- export-world --track third_mainland_rush --out tools/world-preview/public/world.json
+dotnet run --project Server/NaijaKart.Server -- simulate --players 8 --replay tools/world-preview/public/replay.json
+cd tools/world-preview && npm install && npm run setup && node render.js --duration=60 --overview=5 --out=race.mp4
+```
+
 ## Quick start (Unity)
 
 1. Open the project with Unity 6000.0 LTS (see `ProjectSettings/ProjectVersion.txt`). Packages restore automatically.

@@ -108,11 +108,14 @@ namespace NaijaKart.Editor
             var world = new GameObject("World");
             var trackGo = new GameObject("TrackGreybox", typeof(TrackGreyboxBuilder));
             trackGo.transform.SetParent(world.transform);
+            var worldGo = new GameObject("TrackWorld", typeof(TrackWorldBuilder));
+            worldGo.transform.SetParent(world.transform);
             var input = new GameObject("TiltInput", typeof(TiltInputProvider)).GetComponent<TiltInputProvider>();
             var race = new GameObject("RaceClient", typeof(RaceClientController)).GetComponent<RaceClientController>();
             var so = new SerializedObject(race);
             so.FindProperty("_input").objectReferenceValue = input;
             so.FindProperty("_trackBuilder").objectReferenceValue = trackGo.GetComponent<TrackGreyboxBuilder>();
+            so.FindProperty("_worldBuilder").objectReferenceValue = worldGo.GetComponent<TrackWorldBuilder>();
             so.FindProperty("_worldRoot").objectReferenceValue = world.transform;
             so.ApplyModifiedPropertiesWithoutUndo();
 

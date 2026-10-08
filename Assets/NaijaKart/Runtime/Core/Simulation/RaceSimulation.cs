@@ -389,6 +389,8 @@ namespace NaijaKart.Core.Simulation
             var input = p.Status == ParticipantStatus.Connected ? p.LatestInput : PlayerInputFrame.Neutral;
             var surface = _track.SampleSurface(p.State.Position, 1f, 1f);
             var ev = _vehicleModel.Step(ref p.State, input, p.Stats, surface, dt);
+            // The driving model is planar; karts ride on the road surface height (bridges, ramps) for presentation.
+            p.State.Position.Y = _track.Project(p.State.Position).Point.Y;
 
             if ((ev & VehicleStepEvents.DriftStarted) != 0) { p.Telemetry.Drifts++; Emit(RaceEventType.DriftStarted, p.PlayerId); }
             if ((ev & VehicleStepEvents.DriftLevelUp) != 0)

@@ -1,0 +1,208 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>Naija Kart world preview</title>
+<style>
+  html,body{margin:0;height:100%;background:#000;overflow:hidden;font-family:system-ui,Arial,sans-serif}
+  canvas{display:block}
+  #hud{position:absolute;inset:0;pointer-events:none;color:#fff}
+  .pill{position:absolute;background:rgba(10,14,30,.72);border-radius:14px;padding:8px 14px;font-weight:800;letter-spacing:.5px;text-shadow:0 2px 4px #000}
+  #pos{left:22px;top:18px;font-size:34px}
+  #pos small{font-size:16px;opacity:.8}
+  #lap{right:22px;top:18px;font-size:22px;text-align:right}
+  #lap small{display:block;font-size:14px;opacity:.85;font-weight:600}
+  #speed{right:22px;bottom:22px;width:92px;height:92px;border-radius:50%;display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:30px;border:6px solid #ffc83d}
+  #speed small{font-size:11px}
+  #title{left:50%;transform:translateX(-50%);top:16px;font-size:16px;background:rgba(230,40,60,.9)}
+  #ticker{left:22px;bottom:26px;font-size:20px;background:rgba(255,200,61,.95);color:#111;display:none}
+  #stand{left:22px;top:78px;font-size:13px;line-height:20px;padding:6px 12px}
+  #stand .you{color:#ffc83d;font-weight:900}
+</style>
+</head>
+<body>
+<div id="hud">
+  <div id="title" class="pill">THIRD MAINLAND RUSH · LAGOS</div>
+  <div id="pos" class="pill">1<sup>ST</sup> <small>/8</small></div>
+  <div id="stand" class="pill"></div>
+  <div id="lap" class="pill">LAP 1/3<small>00:00.00</small></div>
+  <div id="speed" class="pill"><span id="kmh">0</span><small>KM/H</small></div>
+  <div id="ticker" class="pill"></div>
+</div>
+<script type="importmap">{"imports":{"three":"./three.module.js"}}</script>
+<script type="module">
+import * as THREE from 'three';
+
+const q = new URLSearchParams(location.search);
+const W = window.innerWidth, H = window.innerHeight;
+const renderer = new THREE.WebGLRenderer({antialias:true, preserveDrawingBuffer:true});
+renderer.setSize(W, H); renderer.setPixelRatio(1);
+renderer.shadowMap.enabled = true; renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+renderer.toneMapping = THREE.ACESFilmicToneMapping; renderer.toneMappingExposure = 1.05;
+document.body.appendChild(renderer.domElement);
+const scene = new THREE.Scene();
+const camera = new THREE.PerspectiveCamera(62, W/H, 0.3, 1500);
+
+const world = await (await fetch('world.json')).json();
+const replay = await (await fetch('replay.json')).json();
+
+// Sky: big gradient dome
+scene.background = new THREE.Color(...world.skyHorizon);
+scene.fog = new THREE.Fog(new THREE.Color(...world.fogColor), world.fogStart, world.fogEnd);
+{
+  const g = new THREE.SphereGeometry(1200, 24, 12);
+  const m = new THREE.ShaderMaterial({side: THREE.BackSide, depthWrite:false, uniforms:{top:{value:new THREE.Color(...world.skyTop)}, hor:{value:new THREE.Color(...world.skyHorizon)}},
+    vertexShader:`varying vec3 vP; void main(){ vP = position; gl_Position = projectionMatrix*modelViewMatrix*vec4(position,1.0);}`,
+    fragmentShader:`uniform vec3 top; uniform vec3 hor; varying vec3 vP; void main(){ float t = clamp(vP.y/700.0, 0.0, 1.0); t = pow(t, 0.6); gl_FragColor = vec4(mix(hor, top, t), 1.0);}`});
+  const sky = new THREE.Mesh(g, m); sky.frustumCulled = false; scene.add(sky);
+}
+const hemi = new THREE.HemisphereLight(new THREE.Color(...world.skyTop), new THREE.Color(0.35,0.3,0.25), 0.75); scene.add(hemi);
+const sun = new THREE.DirectionalLight(0xfff1dc, 2.2);
+sun.position.set(-world.sunDirection.X*400, -world.sunDirection.Y*400, -world.sunDirection.Z*400);
+sun.castShadow = true; sun.shadow.mapSize.set(2048,2048);
+const sc = sun.shadow.camera; sc.near = 50; sc.far = 1200; sc.left = -220; sc.right = 220; sc.top = 220; sc.bottom = -220; sun.shadow.bias = -0.0008;
+scene.add(sun); scene.add(sun.target);
+
+function material(b){
+  const color = new THREE.Color(b.r, b.g, b.b);
+  const opts = {color, roughness: 0.85, metalness: 0.0, flatShading: true};
+  switch (b.material){
+    case 'glass': Object.assign(opts, {roughness:0.15, metalness:0.6, color: color}); break;
+    case 'metal': Object.assign(opts, {roughness:0.35, metalness:0.7}); break;
+    case 'paint': Object.assign(opts, {roughness:0.45, metalness:0.15}); break;
+    case 'water': Object.assign(opts, {roughness:0.1, metalness:0.3, transparent:true, opacity:0.92}); break;
+    case 'road': Object.assign(opts, {roughness:0.95}); break;
+    case 'emissive': Object.assign(opts, {emissive: color, emissiveIntensity: b.emissive || 1.2}); break;
+  }
+  if (b.opacity < 1) Object.assign(opts, {transparent:true, opacity:b.opacity});
+  if (b.emissive > 0 && b.material !== 'emissive') Object.assign(opts, {emissive: color, emissiveIntensity: b.emissive});
+  return new THREE.MeshStandardMaterial(opts);
+}
+function geometry(b){
+  const g = new THREE.BufferGeometry();
+  g.setAttribute('position', new THREE.Float32BufferAttribute(b.vertices, 3));
+  if (b.normals && b.normals.length === b.vertices.length) g.setAttribute('normal', new THREE.Float32BufferAttribute(b.normals, 3));
+  else g.computeVertexNormals();
+  g.setIndex(b.triangles);
+  g.computeBoundingSphere();
+  return g;
+}
+for (const b of world.batches){
+  const mesh = new THREE.Mesh(geometry(b), material(b));
+  mesh.castShadow = b.material !== 'water' && b.material !== 'ground' && b.material !== 'road';
+  mesh.receiveShadow = true;
+  scene.add(mesh);
+}
+const templates = {};
+for (const t of world.templates){ templates[t.name] = t; }
+function instantiate(name){
+  const t = templates[name] || templates['kart_sedan'];
+  const group = new THREE.Group();
+  for (const b of t.batches){ const m = new THREE.Mesh(geometry(b), material(b)); m.castShadow = true; m.receiveShadow = true; group.add(m); }
+  return group;
+}
+const propGroups = [];
+for (const p of world.props){
+  const g = instantiate(p.template); g.position.set(p.position.X, p.position.Y, p.position.Z); g.rotation.y = p.yaw; g.scale.setScalar(p.scale || 1);
+  g.userData.template = p.template; scene.add(g); propGroups.push(g);
+}
+
+// Karts
+const karts = {};
+for (const k of replay.karts){ const g = instantiate(k.template); scene.add(g); karts[k.id] = {group:g, name:k.name, template:k.template}; }
+const hazardObjs = {};
+const hazardTemplate = kind => ({TrafficCar:'danfo_bus', DanfoCrossing:'danfo_bus', OkadaCrossing:'okada_bike', OilPatch:'oil_patch', Pothole:'pothole', SpikeStrip:'spike_strip', GoSlowZone:'cone_row', FloodZone:'flood', PoliceCheckpoint:'checkpoint'}[kind] || 'cone_row');
+
+const follow = q.get('follow') || replay.followKartId;
+const fps = +(q.get('fps') || 30);
+const frames = replay.frames;
+const tickDt = 1 / replay.sampleRate;
+
+function frameAt(t){
+  // interpolate between replay samples
+  let i = Math.min(frames.length - 2, Math.max(0, Math.floor(t / tickDt)));
+  const a = frames[i], b = frames[i+1], u = Math.min(1, Math.max(0, (t - a.t) / Math.max(1e-6, b.t - a.t)));
+  return {a, b, u};
+}
+const lerpAngle = (a,b,u) => { let d = b - a; while (d > Math.PI) d -= 2*Math.PI; while (d < -Math.PI) d += 2*Math.PI; return a + d*u; };
+
+const camPos = new THREE.Vector3(), camLook = new THREE.Vector3();
+let camInit = false;
+const ord = n => n + (n%100>=11&&n%100<=13?'TH':n%10==1?'ST':n%10==2?'ND':n%10==3?'RD':'TH');
+const fmt = s => { const m = Math.floor(s/60); const r = s - m*60; return `${m}:${r.toFixed(2).padStart(5,'0')}`; };
+let tickerUntil = -1;
+const tickerEl = document.getElementById('ticker');
+const events = replay.events;
+let evIdx = 0;
+
+window.renderAt = function(t, mode){
+  const {a, b, u} = frameAt(t);
+  let me = null;
+  for (const ka of a.karts){
+    const kb = b.karts.find(x => x.id === ka.id) || ka;
+    const k = karts[ka.id]; if (!k) continue;
+    const x = ka.x + (kb.x - ka.x)*u, y = ka.y + (kb.y - ka.y)*u, z = ka.z + (kb.z - ka.z)*u;
+    const yaw = lerpAngle(ka.h, kb.h, u);
+    k.group.position.set(x, y, z); k.group.rotation.set(0, yaw, 0);
+    // lean into drift / slide
+    k.group.rotation.z = THREE.MathUtils.lerp(k.group.rotation.z, (ka.d ? -ka.dd*0.14 : 0) - ka.lat*0.02, 0.4);
+    k.group.visible = ka.st !== 'Finished' || true;
+    if (ka.id === follow) me = {...ka, x, y, z, yaw, lap: ka.l, pos: ka.p, spd: ka.v};
+  }
+  // hazards
+  const seen = new Set();
+  for (const h of a.hazards){
+    seen.add(h.id);
+    let o = hazardObjs[h.id];
+    if (!o){ o = instantiate(hazardTemplate(h.k)); scene.add(o); hazardObjs[h.id] = o; }
+    o.position.set(h.x, h.y, h.z); if (h.dx || h.dz) o.rotation.y = Math.atan2(h.dx, h.dz);
+    o.visible = true;
+    if (!h.armed){ o.position.y += Math.sin(t*12)*0.15; }
+  }
+  for (const id in hazardObjs) if (!seen.has(id)) { hazardObjs[id].visible = false; }
+  // props: spin item boxes
+  for (const g of propGroups) if (g.userData.template === 'item_box'){ g.rotation.y = t*1.8; g.position.y = g.userData.baseY ?? (g.userData.baseY = g.position.y); g.position.y += Math.sin(t*2 + g.position.x)*0.2; }
+
+  // camera
+  if (me){
+    const fwd = new THREE.Vector3(Math.sin(me.yaw), 0, Math.cos(me.yaw));
+    const right = new THREE.Vector3(fwd.z, 0, -fwd.x);
+    let desired, look;
+    if (mode === 'overview'){
+      const ang = t*0.25; const r = 420;
+      desired = new THREE.Vector3(60 + Math.cos(ang)*r, 260, 280 + Math.sin(ang)*r); look = new THREE.Vector3(60, 0, 280);
+      camera.position.copy(desired); camera.lookAt(look); camera.fov = 55;
+    } else {
+      const dist = 7.5 + me.spd*0.05, height = 3.0;
+      desired = new THREE.Vector3(me.x, me.y, me.z).addScaledVector(fwd, -dist).add(new THREE.Vector3(0, height, 0));
+      if (me.d) desired.addScaledVector(right, -me.dd*1.2);
+      look = new THREE.Vector3(me.x, me.y + 0.9, me.z).addScaledVector(fwd, 4);
+      if (!camInit){ camPos.copy(desired); camLook.copy(look); camInit = true; }
+      camPos.lerp(desired, 1 - Math.exp(-7*(1/fps))); camLook.lerp(look, 1 - Math.exp(-10*(1/fps)));
+      camera.position.copy(camPos); camera.lookAt(camLook);
+      camera.fov = 60 + me.spd*0.25 + (me.b ? 12 : 0);
+    }
+    camera.updateProjectionMatrix();
+    sun.position.set(me.x - world.sunDirection.X*300, 300, me.z - world.sunDirection.Z*300); sun.target.position.set(me.x, 0, me.z); sun.target.updateMatrixWorld();
+    // HUD
+    document.getElementById('pos').innerHTML = `${me.pos}<sup>${ord(me.pos).slice(-2)}</sup> <small>/${a.karts.length}</small>`;
+    document.getElementById('lap').innerHTML = `LAP ${Math.min(me.lap+1, replay.laps)}/${replay.laps}<small>⏱ ${fmt(Math.max(0,t))}</small>`;
+    document.getElementById('kmh').textContent = Math.round(me.spd*3.6);
+    const sorted = [...a.karts].sort((p,q)=>p.p-q.p); const myI = sorted.findIndex(k=>k.id===follow); const start = Math.max(0, Math.min(sorted.length-5, myI-2));
+    document.getElementById('stand').innerHTML = sorted.slice(start, start+5).map(k=>`<div class="${k.id===follow?'you':''}">${k.p}&nbsp; ${k.id===follow?'You':(karts[k.id]?.name||k.id)}</div>`).join('');
+  }
+  while (evIdx < events.length && events[evIdx].t <= t){
+    const e = events[evIdx++];
+    if (e.p === follow || e.type === 'FinalLapStarted' || e.type === 'RaceStarted'){
+      const text = {RaceStarted:'GO!', FinalLapStarted:'LAST LAP, NO SHAKING', Overtake:'+1', LastmaWarning:'PULL OVER!', LastmaEscaped:'YOU ESCAPE!', LastmaCaught:'DEM DON CATCH YOU', ItemHit:'OMO!', HazardHit:'OMO!', BoostStarted:'FULL TANK!', GatePassed: e.payload==='shortcut' ? 'SHORTCUT: UNDER BRIDGE' : null, ItemGranted: 'ITEM: '+(e.payload||'').replace('_',' ').toUpperCase()}[e.type];
+      if (text){ tickerEl.textContent = text; tickerEl.style.display='block'; tickerUntil = t + 1.6; }
+    }
+  }
+  if (t > tickerUntil) tickerEl.style.display = 'none';
+  renderer.render(scene, camera);
+  return true;
+};
+window.__ready = true;
+</script>
+</body>
+</html>

@@ -1,0 +1,14 @@
+{
+  "name": "naijakart-world-preview",
+  "private": true,
+  "version": "0.1.0",
+  "description": "Renders the generated Naija Kart world and a race replay to video (no artists, no engine licence).",
+  "scripts": {
+    "setup": "cp node_modules/three/build/three.module.js public/three.module.js",
+    "render": "node render.js"
+  },
+  "dependencies": {
+    "three": "0.169.0",
+    "playwright": "1.47.2"
+  }
+}

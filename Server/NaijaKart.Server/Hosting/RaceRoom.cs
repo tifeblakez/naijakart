@@ -46,6 +46,8 @@ namespace NaijaKart.Server.Hosting
         public bool HasMember(string playerId) => _members.Contains(playerId);
         public bool IsEmpty => _members.Count == 0;
         public bool Settled { get; private set; }
+        /// <summary>Raised with each tick's drained race events (replays, analytics).</summary>
+        public event System.Action<List<RaceEvent>> EventsDrained;
 
         public RaceRoom(GameServer server, string code, RaceMode mode, string trackId, int laps, string hostPlayerId, ulong seed)
         {
@@ -290,6 +292,7 @@ namespace NaijaKart.Server.Hosting
         {
             _eventBuffer.Clear();
             Race.DrainEvents(_eventBuffer);
+            if (_eventBuffer.Count > 0) EventsDrained?.Invoke(_eventBuffer);
             foreach (var e in _eventBuffer)
             {
                 SendToMembers(new ServerEnvelope { Kind = ServerMessageKind.RaceEvent, Event = e, Tick = Race.Tick });

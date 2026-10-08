@@ -109,3 +109,17 @@ transaction idempotency, and `MovementValidator` for any future soft-trust path.
 * `TrackGreyboxBuilder` → drivable mesh from `TrackDefinition` (road, kerbs, shortcut roads, gizmos).
 * Presenters: `RaceHudPresenter`, `LastmaPromptPresenter`, `LobbyPresenter`, `ResultsPresenter`, `HomePresenter`; `RaceAudioPresenter`; `ChaseCamera`.
 * Copy lives in `NaijaCopy` (the game speaks Nigerian).
+
+## 9. Generated world (no imported art)
+
+The visible world is code. `Core/World/WorldBuilder` turns a `TrackDefinition` into `MeshBatch`es
+(flat-shaded triangles grouped by material and colour) plus mesh templates for every kart and hazard:
+road with lane marks and Lagos kerbs, bridge deck with parapets, pillars and street lights over the
+lagoon, ground and water, three building districts (Island towers, mainland mid-rise, hairpin shops),
+palms, sign gantries, billboards, market stalls, item boxes. Deterministic per seed.
+
+Consumers:
+* Unity: `TrackWorldBuilder` builds Mesh objects from the batches and instantiates templates for karts
+  without an art prefab.
+* Preview: `tools/world-preview` renders the same JSON in three.js headless and records a race replay
+  (`simulate --replay`) to MP4. This is how the world is reviewed before any Unity session.

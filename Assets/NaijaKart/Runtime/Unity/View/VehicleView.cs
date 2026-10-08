@@ -32,6 +32,8 @@ namespace NaijaKart.Unity.View
         public bool IsLocal { get; private set; }
         public VehicleDefinition Definition { get; private set; }
         public VehicleState LastState { get; private set; }
+        /// <summary>True when an art body is assigned; otherwise the generated kart template is used.</summary>
+        public bool HasArt => _body != null && _body != transform && _body.childCount > 0;
 
         public void Bind(string playerId, VehicleDefinition definition, bool isLocal)
         {

@@ -22,6 +22,19 @@ namespace NaijaKart.Editor
             Debug.Log($"[NK:greybox] built {def.displayName}: {def.checkpoints.Length} checkpoints, {def.itemBoxes.Length} item boxes, {def.shortcutRoads.Length} shortcut roads");
         }
 
+        [MenuItem("Naija Kart/World/Build Third Mainland Rush World in Current Scene")]
+        public static void BuildThirdMainlandWorld()
+        {
+            var content = StreamingAssetsConfigSource.LoadFromDisk();
+            var def = content.GetTrack("third_mainland_rush");
+            if (def == null) { Debug.LogError("[NK:world] track not found"); return; }
+            var builder = Object.FindFirstObjectByType<TrackWorldBuilder>();
+            if (builder == null) builder = new GameObject("TrackWorld", typeof(TrackWorldBuilder)).GetComponent<TrackWorldBuilder>();
+            builder.Build(def);
+            Selection.activeObject = builder.gameObject;
+            Debug.Log($"[NK:world] built {def.displayName}: {builder.World.batches.Count} batches, {builder.World.props.Count} props");
+        }
+
         [MenuItem("Naija Kart/Greybox/Clear Greybox in Current Scene")]
         public static void ClearGreybox()
         {

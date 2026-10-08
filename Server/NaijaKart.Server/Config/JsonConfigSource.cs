@@ -13,6 +13,7 @@ namespace NaijaKart.Server.Config
         public static readonly JsonSerializerOptions Options = new JsonSerializerOptions
         {
             IncludeFields = true,
+            IgnoreReadOnlyProperties = true,
             PropertyNameCaseInsensitive = true,
             ReadCommentHandling = JsonCommentHandling.Skip,
             AllowTrailingCommas = true,

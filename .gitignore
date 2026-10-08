@@ -51,3 +51,10 @@ TestResults/
 # ---- OS ----
 .DS_Store
 Thumbs.db
+
+# ---- world preview tool ----
+/tools/world-preview/node_modules/
+/tools/world-preview/public/*.json
+/tools/world-preview/public/three.module.js
+/tools/world-preview/frames/
+/tools/world-preview/*.mp4

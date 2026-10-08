@@ -25,6 +25,8 @@ namespace NaijaKart.Unity.Race
         [SerializeField] private HazardView _hazardViewPrefab;
         [SerializeField] private ItemBoxView _itemBoxViewPrefab;
         [SerializeField] private TrackGreyboxBuilder _trackBuilder;
+        [Tooltip("Generated world (roads, bridge, buildings, props). When set, it replaces the greybox and supplies kart meshes.")]
+        [SerializeField] private TrackWorldBuilder _worldBuilder;
         [SerializeField] private Transform _worldRoot;
         [Tooltip("Seconds of interpolation delay for remote karts (about 1.5 snapshot intervals).")]
         [SerializeField] private float _interpolationDelay = 0.1f;
@@ -106,7 +108,8 @@ namespace NaijaKart.Unity.Race
             _trackDef = GameBootstrap.Content.GetTrack(room.TrackId);
             if (_trackDef == null) { Debug.LogError("[NK:race] unknown track " + room.TrackId); return; }
             _track = new TrackGeometry(_trackDef);
-            if (_trackBuilder != null) _trackBuilder.Build(_trackDef);
+            if (_worldBuilder != null) _worldBuilder.Build(_trackDef);
+            else if (_trackBuilder != null) _trackBuilder.Build(_trackDef);
             foreach (var b in _itemBoxes) if (b != null) Destroy(b.gameObject);
             _itemBoxes.Clear();
             if (_itemBoxViewPrefab != null)
@@ -204,7 +207,9 @@ namespace NaijaKart.Unity.Race
             {
                 if (_vehicles.ContainsKey(p.PlayerId)) continue;
                 var view = Instantiate(_vehicleViewPrefab, p.Position.ToUnity(), CoreConversions.HeadingToRotation(p.Heading), _worldRoot);
-                view.Bind(p.PlayerId, FindVehicle(_net.Room, p.PlayerId), p.PlayerId == _net.PlayerId);
+                var def = FindVehicle(_net.Room, p.PlayerId);
+                view.Bind(p.PlayerId, def, p.PlayerId == _net.PlayerId);
+                if (_worldBuilder != null && !view.HasArt) _worldBuilder.Instantiate(Core.World.WorldBuilder.KartTemplateFor(def?.id), view.transform);
                 _vehicles[p.PlayerId] = view;
             }
         }
