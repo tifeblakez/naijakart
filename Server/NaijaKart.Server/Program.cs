@@ -167,7 +167,8 @@ namespace NaijaKart.Server
                     var s = p.State;
                     karts.Add(new { id = p.PlayerId, x = R(s.Position.X), y = R(s.Position.Y), z = R(s.Position.Z), h = R(s.Heading), v = R(s.Speed), lat = R(s.LateralVelocity),
                         d = s.IsDrifting, dd = s.DriftDirection, b = s.IsBoosting, l = p.Checkpoints?.LapsCompleted ?? 0, p = p.Position, st = p.Status.ToString(),
-                        it = _race.InventoryOf(p.PlayerId)?.SnapshotIds(), bc = s.BoostCharges, stun = s.IsStunned, sh = s.ShieldTimeRemaining > 0f });
+                        it = _race.InventoryOf(p.PlayerId)?.SnapshotIds(), ir = _race.InventoryOf(p.PlayerId)?.SnapshotReady(), bc = s.BoostCharges, dl = (int)s.DriftLevel, stun = s.IsStunned, sh = s.ShieldTimeRemaining > 0f,
+                        lp = _race.LastmaFor(p.PlayerId)?.Phase.ToString() ?? "None", lpr = R(_race.LastmaFor(p.PlayerId)?.Pressure ?? 0f), lt = R(_race.LastmaFor(p.PlayerId)?.PhaseTimeRemaining ?? 0f) });
                 }
                 var hazards = new System.Collections.Generic.List<object>();
                 foreach (var h in _race.Hazards.All)
@@ -188,11 +189,19 @@ namespace NaijaKart.Server
             public void Finish(string path)
             {
                 string follow = null;
-                foreach (var kv in _karts) if (kv.Value.vehicle == "danfo") follow = kv.Key;
+                foreach (var kv in _karts) if (follow == null && kv.Value.vehicle == "danfo") follow = kv.Key;
                 if (follow == null && _race.Results != null && _race.Results.Entries.Count > 0) follow = _race.Results.Entries[0].PlayerId;
                 var kartList = new System.Collections.Generic.List<object>();
                 foreach (var kv in _karts) kartList.Add(new { id = kv.Key, name = kv.Value.name, vehicle = kv.Value.vehicle, template = NaijaKart.Core.World.WorldBuilder.KartTemplateFor(kv.Value.vehicle) });
-                var doc = new { trackId = _race.Setup.TrackId, laps = _race.Setup.Laps, sampleRate = _content.Game.simulation.tickRate, followKartId = follow, karts = kartList, frames = _frames, events = _events };
+                var resultRows = new System.Collections.Generic.List<object>();
+                if (_race.Results != null)
+                    foreach (var e in _race.Results.Entries)
+                    {
+                        var rw = NaijaKart.Core.Progression.RewardCalculator.Compute(e.FinishPosition, e.Finished, e.LapsCompleted, e.Stats, _content.Game);
+                        resultRows.Add(new { id = e.PlayerId, name = e.DisplayName, pos = e.FinishPosition, finished = e.Finished, status = e.Status.ToString(), time = R(e.TotalTime), best = R(e.BestLap), laps = e.LapsCompleted, bot = e.IsBot, xp = rw.Xp, coins = rw.Coins,
+                            overtakes = e.Stats.Overtakes, escapes = e.Stats.LastmaEscapes, purpleDrifts = e.Stats.PurpleDrifts, shortcuts = e.Stats.ShortcutsTaken, finalLapFrom = e.Stats.PositionAtFinalLapStart });
+                    }
+                var doc = new { trackId = _race.Setup.TrackId, laps = _race.Setup.Laps, sampleRate = _content.Game.simulation.tickRate, followKartId = follow, karts = kartList, frames = _frames, events = _events, results = resultRows, raceDuration = R(_race.Results?.RaceDuration ?? 0f) };
                 System.IO.File.WriteAllText(path, System.Text.Json.JsonSerializer.Serialize(doc));
             }
 

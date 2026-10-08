@@ -20,10 +20,10 @@ server.listen(0, async () => {
   const port = server.address().port;
   const browser = await chromium.launch({executablePath: process.env.NK_CHROME || undefined,
     args: ['--use-gl=angle', '--use-angle=swiftshader', '--enable-unsafe-swiftshader', '--ignore-gpu-blocklist']});
-  const page = await browser.newPage({viewport: {width: 1280, height: 720}});
+  const page = await browser.newPage({viewport: {width: +(args.w || 1688), height: +(args.h || 780)}});
   page.on('pageerror', e => console.error('page error:', e.message));
   page.on('console', m => { if (m.type() === 'error') console.error('console:', m.text()); });
-  await page.goto(`http://127.0.0.1:${port}/index.html?fps=${fps}${args.follow ? '&follow=' + args.follow : ''}${args.world ? '&world=' + args.world : ''}`);
+  await page.goto(`http://127.0.0.1:${port}/index.html?fps=${fps}${args.follow ? '&follow=' + args.follow : ''}${args.world ? '&world=' + args.world : ''}${args.state ? '&state=' + args.state : ''}`);
   await page.waitForFunction(() => window.__ready === true, null, {timeout: 180000});
   const dir = path.join(__dirname, 'frames'); fs.rmSync(dir, {recursive: true, force: true}); fs.mkdirSync(dir);
   const total = Math.round(duration * fps);

@@ -13,11 +13,11 @@ const server = http.createServer((req, res) => {
 server.listen(0, async () => {
   const port = server.address().port;
   const browser = await chromium.launch({executablePath: process.env.NK_CHROME || undefined, args: ['--use-gl=angle', '--use-angle=swiftshader', '--enable-unsafe-swiftshader', '--ignore-gpu-blocklist']});
-  const page = await browser.newPage({viewport: {width: +(args.w || 1280), height: +(args.h || 720)}});
+  const page = await browser.newPage({viewport: {width: +(args.w || 1688), height: +(args.h || 780)}});
   page.on('pageerror', e => console.error('page error:', e.message));
   page.on('console', m => { if (m.type() === 'error' || m.type() === 'warning') console.error('console:', m.text().slice(0, 300)); });
   const t0 = Date.now();
-  await page.goto(`http://127.0.0.1:${port}/index.html?fps=${fps}${args.follow ? '&follow=' + args.follow : ''}${args.world ? '&world=' + args.world : ''}`);
+  await page.goto(`http://127.0.0.1:${port}/index.html?fps=${fps}${args.follow ? '&follow=' + args.follow : ''}${args.world ? '&world=' + args.world : ''}${args.state ? '&state=' + args.state : ''}`);
   await page.waitForFunction(() => window.__ready === true, null, {timeout: 180000});
   console.log(`ready in ${((Date.now() - t0) / 1000).toFixed(1)}s`);
   for (const t of times) {

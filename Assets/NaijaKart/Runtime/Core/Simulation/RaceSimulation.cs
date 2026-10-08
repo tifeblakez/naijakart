@@ -296,6 +296,8 @@ namespace NaijaKart.Core.Simulation
         }
 
         public ItemInventory InventoryOf(string playerId) => _inventories.TryGetValue(playerId, out var inv) ? inv : null;
+        /// <summary>Current LASTMA engagement of a player, or null (read-only view for presenters and replays).</summary>
+        public NaijaKart.Core.Lastma.LastmaEvent LastmaFor(string playerId) => _lastma.EventFor(playerId);
 
         public void DrainEvents(List<RaceEvent> into)
         {
