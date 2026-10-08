@@ -87,7 +87,7 @@ namespace NaijaKart.Server.Tests
             Assert.That(host.Room, Is.Not.Null);
             Assert.That(host.Room.HostPlayerId, Is.EqualTo("host"));
             string code = host.Room.RoomCode;
-            Assert.That(code.Length, Is.EqualTo(5));
+            Assert.That(code, Does.Match("^[A-Z]{3}-[0-9]{3}$"), "EKO-427 style room code");
 
             guest.Send(new ClientEnvelope { Kind = ClientMessageKind.JoinRoom, RoomCode = code.ToLowerInvariant(), VehicleId = "keke" });
             h.Run(0.1f, host, guest);

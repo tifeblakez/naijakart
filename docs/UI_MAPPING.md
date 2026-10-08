@@ -53,15 +53,15 @@ classes, so the video shows the designed UI over the generated world.
 | 02 | Home | `Welcome`, `GetProfile`, `GetChallenges`, `LiveEvent` (Wahala today), friends online | Served |
 | 03 | Choose mode | `JoinQueue` (QuickRace/Ranked), `CreateRoom` (PrivateRoom/Practice) | Served |
 | 03.1 | Ranked hub | `GetProfile` (RP, division, RP to next, last 5), `GetSeason` (days left, Rush Hour, rules), `GetLeaderboard` "rp" | Served (ADR-0010) |
-| 03.2 / 03.3 | Private room, invite friends | `CreateRoom` + `JoinRoom` by code, `RoomState`; host options beyond laps/items/LASTMA, invite list, WhatsApp link | Options + invites pending |
-| 04 | Matchmaking | `QueueStatus`; found-count and AI-fill countdown | Status detail pending |
-| 05 | Lobby | `RoomState` members, `Ready`, bot tags | Served |
+| 03.2 / 03.3 | Private room, invite friends | `CreateRoom`/`JoinRoom` by EKO-427 code (forgiving input), `SetRoomOptions` (track, laps, LASTMA Off/On/Madness, items Off/Boosts only/On, AI fill), `InviteFriend` → `RoomInvite`, `RoomState.Invited`, `ShareUrl` | Served |
+| 04 | Matchmaking | `QueueStatus` every second: found / grid size / seconds until AI fills | Served |
+| 05 | Lobby | `RoomState` members with Status (Host/Ready/Waiting/AI), `AiSeats`, `StartsInSeconds`, `Ready` | Served |
 | 06 | Countdown | `RaceSnapshot` countdown, tilt calibration (client) | Served |
 | 07 | Race HUD | `RaceSnapshot` (position, lap, items, boost charges, drift level), `RaceEvent` callouts | Served |
 | 08 | LASTMA chase | `LastmaPhase/Pressure/TimeRemaining` in the snapshot | Served |
 | 09 | Caught: recovery choice | `LastmaOptions`, intents `TakePenalty` / `PayFine` / `RequestBail` | Served |
 | 10 | Results | `RaceResults` + `SettledRewardDto` (XP, coins, RP delta, division before/after), stats | Served |
-| 11 | Network issue | reconnect by `Hello`; AI drives while away; attempt count; Ranked rule | Bot takeover pending |
+| 11 | Network issue | reconnect by `Hello`; an AI stand-in drives the kart while away (`RoomState` member Status "AiDriving"), `ReconnectWindowSeconds`/`ReconnectAttempts`; DNF after the window = last | Served |
 | 12 | Rivalry | `GetRivalries` (wins, streaks, fastest laps); bails count, last-5 | Extra stats pending |
 | 13–13.2 | Garage: karts, racers, style | `GetGarage`, `PurchaseVehicle/Character`; cosmetics (colours, rims, trails) | Cosmetics pending |
 | 14 | Profile | `GetProfile` (level, rank, stats, achievements, title) | Served (share code via accounts) |

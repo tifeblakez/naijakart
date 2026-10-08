@@ -416,13 +416,20 @@ namespace NaijaKart.Server.Hosting
 
         public void OnPlayerDisconnected(string playerId)
         {
-            if (Race.StateMachine.IsRacing || Race.State == RaceState.Countdown) Race.MarkDisconnected(playerId);
+            if (Race.StateMachine.IsRacing || Race.State == RaceState.Countdown)
+            {
+                Race.MarkDisconnected(playerId);
+                if (_cfg.raceRules.aiStandInWhileDisconnected && !_bots.ContainsKey(playerId) && !_standIns.ContainsKey(playerId))
+                    _standIns[playerId] = new BotDriver(Race.Track, _seed ^ 0xA11EUL, 0.5f);
+                BroadcastRoomState();   // members see "AI driving · holding their place"
+            }
             else Leave(playerId);
         }
 
         public void OnPlayerReconnected(string playerId)
         {
             _standIns.Remove(playerId);
+            BroadcastRoomState();
             Race.MarkReconnected(playerId);
             BroadcastRoomState();
             _server.SendTo(playerId, new ServerEnvelope { Kind = ServerMessageKind.RaceSnapshot, Snapshot = Race.BuildSnapshot(), Tick = Race.Tick });

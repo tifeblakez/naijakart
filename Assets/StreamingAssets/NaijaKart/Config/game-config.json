@@ -88,6 +88,8 @@
     "finishGraceSeconds": 30,
     "maxRaceDurationSeconds": 420,
     "reconnectWindowSeconds": 20,
+    "aiStandInWhileDisconnected": true,
+    "reconnectAttempts": 5,
     "gridRowSpacing": 4,
     "gridColumnSpacing": 2.5,
     "rematchVoteSeconds": 20
@@ -309,6 +311,12 @@
     "seasonLengthDays": 30,
     "resetDropTiers": 1,
     "recentResultsKept": 5
+  },
+  "social": {
+    "shareLinkBase": "https://naijakart.ng/r/",
+    "roomCodeLetters": 3,
+    "roomCodeDigits": 3,
+    "lastmaMadnessIntervalMultiplier": 0.5
   },
   "antiCheat": {
     "absoluteMinLapSeconds": 20,
