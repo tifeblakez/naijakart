@@ -1,0 +1,88 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Season and challenges</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="ds/naijakart/tokens.css">
+<link rel="stylesheet" href="ds/naijakart/components/bundle.css">
+<link rel="stylesheet" href="screens.css">
+<link rel="stylesheet" href="mobile.css">
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lilita+One&amp;family=Nunito:ital,wght@0,700;0,800;0,900;1,800;1,900&amp;display=swap">
+<style>body{margin:0}</style>
+</helmet>
+<div class="phone"><div class="screen">
+  <div class="layer scene-city"></div>
+  <div class="layer dim-full"></div>
+
+  <div class="m-sub">
+    <a class="m-icon-btn nk-glass" href="Main.dc.html" aria-label="Back"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"></path></svg></a>
+    <span class="m-col" style="gap: 0"><span class="m-eyebrow" style="color: var(--danfo)">Season 1 · 23 days left</span><h1 class="d ol" style="font-size: 24px; line-height: 26px">Lagos</h1></span>
+    <span style="flex-grow: 1"></span>
+    <a class="m-btn m-btn--sec" href="Shop.dc.html">Get Premium Pass</a>
+  </div>
+
+  <div class="nk-glass abs" style="left: var(--sl); right: var(--sr); top: 64px; padding: 8px 10px; border-radius: 14px; display: grid; grid-template-columns: 62px repeat(6, minmax(0, 1fr)); gap: 5px; align-items: stretch">
+    <span class="m-eyebrow" style="align-self: center">Free</span>
+    <sc-for list="{{ free }}" as="c" hint-placeholder-count="6">
+      <div class="m-col" style="height: 44px; border-radius: 8px; align-items: center; justify-content: center; gap: 0; text-align: center; background: {{ c.bg }}; color: {{ c.fg }}; box-shadow: {{ c.ring }}"><b style="font-size: 11px; line-height: 13px">{{ c.label }}</b><span style="font-size: 11px; font-weight: 800; opacity: 0.8">{{ c.state }}</span></div>
+    </sc-for>
+    <span class="m-eyebrow" style="align-self: center; color: var(--rank-oga-patapata)">Premium</span>
+    <sc-for list="{{ prem }}" as="c" hint-placeholder-count="6">
+      <div class="m-col" style="height: 44px; border-radius: 8px; align-items: center; justify-content: center; gap: 0; text-align: center; background: {{ c.bg }}; color: {{ c.fg }}; box-shadow: {{ c.ring }}"><b style="font-size: 11px; line-height: 13px">{{ c.label }}</b><span style="font-size: 11px; font-weight: 800; opacity: 0.8">{{ c.state }}</span></div>
+    </sc-for>
+    <span class="m-small" style="color: var(--ink-muted)">Tier</span>
+    <sc-for list="{{ tiers }}" as="t" hint-placeholder-count="6"><span class="d" style="text-align: center; font-size: 14px; color: {{ t.color }}">{{ t.n }}</span></sc-for>
+  </div>
+
+  <div class="nk-glass m-col abs" style="left: var(--sl); top: 214px; bottom: var(--sb); width: 360px; padding: 10px 12px; box-sizing: border-box; border-radius: 14px; gap: 8px">
+    <span class="m-row" style="justify-content: space-between"><span class="d ol-sm" style="font-size: 18px">Today's wahala</span><span class="m-small" style="color: var(--ink-muted)">Resets in 7h</span></span>
+    <div><div class="m-prog-head"><span>Drift 20 times</span><span>17/20 · 500 C</span></div><div class="m-track"><div class="m-fill" style="width: 85%"></div></div></div>
+    <div><div class="m-prog-head"><span>Escape LASTMA 3 times</span><span>1/3 · 300 XP</span></div><div class="m-track"><div class="m-fill" style="width: 33%"></div></div></div>
+    <div><div class="m-prog-head"><span style="color: var(--success)">You don do am! Race a friend</span><span>Claimed</span></div><div class="m-track"><div class="m-fill" style="width: 100%; background: var(--success)"></div></div></div>
+  </div>
+
+  <div class="nk-glass m-col abs" style="left: 428px; right: var(--sr); top: 214px; bottom: var(--sb); padding: 10px 12px; box-sizing: border-box; border-radius: 14px; gap: 6px">
+    <span class="d ol-sm" style="font-size: 18px">Wahala calendar</span>
+    <div style="display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 4px; flex-grow: 1">
+      <sc-for list="{{ days }}" as="d" hint-placeholder-count="7">
+        <div class="m-col" style="padding: 5px 4px; border-radius: 8px; gap: 2px; background: {{ d.bg }}; color: {{ d.fg }}">
+          <span class="d" style="font-size: 13px">{{ d.day }}</span>
+          <b style="font-size: 11px; line-height: 13px">{{ d.event }}</b>
+        </div>
+      </sc-for>
+    </div>
+  </div>
+
+  <div class="island"></div><div class="homebar"></div>
+</div></div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":872,"height":418}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const cur = 14;
+    const ns = [12, 13, 14, 15, 16, 17];
+    const cell = (label, n, prem) => ({
+      label, state: n < cur ? 'Got' : n === cur ? (prem ? 'Locked' : 'Claim') : '',
+      bg: n === cur && !prem ? 'var(--danfo)' : 'var(--plate-glass-solid)',
+      fg: n === cur && !prem ? 'var(--on-danfo)' : 'var(--ink)',
+      ring: prem ? 'inset 0 0 0 1.5px var(--rank-oga-patapata)' : 'inset 0 1px 0 var(--glass-edge)'
+    });
+    const freeL = ['300 C', 'Horn', '500 C', 'Stickers', '300 C', 'Banner'];
+    const premL = ['Molue skin', 'Jollof trail', 'Owambe fit', 'Shaku emote', 'Chrome rims', 'Ajebo title'];
+    const days = [['Mon', 'No Item'], ['Tue', 'LASTMA Madness', true], ['Wed', 'Danfo Madness'], ['Thu', 'Drift Night'], ['Fri', 'Night Rush'], ['Sat', 'City Cup'], ['Sun', 'Chill Race']];
+    return {
+      free: ns.map((n, i) => cell(freeL[i], n, false)),
+      prem: ns.map((n, i) => cell(premL[i], n, true)),
+      tiers: ns.map(n => ({ n, color: n === cur ? 'var(--danfo)' : 'var(--ink-muted)' })),
+      days: days.map(([day, event, today]) => ({ day, event, bg: today ? 'var(--enforcer)' : 'var(--plate-glass-solid)', fg: today ? 'var(--on-enforcer)' : 'var(--ink)' }))
+    };
+  }
+}
+</script>
+</body>
+</html>

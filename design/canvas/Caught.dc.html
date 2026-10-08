@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Caught by LASTMA</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="ds/naijakart/tokens.css">
+<link rel="stylesheet" href="ds/naijakart/components/bundle.css">
+<link rel="stylesheet" href="screens.css">
+<link rel="stylesheet" href="mobile.css">
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lilita+One&amp;family=Nunito:ital,wght@0,700;0,800;0,900;1,800;1,900&amp;display=swap">
+<style>body{margin:0}</style>
+</helmet>
+<div class="phone"><div class="screen">
+  <div class="layer scene-race"></div>
+  <div class="layer dim-full"></div>
+  <div class="layer" style="box-shadow: inset 0 0 0 5px var(--enforcer); pointer-events: none"></div>
+
+  <div class="m-col abs" style="left: 0; right: 0; top: 16px; align-items: center; gap: 0">
+    <h1 class="d ol-lg" style="font-size: 50px; line-height: 50px; color: var(--enforcer)">Pull over!</h1>
+    <p class="d ol-sm" style="font-size: 18px; margin: 2px 0 0">LASTMA don catch you</p>
+    <p class="m-small" style="margin: 4px 0 0; color: var(--ink-muted)">Pick how you recover. No choice in 3 s takes the penalty.</p>
+  </div>
+
+  <div class="abs" style="left: var(--sl); right: var(--sr); top: 128px; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px">
+    <a href="RaceHUD.dc.html" class="nk-glass m-col" style="height: 168px; padding: 14px; box-sizing: border-box; border-radius: 16px; text-decoration: none; color: var(--ink); gap: 6px; box-shadow: inset 0 0 0 3px var(--ink), 0 4px 0 var(--outline)">
+      <span class="m-row" style="justify-content: space-between"><span class="d ol-sm" style="font-size: 22px">Take penalty</span>
+        <span style="width: 34px; height: 34px; border-radius: 99px; display: grid; place-items: center; font-family: var(--font-display); font-size: 17px; background: conic-gradient(var(--ink) 0 66%, var(--plate-700) 66% 100%); color: var(--plate-900)">2</span></span>
+      <span style="font-size: 14px; font-weight: 900">Wait 3 s, lose your item</span>
+      <span style="flex-grow: 1"></span>
+      <span class="m-small" style="color: var(--ink-muted)">Always free. Default.</span>
+    </a>
+    <a href="RaceHUD.dc.html" class="nk-glass m-col" style="height: 168px; padding: 14px; box-sizing: border-box; border-radius: 16px; text-decoration: none; color: var(--ink); gap: 6px">
+      <span class="d ol-sm" style="font-size: 22px">Pay fine</span>
+      <span style="font-size: 14px; font-weight: 900">200 Coins · back in 1 s</span>
+      <span style="flex-grow: 1"></span>
+      <span class="m-row"><span class="m-cur" style="background: var(--plate-900); height: 28px"><span class="m-coin m-coin--c" style="width: 20px; height: 20px; font-size: 11px">C</span>12,480</span><span class="m-small" style="color: var(--ink-muted)">earned only</span></span>
+    </a>
+    <a href="RaceHUD.dc.html" class="nk-glass m-col" style="height: 168px; padding: 14px; box-sizing: border-box; border-radius: 16px; text-decoration: none; color: var(--ink); gap: 6px">
+      <span class="d ol-sm" style="font-size: 22px; color: var(--lagoon)">Call for bail</span>
+      <span style="font-size: 14px; font-weight: 900">A friend can free you early</span>
+      <span style="flex-grow: 1"></span>
+      <span class="m-row" style="gap: 4px"><span class="m-av" style="width: 26px; height: 26px; font-size: 12px; background: var(--rank-odogwu)">C</span><span class="m-av" style="width: 26px; height: 26px; font-size: 12px; background: var(--rank-sharp-sharp)">M</span><span class="m-small" style="color: var(--ink-muted)">2 online</span></span>
+    </a>
+  </div>
+
+  <p class="m-small abs" style="left: 0; right: 0; bottom: var(--sb); margin: 0; text-align: center; color: var(--ink-muted)"><span class="m-tag" style="margin-right: 6px">Quick Race rules</span>In Ranked everyone takes the same penalty.</p>
+
+  <div class="island"></div><div class="homebar"></div>
+</div></div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":872,"height":418}}'>
+class Component extends DCLogic {
+  renderVals() { return {}; }
+}
+</script>
+</body>
+</html>

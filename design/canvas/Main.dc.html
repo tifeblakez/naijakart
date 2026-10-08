@@ -1,0 +1,92 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Naija Kart Home</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="ds/naijakart/tokens.css">
+<link rel="stylesheet" href="ds/naijakart/components/bundle.css">
+<link rel="stylesheet" href="screens.css">
+<link rel="stylesheet" href="mobile.css">
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lilita+One&amp;family=Nunito:ital,wght@0,700;0,800;0,900;1,800;1,900&amp;display=swap">
+<style>body{margin:0}</style>
+</helmet>
+<div class="phone"><div class="screen">
+  <div class="layer scene-city"></div>
+  <div class="layer dim"></div>
+
+  <nav class="m-rail nk-glass" aria-label="Main">
+    <a class="on" href="Main.dc.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linejoin="round"><path d="M3 11l9-7 9 7v9a1 1 0 0 1-1 1h-5v-6h-6v6H4a1 1 0 0 1-1-1z"></path></svg>Home</a>
+    <a href="Garage.dc.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linejoin="round"><path d="M3 15l2-6h14l2 6v4H3z"></path><circle cx="7.5" cy="19" r="1.5"></circle><circle cx="16.5" cy="19" r="1.5"></circle></svg>Garage</a>
+    <a href="Social.dc.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><circle cx="9" cy="8" r="3.5"></circle><path d="M2.5 20c.8-3.5 3.4-5.5 6.5-5.5s5.7 2 6.5 5.5"></path><path d="M16 4.8a3.5 3.5 0 0 1 0 6.4M18.5 14.8c1.6.9 2.6 2.6 3 5.2"></path></svg>Social</a>
+    <a href="Profile.dc.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><circle cx="12" cy="8" r="4"></circle><path d="M4 21c1-4 4-6 8-6s7 2 8 6"></path></svg>Profile</a>
+  </nav>
+
+  <div class="m-top">
+    <a class="m-row nk-glass" href="Profile.dc.html" style="padding: 4px 12px 4px 4px; border-radius: 999px; text-decoration: none; color: var(--ink)">
+      <span class="m-av photo-face" role="img" aria-label="Tife's racer">T</span>
+      <span class="m-col" style="gap: 1px">
+        <span class="d ol-sm" style="font-size: 16px; line-height: 16px">Tife</span>
+        <span class="m-small" style="color: var(--rank-chairman)">Chairman II · Lvl 27</span>
+      </span>
+    </a>
+    <span style="flex-grow: 1"></span>
+    <span class="m-cur nk-glass"><span class="m-coin m-coin--c">C</span>12,480</span>
+    <a class="m-cur nk-glass" href="Shop.dc.html"><span class="m-coin m-coin--p">P</span>350</a>
+    <a class="m-icon-btn nk-glass" href="Settings.dc.html" aria-label="Settings"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><circle cx="12" cy="12" r="3"></circle><path d="M12 2v3M12 19v3M4.9 4.9l2.1 2.1M17 17l2.1 2.1M2 12h3M19 12h3M4.9 19.1L7 17M17 7l2.1-2.1"></path></svg></a>
+  </div>
+
+  <div class="m-col abs" style="left: 128px; top: 66px; width: 214px; gap: 8px">
+    <a class="m-card nk-glass m-row" href="Leaderboards.dc.html" style="text-decoration: none; color: var(--ink); gap: 10px">
+      <span class="nk-rank nk-rank--s tier-chairman"><span class="nk-rank__plate">II</span></span>
+      <span class="m-col" style="gap: 1px">
+        <span class="d ol-sm" style="font-size: 20px; line-height: 20px; color: var(--rank-chairman)">Chairman</span>
+        <span class="m-small">Nigeria #124 <span style="color: var(--success)">· up 8</span></span>
+      </span>
+    </a>
+    <div class="m-card nk-glass m-col" style="gap: 6px; padding: 10px 12px">
+      <p class="m-eyebrow">Your people</p>
+      <div class="m-row" style="justify-content: space-between">
+        <span class="m-row"><span class="m-av" style="width: 30px; height: 30px; font-size: 13px; background: var(--rank-odogwu)">C</span><span class="m-col" style="gap: 0"><b style="font-size: 13px">Chuks</b><span class="m-small" style="color: var(--lagoon)"><span class="m-dot"></span> Online</span></span></span>
+        <a class="m-btn m-btn--social m-btn--sm" href="Rivalry.dc.html">Challenge</a>
+      </div>
+      <div class="m-row" style="justify-content: space-between">
+        <span class="m-row"><span class="m-av" style="width: 30px; height: 30px; font-size: 13px; background: var(--rank-sabi)">B</span><span class="m-col" style="gap: 0"><b style="font-size: 13px">Bisi</b><span class="m-small" style="color: var(--danfo)"><span class="m-dot"></span> Racing</span></span></span>
+        <button type="button" class="m-btn m-btn--sec m-btn--sm">Watch</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="m-card nk-glass abs" style="left: 128px; bottom: var(--sb); width: 214px; padding: 8px 12px">
+    <div class="m-prog-head"><span>Level 27</span><span>1,240 / 2,000 XP</span></div>
+    <div class="m-track"><div class="m-fill" style="width: 62%"></div></div>
+  </div>
+
+  <a class="m-card nk-glass m-col abs" href="Season.dc.html" style="right: var(--sr); top: 66px; width: 236px; gap: 4px; text-decoration: none; color: var(--ink); box-shadow: inset 0 0 0 2px var(--enforcer), inset 0 1px 0 var(--glass-edge)">
+    <span class="m-row" style="justify-content: space-between"><span class="m-eyebrow" style="color: var(--danfo)">Wahala today</span><span class="m-small">2h 43m left</span></span>
+    <span class="d ol" style="font-size: 24px; line-height: 24px">LASTMA Madness</span>
+    <span class="m-body">Escape patrols for 2x coins</span>
+  </a>
+
+  <div class="m-col abs" style="right: var(--sr); bottom: 26px; align-items: flex-end; gap: 10px">
+    <a class="m-chip nk-glass" href="ModeSelect.dc.html" style="height: 36px; padding: 0 14px; text-decoration: none; color: var(--ink); font-size: 12px">
+      <span style="color: var(--ink-muted)">Mode</span> Quick Race
+      <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"></path></svg>
+    </a>
+    <a class="m-btn m-btn--primary m-btn--xl" href="Matchmaking.dc.html" style="min-width: 220px">Race now</a>
+  </div>
+
+  <div class="island"></div><div class="homebar"></div>
+</div></div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":872,"height":418}}'>
+class Component extends DCLogic {
+  renderVals() { return {}; }
+}
+</script>
+</body>
+</html>

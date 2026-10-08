@@ -1,0 +1,390 @@
+{
+  "v": 3,
+  "attachments": {},
+  "boards": {
+    "Caught.dc.html": {
+      "h": 418,
+      "is_interactive": true,
+      "title": "09 Caught: recovery choice",
+      "w": 872,
+      "x": 0,
+      "y": 1496
+    },
+    "Countdown.dc.html": {
+      "h": 418,
+      "is_interactive": true,
+      "title": "06 Countdown",
+      "w": 872,
+      "x": 952,
+      "y": 748
+    },
+    "Garage.dc.html": {
+      "h": 418,
+      "is_interactive": true,
+      "title": "13 Garage: karts",
+      "w": 872,
+      "x": 0,
+      "y": 2244
+    },
+    "LastmaChase.dc.html": {
+      "h": 418,
+      "is_interactive": true,
+      "title": "08 LASTMA chase",
+      "w": 872,
+      "x": 2856,
+      "y": 748
+    },
+    "Leaderboards.dc.html": {
+      "h": 418,
+      "is_interactive": true,
+      "title": "15 Leaderboards",
+      "w": 872,
+      "x": 3808,
+      "y": 2244
+    },
+    "Lobby.dc.html": {
+      "h": 418,
+      "is_interactive": true,
+      "title": "05 Lobby",
+      "w": 872,
+      "x": 0,
+      "y": 748
+    },
+    "Main.dc.html": {
+      "h": 418,
+      "is_interactive": true,
+      "title": "02 Home",
+      "w": 872,
+      "x": 0,
+      "y": 0
+    },
+    "Matchmaking.dc.html": {
+      "h": 418,
+      "is_interactive": true,
+      "title": "04 Matchmaking",
+      "w": 872,
+      "x": 1904,
+      "y": 0
+    },
+    "ModeSelect.dc.html": {
+      "h": 418,
+      "is_interactive": true,
+      "title": "03 Choose mode",
+      "w": 872,
+      "x": 952,
+      "y": 0
+    },
+    "Onboarding.dc.html": {
+      "x": 1904,
+      "y": -748,
+      "w": 872,
+      "h": 418,
+      "title": "01.3 Onboarding: choose controls",
+      "is_interactive": true
+    },
+    "Profile.dc.html": {
+      "h": 418,
+      "is_interactive": true,
+      "title": "14 Profile",
+      "w": 872,
+      "x": 2856,
+      "y": 2244
+    },
+    "RaceHUD.dc.html": {
+      "h": 418,
+      "is_interactive": true,
+      "title": "07 Race HUD",
+      "w": 872,
+      "x": 1904,
+      "y": 748
+    },
+    "Reconnect.dc.html": {
+      "h": 418,
+      "is_interactive": true,
+      "title": "11 Network issue",
+      "w": 872,
+      "x": 1904,
+      "y": 1496
+    },
+    "Results.dc.html": {
+      "h": 418,
+      "is_interactive": true,
+      "title": "10 Results",
+      "w": 872,
+      "x": 952,
+      "y": 1496
+    },
+    "Rivalry.dc.html": {
+      "h": 418,
+      "is_interactive": true,
+      "title": "12 Rivalry",
+      "w": 872,
+      "x": 2856,
+      "y": 1496
+    },
+    "Season.dc.html": {
+      "h": 418,
+      "is_interactive": true,
+      "title": "18 Season and challenges",
+      "w": 872,
+      "x": 952,
+      "y": 2992
+    },
+    "Settings.dc.html": {
+      "h": 418,
+      "is_interactive": true,
+      "title": "20 Settings: data and performance",
+      "w": 872,
+      "x": 2856,
+      "y": 2992
+    },
+    "Shop.dc.html": {
+      "h": 418,
+      "is_interactive": true,
+      "title": "19 Shop",
+      "w": 872,
+      "x": 1904,
+      "y": 2992
+    },
+    "Social.dc.html": {
+      "h": 418,
+      "is_interactive": true,
+      "title": "16 Social",
+      "w": 872,
+      "x": 4760,
+      "y": 2244
+    },
+    "Tournament.dc.html": {
+      "h": 418,
+      "is_interactive": true,
+      "title": "17 Tournament",
+      "w": 872,
+      "x": 0,
+      "y": 2992
+    },
+    "SaveProgress.dc.html": {
+      "x": 0,
+      "y": 3740,
+      "w": 872,
+      "h": 418,
+      "title": "21 Save progress (after first race)",
+      "is_interactive": true
+    },
+    "PhoneNumber.dc.html": {
+      "x": 952,
+      "y": 3740,
+      "w": 872,
+      "h": 418,
+      "title": "22 Phone number",
+      "is_interactive": true
+    },
+    "Otp.dc.html": {
+      "x": 1904,
+      "y": 3740,
+      "w": 872,
+      "h": 418,
+      "title": "23 Enter code",
+      "is_interactive": true
+    },
+    "CreateRacer.dc.html": {
+      "x": 2856,
+      "y": 3740,
+      "w": 872,
+      "h": 418,
+      "title": "24 Create your racer",
+      "is_interactive": true
+    },
+    "AccountReady.dc.html": {
+      "x": 3808,
+      "y": 3740,
+      "w": 872,
+      "h": 418,
+      "title": "25 Account ready",
+      "is_interactive": true
+    },
+    "OnboardWelcome.dc.html": {
+      "x": 0,
+      "y": -748,
+      "w": 872,
+      "h": 418,
+      "title": "01.1 Onboarding: welcome",
+      "is_interactive": true
+    },
+    "OnboardDriver.dc.html": {
+      "x": 952,
+      "y": -748,
+      "w": 872,
+      "h": 418,
+      "title": "01.2 Onboarding: pick driver",
+      "is_interactive": true
+    },
+    "OnboardPractice.dc.html": {
+      "x": 2856,
+      "y": -748,
+      "w": 872,
+      "h": 418,
+      "title": "01.4 Onboarding: practice lap",
+      "is_interactive": true
+    },
+    "OnboardReady.dc.html": {
+      "x": 3808,
+      "y": -748,
+      "w": 872,
+      "h": 418,
+      "title": "01.5 Onboarding: ready to race",
+      "is_interactive": true
+    },
+    "GarageRacers.dc.html": {
+      "y": 2244,
+      "w": 872,
+      "h": 418,
+      "is_interactive": true,
+      "x": 952,
+      "title": "13.1 Garage: racers"
+    },
+    "GarageStyle.dc.html": {
+      "y": 2244,
+      "w": 872,
+      "h": 418,
+      "is_interactive": true,
+      "x": 1904,
+      "title": "13.2 Garage: style"
+    },
+    "RankedHub.dc.html": {
+      "x": 2856,
+      "y": 0,
+      "w": 872,
+      "h": 418,
+      "title": "03.1 Ranked",
+      "is_interactive": true
+    },
+    "PrivateRoom.dc.html": {
+      "x": 3808,
+      "y": 0,
+      "w": 872,
+      "h": 418,
+      "title": "03.2 Private room (invite friends)",
+      "is_interactive": true
+    },
+    "InviteFriends.dc.html": {
+      "x": 4760,
+      "y": 0,
+      "w": 872,
+      "h": 418,
+      "title": "03.3 Invite friends",
+      "is_interactive": true
+    }
+  },
+  "createdOnFiles": {
+    "at": "2026-10-08T14:50:00Z",
+    "v": 1
+  },
+  "designSystems": [
+    {
+      "artifact": "https://claude.ai/artifact/Ft4XhezKUparaTbQL7GGwx",
+      "copiedAt": "2026-10-08T14:50:00Z",
+      "namespace": "naijakart",
+      "title": "Naija Kart",
+      "version": "1791469347-d4f3"
+    }
+  ],
+  "launch": {
+    "view": "canvas"
+  },
+  "notes": {
+    "row1": {
+      "kind": "title1",
+      "maxW": 5632,
+      "text": "Home to the race",
+      "w": 240,
+      "x": 0,
+      "y": -290
+    },
+    "row2": {
+      "kind": "title1",
+      "maxW": 3728,
+      "text": "In the race",
+      "w": 240,
+      "x": 0,
+      "y": 458
+    },
+    "row3": {
+      "kind": "title1",
+      "maxW": 3728,
+      "text": "Outcomes: caught, finish, disconnect, rivalry",
+      "w": 240,
+      "x": 0,
+      "y": 1206
+    },
+    "row4": {
+      "kind": "title1",
+      "maxW": 5632,
+      "text": "Identity: garage, profile, ranks, friends",
+      "w": 240,
+      "x": 0,
+      "y": 1954
+    },
+    "row5": {
+      "kind": "title1",
+      "maxW": 3728,
+      "text": "Live ops, shop and settings",
+      "w": 240,
+      "x": 0,
+      "y": 2702
+    },
+    "row6": {
+      "x": 0,
+      "y": 3450,
+      "text": "Create account: guest first, save progress after the first race",
+      "kind": "title1",
+      "maxW": 4680,
+      "w": 240
+    },
+    "row0": {
+      "x": 0,
+      "y": -1038,
+      "text": "First launch: onboarding, 5 steps (iPhone, 844x390 pt landscape)",
+      "kind": "title1",
+      "maxW": 4680,
+      "w": 240
+    }
+  },
+  "order": [
+    "OnboardWelcome.dc.html",
+    "OnboardDriver.dc.html",
+    "Onboarding.dc.html",
+    "OnboardPractice.dc.html",
+    "OnboardReady.dc.html",
+    "Main.dc.html",
+    "ModeSelect.dc.html",
+    "Matchmaking.dc.html",
+    "RankedHub.dc.html",
+    "PrivateRoom.dc.html",
+    "InviteFriends.dc.html",
+    "Lobby.dc.html",
+    "Countdown.dc.html",
+    "RaceHUD.dc.html",
+    "LastmaChase.dc.html",
+    "Caught.dc.html",
+    "Results.dc.html",
+    "Reconnect.dc.html",
+    "Rivalry.dc.html",
+    "Garage.dc.html",
+    "GarageRacers.dc.html",
+    "GarageStyle.dc.html",
+    "Profile.dc.html",
+    "Leaderboards.dc.html",
+    "Social.dc.html",
+    "Tournament.dc.html",
+    "Season.dc.html",
+    "Shop.dc.html",
+    "Settings.dc.html",
+    "SaveProgress.dc.html",
+    "PhoneNumber.dc.html",
+    "Otp.dc.html",
+    "CreateRacer.dc.html",
+    "AccountReady.dc.html"
+  ],
+  "pages": [],
+  "title": "Naija Kart Game Screens"
+}

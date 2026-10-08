@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Countdown</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="ds/naijakart/tokens.css">
+<link rel="stylesheet" href="ds/naijakart/components/bundle.css">
+<link rel="stylesheet" href="screens.css">
+<link rel="stylesheet" href="mobile.css">
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lilita+One&amp;family=Nunito:ital,wght@0,700;0,800;0,900;1,800;1,900&amp;display=swap">
+<style>body{margin:0}</style>
+</helmet>
+<div class="phone"><div class="screen">
+  <div class="layer scene-race"></div>
+
+  <div class="m-pos nk-glass"><b class="ol">8</b><span class="ol-sm"><em style="font-style: normal">TH</em><i style="font-style: normal">/8</i></span></div>
+  <div class="m-lap nk-glass"><div class="ol-sm">LAP <b>1/3</b></div></div>
+
+  <a href="RaceHUD.dc.html" class="m-col abs" style="left: 0; right: 0; top: 54px; align-items: center; gap: 4px; text-decoration: none" aria-label="Go to race">
+    <span class="d ol-lg" style="font-size: 170px; line-height: 150px; color: var(--danfo)">2</span>
+    <span class="m-row" style="gap: 6px">
+      <span class="m-tag" style="background: var(--plate-glass-solid); color: var(--ink)">3</span>
+      <span class="m-tag" style="background: var(--danfo); color: var(--on-danfo)">2</span>
+      <span class="m-tag" style="background: var(--plate-glass-solid); color: var(--ink-muted)">1</span>
+      <span class="m-tag" style="background: var(--plate-glass-solid); color: var(--ink-muted)">Go!</span>
+    </span>
+  </a>
+
+  <div class="nk-glass m-row abs" style="left: 50%; bottom: var(--sb); transform: translateX(-50%); padding: 8px 14px; border-radius: 12px; gap: 10px">
+    <svg width="34" height="24" viewBox="0 0 44 30" aria-hidden="true"><g transform="rotate(-10 22 15)"><rect x="4" y="5" width="36" height="20" rx="5" fill="none" stroke="var(--ink)" stroke-width="3.5"></rect></g></svg>
+    <span class="m-col" style="gap: 0"><b style="font-size: 13px">Hold your phone how you like</b><span class="m-small" style="color: var(--ink-muted)">Tilt is calibrating. Tap Boost on GO!</span></span>
+  </div>
+
+  <div class="island"></div><div class="homebar"></div>
+</div></div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":872,"height":418}}'>
+class Component extends DCLogic {
+  renderVals() { return {}; }
+}
+</script>
+</body>
+</html>

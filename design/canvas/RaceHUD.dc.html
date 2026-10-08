@@ -1,0 +1,81 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Race HUD</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="ds/naijakart/tokens.css">
+<link rel="stylesheet" href="ds/naijakart/components/bundle.css">
+<link rel="stylesheet" href="screens.css">
+<link rel="stylesheet" href="mobile.css">
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lilita+One&amp;family=Nunito:ital,wght@0,700;0,800;0,900;1,800;1,900&amp;display=swap">
+<style>body{margin:0}</style>
+</helmet>
+<div class="phone"><div class="screen">
+  <div class="layer scene-race"></div>
+
+  <div class="m-pos nk-glass"><b class="ol">4</b><span class="ol-sm"><em style="font-style: normal">TH</em><i style="font-style: normal">/8</i></span></div>
+
+  <div class="m-stand">
+    <sc-for list="{{ standings }}" as="r" hint-placeholder-count="5">
+      <div class="{{ r.cls }}"><b>{{ r.pos }}</b><i style="background: {{ r.bg }}"></i><em>{{ r.name }}</em></div>
+    </sc-for>
+  </div>
+
+  <div class="m-lap nk-glass">
+    <div class="ol-sm">LAP <b>2/3</b></div>
+    <span><svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><circle cx="12" cy="13" r="8"></circle><path d="M12 13V9M9 2h6"></path></svg>01:24.76</span>
+  </div>
+
+  <a class="m-callout" href="LastmaChase.dc.html" style="background: var(--enforcer); color: var(--on-enforcer); box-shadow: 0 3px 0 var(--outline)">
+    <b>Shortcut: BRT lane</b><small>Faster, but LASTMA dey watch</small>
+  </a>
+
+  <div class="m-map nk-glass" aria-label="Minimap"><svg viewBox="0 0 156 156">
+    <path class="nk-map__edge" d="M70 24c18 0 22 14 12 24s-26 14-20 30 30 10 32 28-14 26-30 26"></path>
+    <path class="nk-map__track" d="M70 24c18 0 22 14 12 24s-26 14-20 30 30 10 32 28-14 26-30 26"></path>
+    <path class="nk-map__done" style="stroke: var(--item-hazard)" d="M70 24c18 0 22 14 12 24s-26 14-20 30"></path>
+    <rect class="nk-map__flag-a" x="62" y="10" width="7" height="7"></rect><rect class="nk-map__flag-b" x="69" y="10" width="7" height="7"></rect><rect class="nk-map__flag-b" x="62" y="17" width="7" height="7"></rect><rect class="nk-map__flag-a" x="69" y="17" width="7" height="7"></rect>
+    <circle class="nk-map__rival" cx="80" cy="44" r="7" style="fill: var(--rank-sabi)"></circle>
+    <circle class="nk-map__rival" cx="64" cy="64" r="7" style="fill: var(--rank-odogwu)"></circle>
+    <circle class="nk-map__you" cx="70" cy="84" r="10"></circle>
+    <circle class="nk-map__rival" cx="88" cy="100" r="7" style="fill: var(--rank-oga-patapata)"></circle>
+  </svg></div>
+
+  <div class="m-portrait">
+    <span class="photo-face" role="img" aria-label="Your racer"></span>
+    <div class="nk-glass"><div><b class="ol-sm">Omo!</b><small class="ol-sm">Dem dey come!</small></div></div>
+  </div>
+
+  <button type="button" class="m-drift nk-glass" aria-label="Drift, charge 2" style="box-shadow: inset 0 0 0 4px var(--drift-2), 0 0 0 1.5px var(--outline), 0 3px 0 var(--outline)">
+    <svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 24c0-9 6-15 18-15"></path><path d="M19 4l5 5-5 5"></path></svg>Drift
+  </button>
+
+  <div class="m-speedo nk-glass"><div class="ring"></div><div class="read"><b class="ol-sm">128</b><span class="ol-sm">KM/H</span></div><span class="boosts">3</span></div>
+
+  <div class="m-items">
+    <button type="button" class="m-item" style="--rim: var(--item-boost)"><span class="nk-glass"><svg viewBox="0 0 40 40"><path d="M30 8c-2 0-3 2-3 3-8 2-16 9-18 21 0 2 2 3 3 1 4-8 10-13 17-15 3-1 5-4 4-7 0-2-1-3-3-3z" fill="var(--enforcer)"></path><path d="M27 11c1-3 3-5 6-5" stroke="var(--item-boost)" stroke-width="3" fill="none" stroke-linecap="round"></path></svg></span><span class="ol-sm">Jollof</span></button>
+    <button type="button" class="m-item" style="--rim: var(--item-attack)"><span class="nk-glass"><svg viewBox="0 0 40 40"><path d="M14 6h12l-1 4c3 2 4 5 4 9v13a3 3 0 0 1-3 3H14a3 3 0 0 1-3-3V19c0-4 1-7 4-9z" fill="var(--item-attack)"></path><rect x="15" y="20" width="10" height="7" rx="2" fill="var(--ink)"></rect></svg></span><span class="ol-sm">Pure Water</span></button>
+    <button type="button" class="m-item" style="--rim: var(--item-hazard)"><span class="nk-glass"><svg viewBox="0 0 40 40"><circle cx="20" cy="20" r="14" fill="var(--plate-900)" stroke="var(--ink-muted)" stroke-width="3"></circle><circle cx="20" cy="20" r="6" fill="var(--plate-600)"></circle><path d="M20 3v6M20 31v6M3 20h6M31 20h6M8 8l4 4M28 28l4 4M32 8l-4 4M12 28l-4 4" stroke="var(--item-hazard)" stroke-width="3" stroke-linecap="round"></path></svg></span><span class="ol-sm">Spike</span></button>
+    <button type="button" class="m-item" style="--rim: var(--item-trap)"><span class="nk-glass"><svg viewBox="0 0 40 40"><path d="M9 10c2 13 10 21 24 20-3 4-9 6-15 3C11 29 7 21 9 10z" fill="var(--item-trap)"></path><path d="M8 7l3 4" stroke="var(--danfo-deep)" stroke-width="3" stroke-linecap="round"></path></svg></span><span class="ol-sm">Banana</span></button>
+  </div>
+
+  <div class="island"></div><div class="homebar"></div>
+</div></div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":872,"height":418}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const rows = [['Amaka', 'var(--rank-sabi)'], ['Tunde', 'var(--rank-odogwu)'], ['Musa', 'var(--rank-sharp-sharp)'], ['You', 'var(--on-danfo)'], ['Damilola', 'var(--rank-oga-patapata)']];
+    return {
+      standings: rows.map(([name, bg], i) => ({ pos: i + 1, name, bg, cls: name === 'You' ? 'nk-glass you' : 'nk-glass ol-sm' }))
+    };
+  }
+}
+</script>
+</body>
+</html>

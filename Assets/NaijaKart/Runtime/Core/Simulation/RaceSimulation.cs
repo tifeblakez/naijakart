@@ -252,6 +252,14 @@ namespace NaijaKart.Core.Simulation
             }
         }
 
+        /// <summary>Input from the server's AI stand-in for a disconnected racer: drives the kart without marking them reconnected.</summary>
+        public void SubmitStandInInput(string playerId, PlayerInputFrame frame)
+        {
+            var p = Find(playerId);
+            if (p == null || (p.Status != ParticipantStatus.Disconnected && p.Status != ParticipantStatus.Reconnecting)) return;
+            p.LatestInput = frame.Sanitised();
+        }
+
         public bool PayFine(string playerId) => _lastma.PayFine(playerId);
         public bool TakePenalty(string playerId) => _lastma.TakePenalty(playerId);
         /// <summary>Empties a racer's item slots (LASTMA penalty).</summary>

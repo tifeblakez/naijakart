@@ -1,0 +1,73 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Choose mode</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="ds/naijakart/tokens.css">
+<link rel="stylesheet" href="ds/naijakart/components/bundle.css">
+<link rel="stylesheet" href="screens.css">
+<link rel="stylesheet" href="mobile.css">
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lilita+One&amp;family=Nunito:ital,wght@0,700;0,800;0,900;1,800;1,900&amp;display=swap">
+<style>body{margin:0}</style>
+</helmet>
+<div class="phone"><div class="screen">
+  <div class="layer scene-city"></div>
+  <div class="layer dim-full"></div>
+
+  <div class="m-sub">
+    <a class="m-icon-btn nk-glass" href="Main.dc.html" aria-label="Back"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"></path></svg></a>
+    <h1 class="d ol" style="font-size: 26px; line-height: 28px">Choose mode</h1>
+  </div>
+
+  <div class="abs" style="left: var(--sl); right: var(--sr); top: 66px; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px">
+    <sc-for list="{{ modes }}" as="m" hint-placeholder-count="4">
+      <button type="button" onClick="{{ m.pick }}" class="nk-glass m-col" style="height: 214px; border: 0; border-radius: 16px; cursor: pointer; color: var(--ink); font-family: var(--font-text); text-align: left; padding: 12px; gap: 5px; box-shadow: {{ m.ring }}">
+        <span class="m-eyebrow">{{ m.name }}</span>
+        <span class="d ol-sm" style="font-size: 21px; line-height: 22px; color: {{ m.titleColor }}">{{ m.line }}</span>
+        <span style="font-size: 12px; line-height: 16px; font-weight: 700; color: var(--ink-muted)">{{ m.desc }}</span>
+        <span style="flex-grow: 1"></span>
+        <span class="m-tag" style="align-self: flex-start">{{ m.players }}</span>
+        <span class="m-small" style="color: {{ m.statusColor }}">{{ m.status }}</span>
+      </button>
+    </sc-for>
+  </div>
+
+  <div class="m-row abs" style="left: var(--sl); right: var(--sr); bottom: var(--sb); justify-content: space-between">
+    <a class="m-chip nk-glass" href="Season.dc.html" style="height: 40px; padding: 0 14px; text-decoration: none; color: var(--ink)"><span style="color: var(--danfo)">Wahala today</span> LASTMA Madness</a>
+    <a class="m-btn m-btn--primary" href="{{ selectedHref }}" style="min-width: 240px">Race · {{ selectedName }}</a>
+  </div>
+
+  <div class="island"></div><div class="homebar"></div>
+</div></div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":872,"height":418}}'>
+class Component extends DCLogic {
+  constructor(props) { super(props); this.state = { pick: 'quick' }; }
+  renderVals() {
+    const list = [
+      { id: 'quick', href: 'Matchmaking.dc.html', name: 'Quick Race', line: 'Just enter and race', desc: 'Jump in. AI fills empty seats so you never wait long.', players: '8 racers', status: 'About 15 s to race', statusColor: 'var(--success)', locked: false },
+      { id: 'ranked', href: 'RankedHub.dc.html', name: 'Ranked', line: 'Who get mouth?', desc: 'Climb JJC to Oga Patapata. Same rules for all.', players: '4+ real racers', status: 'Rush Hour: bonus RP', statusColor: 'var(--danfo)', locked: false },
+      { id: 'private', href: 'PrivateRoom.dc.html', name: 'Private Room', line: 'Race your people', desc: 'Share a link on WhatsApp. Set your own wahala.', players: 'Up to 8', status: 'Link or code', statusColor: 'var(--ink-muted)', locked: false },
+      { id: 'tourney', href: 'Tournament.dc.html', name: 'Tournament', line: 'Fight for the crown', desc: 'Lagos Championship. 32 racers, 5 rounds.', players: '32 racers', status: 'Round 3 now · next race 04:32', statusColor: 'var(--danfo)', locked: false }
+    ];
+    const sel = list.find(m => m.id === this.state.pick);
+    return {
+      selectedName: sel.name,
+      selectedHref: sel.href,
+      modes: list.map(m => ({
+        ...m,
+        pick: () => { if (!m.locked) this.setState({ pick: m.id }); },
+        ring: m.id === this.state.pick ? 'inset 0 0 0 3px var(--danfo), 0 4px 0 var(--danfo-deep)' : 'inset 0 1px 0 var(--glass-edge), inset 0 0 0 1px var(--glass-sheen)',
+        titleColor: m.locked ? 'var(--ink-faint)' : 'var(--ink)'
+      }))
+    };
+  }
+}
+</script>
+</body>
+</html>

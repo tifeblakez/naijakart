@@ -23,6 +23,10 @@ namespace NaijaKart.Server.Hosting
         private readonly GameConfig _cfg;
         private readonly ILogger _log;
         private readonly Dictionary<string, BotDriver> _bots = new Dictionary<string, BotDriver>();
+        /// <summary>AI stand-ins driving for disconnected humans (design 11: "AI driving · holding your place").</summary>
+        private readonly Dictionary<string, BotDriver> _standIns = new Dictionary<string, BotDriver>();
+        /// <summary>Invited friends and their state: Invited, Joining.</summary>
+        private readonly Dictionary<string, string> _invited = new Dictionary<string, string>();
         private readonly List<RaceEvent> _eventBuffer = new List<RaceEvent>();
         private readonly List<string> _members = new List<string>();
         private readonly Dictionary<string, (string vehicle, string character)> _loadouts = new Dictionary<string, (string, string)>();
@@ -41,6 +45,11 @@ namespace NaijaKart.Server.Hosting
         public int Laps { get; private set; }
         public bool ItemsEnabled { get; private set; } = true;
         public bool LastmaEnabled { get; private set; } = true;
+        /// <summary>Off | On | Madness (design 03.2).</summary>
+        public string LastmaMode { get; private set; } = "On";
+        /// <summary>Off | BoostsOnly | On.</summary>
+        public string ItemsMode { get; private set; } = "On";
+        public bool FillWithAi { get; private set; }
         public RaceSimulation Race { get; private set; }
         public IReadOnlyList<string> Members => _members;
         public bool HasMember(string playerId) => _members.Contains(playerId);
@@ -79,8 +88,8 @@ namespace NaijaKart.Server.Hosting
                 RoadEventsEnabled = true,
                 MaxPlayers = _cfg.simulation.maxPlayersPerRace,
                 LiveEventId = _liveEvent?.id,
-                AllowedItemIds = _liveEvent?.allowedItemIds != null && _liveEvent.allowedItemIds.Length > 0 ? new List<string>(_liveEvent.allowedItemIds) : null,
-                LastmaIntervalMultiplier = _liveEvent?.lastmaIntervalMultiplier ?? 1f,
+                AllowedItemIds = AllowedItems(),
+                LastmaIntervalMultiplier = (_liveEvent?.lastmaIntervalMultiplier ?? 1f) * (LastmaMode == "Madness" ? _cfg.social.lastmaMadnessIntervalMultiplier : 1f),
                 DriftBoostMultiplier = _liveEvent?.driftBoostMultiplier ?? 1f
             };
             Race = new RaceSimulation(setup, _content, _server.Wallet, _log);
@@ -95,6 +104,17 @@ namespace NaijaKart.Server.Hosting
             BroadcastRoomState();
         }
 
+        /// <summary>Items allowed by the live event and the room's items mode ("Boosts only" keeps the Boost category).</summary>
+        private List<string> AllowedItems()
+        {
+            List<string> list = _liveEvent?.allowedItemIds != null && _liveEvent.allowedItemIds.Length > 0 ? new List<string>(_liveEvent.allowedItemIds) : null;
+            if (ItemsMode != "BoostsOnly") return list;
+            var boosts = new List<string>();
+            foreach (var it in _content.Items.items)
+                if (it.category == ItemCategory.Boost && (list == null || list.Contains(it.id))) boosts.Add(it.id);
+            return boosts;
+        }
+
         public bool Join(string playerId, string vehicleId, string characterId)
         {
             if (_members.Contains(playerId)) return true;
@@ -103,10 +123,20 @@ namespace NaijaKart.Server.Hosting
             if (!Race.AddParticipant(playerId, _server.DisplayNameOf(playerId), vehicleId, characterId)) return false;
             _members.Add(playerId);
             _loadouts[playerId] = (vehicleId, characterId);
+            _invited.Remove(playerId);
             if (HostPlayerId == null) HostPlayerId = playerId;
             BroadcastRoomState();
             return true;
         }
+
+        public void Invite(string playerId, string status = "Invited")
+        {
+            if (_members.Contains(playerId)) return;
+            _invited[playerId] = status;
+            BroadcastRoomState();
+        }
+
+        public bool IsInvited(string playerId) => _invited.ContainsKey(playerId);
 
         public void AddBot(string botId, float skill, string vehicleId = null)
         {
@@ -157,10 +187,10 @@ namespace NaijaKart.Server.Hosting
         public bool StartByHost(string playerId, bool fillWithBots)
         {
             if (playerId != HostPlayerId || Race.State != RaceState.Lobby) return false;
-            if (fillWithBots && Mode != RaceMode.Ranked)
+            if ((fillWithBots || FillWithAi) && Mode != RaceMode.Ranked)
             {
                 int i = 0;
-                while (_members.Count < _cfg.simulation.maxPlayersPerRace) AddBot("bot_" + Code.ToLowerInvariant() + "_" + (++i), 0.45f + 0.07f * i);
+                while (_members.Count < _cfg.simulation.maxPlayersPerRace) AddBot("bot_" + Code.ToLowerInvariant().Replace("-", "") + "_" + (++i), 0.45f + 0.07f * i);
             }
             if (!Race.CanStart) return false;
             Race.BeginCountdown();
@@ -180,13 +210,19 @@ namespace NaijaKart.Server.Hosting
 
         public WeekdayRule LiveEvent => _liveEvent;
 
-        public void Configure(string trackId, int laps, bool items, bool lastma)
+        public void Configure(string trackId, int laps, bool items, bool lastma) => Configure(trackId, laps, items ? null : "Off", lastma ? null : "Off", null);
+
+        /// <summary>Private room options (design 03.2). Null leaves an option unchanged.</summary>
+        public void Configure(string trackId, int laps, string itemsMode, string lastmaMode, bool? fillWithAi)
         {
             if (Race.State != RaceState.Lobby) return;
             if (!string.IsNullOrEmpty(trackId) && _content.GetTrack(trackId) != null) TrackId = trackId;
             if (laps > 0) Laps = laps;
-            ItemsEnabled = items;
-            LastmaEnabled = lastma;
+            if (itemsMode == "Off" || itemsMode == "BoostsOnly" || itemsMode == "On") ItemsMode = itemsMode;
+            if (lastmaMode == "Off" || lastmaMode == "On" || lastmaMode == "Madness") LastmaMode = lastmaMode;
+            if (fillWithAi.HasValue) FillWithAi = fillWithAi.Value;
+            ItemsEnabled = ItemsMode != "Off";
+            LastmaEnabled = LastmaMode != "Off";
             CreateRace();
         }
 
@@ -207,6 +243,17 @@ namespace NaijaKart.Server.Hosting
 
             if (Race.StateMachine.IsRacing)
             {
+                // AI stand-ins hold a disconnected racer's place: their kart keeps racing until they return
+                // or the reconnect window closes (design 11).
+                if (_cfg.raceRules.aiStandInWhileDisconnected)
+                    foreach (var p in Race.Participants)
+                    {
+                        if (p.IsBot || p.Status != ParticipantStatus.Disconnected) continue;
+                        if (!_standIns.TryGetValue(p.PlayerId, out var driver)) _standIns[p.PlayerId] = driver = new BotDriver(Race.Track, _seed ^ 0xA11EUL, 0.5f);
+                        Race.SubmitStandInInput(p.PlayerId, driver.Think(p, Race.Hazards.All, dt));
+                        var le = Race.Lastma.EventFor(p.PlayerId);
+                        if (le != null && le.Phase == Core.Lastma.LastmaPhase.FinePending && !le.BailRequested) Race.TakePenalty(p.PlayerId);
+                    }
                 foreach (var kv in _bots)
                 {
                     var p = Race.Find(kv.Key);
@@ -353,6 +400,10 @@ namespace NaijaKart.Server.Hosting
                 case ClientMessageKind.SelectLoadout:
                     SetLoadout(playerId, msg.VehicleId, msg.CharacterId);
                     break;
+                case ClientMessageKind.SetRoomOptions:
+                    if (playerId != HostPlayerId) { _server.SendError(playerId, "Only the host can change options"); break; }
+                    Configure(msg.TrackId, msg.Laps, msg.ItemsMode, msg.LastmaMode, msg.FillWithAi);
+                    break;
                 case ClientMessageKind.StartRoom:
                     if (Mode == RaceMode.PrivateRoom || Mode == RaceMode.Practice)
                     {
@@ -371,6 +422,7 @@ namespace NaijaKart.Server.Hosting
 
         public void OnPlayerReconnected(string playerId)
         {
+            _standIns.Remove(playerId);
             Race.MarkReconnected(playerId);
             BroadcastRoomState();
             _server.SendTo(playerId, new ServerEnvelope { Kind = ServerMessageKind.RaceSnapshot, Snapshot = Race.BuildSnapshot(), Tick = Race.Tick });
@@ -388,9 +440,22 @@ namespace NaijaKart.Server.Hosting
                 Laps = Laps,
                 ItemsEnabled = ItemsEnabled,
                 LastmaEnabled = LastmaEnabled,
+                LastmaMode = LastmaMode,
+                ItemsMode = ItemsMode,
+                FillWithAi = FillWithAi,
+                ShareUrl = (_cfg.social.shareLinkBase ?? "") + Code,
+                StartsInSeconds = Race.State == RaceState.Lobby && Mode != RaceMode.PrivateRoom && Race.CanStart
+                    ? (int)System.Math.Ceiling(System.Math.Max(0f, _cfg.raceRules.lobbyReadyTimeoutSeconds - Race.StateMachine.TimeInState)) : -1,
+                AiSeats = _bots.Count,
+                ReconnectWindowSeconds = _cfg.raceRules.reconnectWindowSeconds,
+                ReconnectAttempts = _cfg.raceRules.reconnectAttempts,
                 State = Race.State,
-                Members = new RoomMemberDto[Race.ParticipantCount]
+                Members = new RoomMemberDto[Race.ParticipantCount],
+                Invited = new RoomMemberDto[_invited.Count]
             };
+            int inv = 0;
+            foreach (var kv in _invited)
+                dto.Invited[inv++] = new RoomMemberDto { PlayerId = kv.Key, DisplayName = _server.DisplayNameOf(kv.Key), Status = kv.Value };
             for (int i = 0; i < Race.Participants.Count; i++)
             {
                 var p = Race.Participants[i];
@@ -402,6 +467,9 @@ namespace NaijaKart.Server.Hosting
                     VehicleId = p.Vehicle.id,
                     CharacterId = p.Character?.id,
                     Ready = p.IsReady,
+                    IsBot = p.IsBot,
+                    Status = p.IsBot ? "AI" : p.Status == ParticipantStatus.Disconnected ? (_standIns.ContainsKey(p.PlayerId) ? "AiDriving" : "Disconnected")
+                        : p.PlayerId == HostPlayerId ? "Host" : p.IsReady ? "Ready" : "Waiting",
                     Level = XpCurve.LevelForXp(profile.TotalXp, _cfg.progression),
                     RankId = _server.RankLadder.TierFor(profile.RankedPoints).id,
                     Title = profile.Title

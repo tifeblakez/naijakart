@@ -50,7 +50,11 @@ namespace NaijaKart.Core.Net
         ApplyReferral,
         GetAccount,
         /// <summary>Season, Rush Hour and ranked rules for the Ranked hub.</summary>
-        GetSeason
+        GetSeason,
+        /// <summary>Host changes private-room options: TrackId, Laps, LastmaMode, ItemsMode, FillWithAi.</summary>
+        SetRoomOptions,
+        /// <summary>Invite a friend to the room: TargetPlayerId.</summary>
+        InviteFriend
     }
 
     [Serializable]
@@ -70,6 +74,10 @@ namespace NaijaKart.Core.Net
         public bool Flag;
         public bool ItemsEnabled = true;
         public bool LastmaEnabled = true;
+        /// <summary>Private room options (design 03.2): "Off" | "On" | "Madness" and "Off" | "BoostsOnly" | "On".</summary>
+        public string LastmaMode;
+        public string ItemsMode;
+        public bool FillWithAi;
         public PlayerInputFrame Input;
         public long ClientTimeMs;
         /// <summary>Free text argument (leaderboard metric, etc.).</summary>
@@ -97,7 +105,9 @@ namespace NaijaKart.Core.Net
         LastmaOptions,
         Garage,
         Account,
-        Season
+        Season,
+        /// <summary>A friend invited you: Room = the room, PlayerId = host, Text = host name.</summary>
+        RoomInvite
     }
 
     [Serializable]
@@ -240,6 +250,9 @@ namespace NaijaKart.Core.Net
         public string VehicleId;
         public string CharacterId;
         public bool Ready;
+        public bool IsBot;
+        /// <summary>Host, Ready, Waiting, AI, Invited, Joining, Disconnected, AiDriving.</summary>
+        public string Status;
         public int Level;
         public string RankId;
         public string Title;
@@ -256,8 +269,18 @@ namespace NaijaKart.Core.Net
         public int Laps;
         public bool ItemsEnabled;
         public bool LastmaEnabled;
+        public string LastmaMode;
+        public string ItemsMode;
+        public bool FillWithAi;
+        public string ShareUrl;
+        /// <summary>Public lobbies: seconds until the race starts on its own; -1 when the host decides.</summary>
+        public int StartsInSeconds = -1;
+        public int AiSeats;
+        public float ReconnectWindowSeconds;
+        public int ReconnectAttempts;
         public RaceState State;
         public RoomMemberDto[] Members = Array.Empty<RoomMemberDto>();
+        public RoomMemberDto[] Invited = Array.Empty<RoomMemberDto>();
     }
 
     [Serializable]
@@ -321,5 +344,9 @@ namespace NaijaKart.Core.Net
         public long PremiumBalance;
         public AccountDto Account;
         public SeasonDto Season;
+        /// <summary>QueueStatus: racers found, grid size, seconds until AI fills the rest.</summary>
+        public int QueueFound;
+        public int QueueMax;
+        public int QueueSecondsToAi;
     }
 }

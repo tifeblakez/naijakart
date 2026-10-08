@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Ranked</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="ds/naijakart/tokens.css">
+<link rel="stylesheet" href="ds/naijakart/components/bundle.css">
+<link rel="stylesheet" href="screens.css">
+<link rel="stylesheet" href="mobile.css">
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lilita+One&amp;family=Nunito:ital,wght@0,700;0,800;0,900;1,800;1,900&amp;display=swap">
+<style>body{margin:0}</style>
+</helmet>
+<div class="phone"><div class="screen">
+  <div class="layer scene-city"></div>
+  <div class="layer dim-full"></div>
+
+  <div class="m-sub">
+    <a class="m-icon-btn nk-glass" href="ModeSelect.dc.html" aria-label="Back"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"></path></svg></a>
+    <span class="m-col" style="gap: 0"><span class="m-eyebrow" style="color: var(--danfo)">Season 1 · 23 days left</span><h1 class="d ol" style="font-size: 26px; line-height: 28px">Ranked</h1></span>
+    <span style="flex-grow: 1"></span>
+    <a class="m-btn m-btn--sec" href="Leaderboards.dc.html">Leaderboard</a>
+  </div>
+
+  <div class="nk-glass m-col abs" style="left: var(--sl); top: 70px; bottom: var(--sb); width: 330px; padding: 12px; box-sizing: border-box; border-radius: 18px; gap: 8px">
+    <span class="m-row" style="gap: 12px">
+      <span class="nk-rank nk-rank--m tier-chairman"><span class="nk-rank__plate">II</span></span>
+      <span class="m-col" style="gap: 0"><span class="d ol" style="font-size: 26px; line-height: 26px; color: var(--rank-chairman)">Chairman II</span><span class="m-small">Nigeria #124 · Lagos #31</span></span>
+    </span>
+    <div><div class="m-prog-head"><span>To Chairman I</span><span>88 / 100 RP</span></div><div class="m-track"><div class="m-fill" style="width: 88%"></div></div></div>
+    <span class="m-row m-small" style="gap: 12px"><span>Win: about <b style="color: var(--success)">+24 RP</b></span><span>Last place: about <b style="color: var(--danger)">-12 RP</b></span></span>
+    <span class="m-label" style="margin-top: 4px">Last 5 races</span>
+    <span class="m-row" style="gap: 5px">
+      <sc-for list="{{ last }}" as="l" hint-placeholder-count="5">
+        <span class="m-col" style="gap: 0; width: 52px; height: 44px; border-radius: 10px; align-items: center; justify-content: center; background: var(--plate-glass-solid)"><b class="d" style="font-size: 15px">{{ l.pos }}</b><span style="font-size: 11px; font-weight: 900; color: {{ l.c }}">{{ l.rp }}</span></span>
+      </sc-for>
+    </span>
+  </div>
+
+  <div class="m-col abs" style="left: 400px; right: var(--sr); top: 70px; bottom: var(--sb); gap: 8px">
+    <div class="nk-glass m-row" style="padding: 10px 12px; border-radius: 14px; gap: 10px; box-shadow: inset 0 0 0 2px var(--danfo), inset 0 1px 0 var(--glass-edge)">
+      <span class="m-col" style="gap: 0; flex-grow: 1"><span class="m-eyebrow" style="color: var(--danfo)">Rush Hour is on</span><b style="font-size: 14px">+25% RP on every race</b><span class="m-small" style="color: var(--ink-muted)">Most racers online · 7pm to 10pm daily</span></span>
+      <span class="m-col" style="gap: 0; align-items: flex-end"><span class="m-label">Ends in</span><span class="d ol" style="font-size: 24px; line-height: 24px; color: var(--danfo)">1:47:12</span></span>
+    </div>
+    <div class="nk-glass m-col" style="padding: 10px 12px; border-radius: 14px; gap: 5px">
+      <span class="m-eyebrow">Ranked rules · same for everyone</span>
+      <span class="m-row m-small" style="gap: 8px"><span class="m-dot" style="color: var(--lagoon)"></span>At least 4 real racers. AI fills the rest and never changes your RP.</span>
+      <span class="m-row m-small" style="gap: 8px"><span class="m-dot" style="color: var(--lagoon)"></span>No fines, no bail. Caught by LASTMA = same fixed penalty for all.</span>
+      <span class="m-row m-small" style="gap: 8px"><span class="m-dot" style="color: var(--lagoon)"></span>Leaving a race counts as last place.</span>
+    </div>
+    <span style="flex-grow: 1"></span>
+    <a class="m-btn m-btn--primary m-btn--xl" href="Matchmaking.dc.html">Find ranked race</a>
+  </div>
+
+  <div class="island"></div><div class="homebar"></div>
+</div></div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":872,"height":418}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const r = [['1st', '+26'], ['3rd', '+14'], ['6th', '-8'], ['2nd', '+19'], ['4th', '+5']];
+    return { last: r.map(([pos, rp]) => ({ pos, rp: rp + ' RP', c: rp[0] === '-' ? 'var(--danger)' : 'var(--success)' })) };
+  }
+}
+</script>
+</body>
+</html>

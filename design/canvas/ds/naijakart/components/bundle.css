@@ -1,0 +1,338 @@
+@import url("https://fonts.googleapis.com/css2?family=Lilita+One&family=Nunito:ital,wght@0,700;0,800;0,900;1,800;1,900&display=swap");
+
+/* Naija Kart components. Every value comes from tokens.css; no literal colours. */
+
+html, body { margin: 0; background: var(--plate-900); color: var(--ink); font-family: var(--font-text); }
+.nk-preview { padding: var(--space-5); display: flex; flex-wrap: wrap; gap: var(--space-4); align-items: flex-start; }
+.nk-stack { display: flex; flex-direction: column; gap: var(--space-3); }
+.nk-num { font-family: var(--font-display); font-variant-numeric: tabular-nums; }
+
+/* Button */
+.nk-btn { font-weight: 900; display: inline-flex; align-items: center; justify-content: center; gap: var(--space-2); min-height: var(--button-md); padding: 0 var(--space-5); border: 0; border-radius: var(--radius-md); font-family: var(--font-text); font-size: 14px; line-height: 16px; font-weight: 800; letter-spacing: 0.06em; text-transform: uppercase; cursor: pointer; transition: transform var(--duration-fast) var(--ease-out), box-shadow var(--duration-fast) var(--ease-out); }
+.nk-btn:focus-visible { outline: 3px solid var(--ink); outline-offset: 3px; }
+.nk-btn--primary { color: var(--on-danfo); min-height: var(--button-lg); padding: 0 var(--space-6); background: var(--danfo); color: var(--on-danfo); box-shadow: var(--edge-danfo); font-family: var(--font-display); font-size: 32px; line-height: 32px; font-weight: 400; letter-spacing: 0.02em; }
+.nk-btn--primary:active { transform: translateY(4px); box-shadow: 0 2px 0 var(--danfo-deep); }
+.nk-btn--secondary { background: var(--plate-700); color: var(--ink); box-shadow: var(--edge-plate); }
+.nk-btn--social { background: var(--lagoon); color: var(--on-lagoon); box-shadow: var(--edge-plate); }
+.nk-btn--danger { background: transparent; color: var(--danger); box-shadow: inset 0 0 0 2px var(--danger); }
+.nk-btn--icon { width: var(--touch-min); min-height: var(--touch-min); padding: 0; border-radius: var(--radius-pill); background: var(--plate-700); color: var(--ink); }
+.nk-btn[disabled] { background: var(--plate-800); color: var(--ink-muted); box-shadow: none; cursor: not-allowed; }
+.nk-btn__sub { display: block; font-family: var(--font-text); font-size: 12px; line-height: 14px; font-weight: 700; letter-spacing: 0.04em; opacity: 0.8; }
+
+/* Currency chip */
+.nk-chip-currency { display: inline-flex; align-items: center; gap: var(--space-2); height: 40px; padding: 0 var(--space-3) 0 var(--space-1); border-radius: var(--radius-pill); background: var(--plate-800); box-shadow: inset 0 0 0 1px var(--plate-600); font-family: var(--font-display); font-size: 16px; font-weight: 400; font-variant-numeric: tabular-nums; color: var(--ink); }
+.nk-chip-currency__coin { width: 32px; height: 32px; border-radius: var(--radius-pill); display: grid; place-items: center; font-size: 15px; font-family: var(--font-display); font-weight: 400; }
+.nk-chip-currency__coin--coins { background: var(--danfo); color: var(--on-danfo); }
+.nk-chip-currency__coin--premium { background: var(--rank-oga-patapata); color: var(--on-rank); }
+.nk-chip-currency__add { width: 24px; height: 24px; border-radius: var(--radius-pill); background: var(--plate-700); color: var(--ink); display: grid; place-items: center; font-size: 16px; }
+
+/* Tag */
+.nk-tag { display: inline-flex; align-items: center; gap: var(--space-1); height: 22px; padding: 0 var(--space-2); border-radius: var(--radius-sm); font-size: 12px; line-height: 16px; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; background: var(--plate-700); color: var(--ink-muted); }
+.nk-tag__dot { width: 8px; height: 8px; border-radius: var(--radius-pill); background: currentColor; }
+.nk-tag--online { color: var(--lagoon); }
+.nk-tag--racing { color: var(--danfo); }
+.nk-tag--ai { background: var(--ink); color: var(--plate-900); }
+.nk-tag--locked { color: var(--ink-muted); box-shadow: inset 0 0 0 1px var(--plate-600); background: transparent; }
+.nk-tag--streak { background: var(--enforcer); color: var(--on-enforcer); }
+
+/* Rank badge: a plate-number shape, the tier colour is the only hue */
+.nk-rank { display: inline-flex; align-items: center; gap: var(--space-3); }
+.nk-rank__plate { display: grid; place-items: center; border-radius: var(--radius-md); background: var(--tier); color: var(--on-rank); font-family: var(--font-display); font-weight: 400; box-shadow: inset 0 0 0 3px var(--plate-900), inset 0 0 0 5px var(--tier); }
+.nk-rank--s .nk-rank__plate { width: 36px; height: 28px; font-size: 14px; border-radius: var(--radius-sm); box-shadow: none; }
+.nk-rank--m .nk-rank__plate { width: 64px; height: 48px; font-size: 22px; }
+.nk-rank--l .nk-rank__plate { width: 120px; height: 88px; font-size: 40px; border-radius: var(--radius-lg); }
+.nk-rank__name { font-family: var(--font-display); font-weight: 400; text-transform: uppercase; color: var(--tier); line-height: 1; }
+.nk-rank--s .nk-rank__name { font-size: 17px; }
+.nk-rank--m .nk-rank__name { font-size: 26px; }
+.nk-rank--l .nk-rank__name { font-size: 44px; }
+.nk-rank__div { display: block; margin-top: var(--space-1); font-family: var(--font-text); font-size: 13px; font-weight: 600; letter-spacing: 0.02em; text-transform: none; color: var(--ink-muted); }
+.tier-jjc { --tier: var(--rank-jjc); }
+.tier-sharp-sharp { --tier: var(--rank-sharp-sharp); }
+.tier-no-dull { --tier: var(--rank-no-dull); }
+.tier-sabi { --tier: var(--rank-sabi); }
+.tier-odogwu { --tier: var(--rank-odogwu); }
+.tier-chairman { --tier: var(--rank-chairman); }
+.tier-oga-patapata { --tier: var(--rank-oga-patapata); }
+
+/* Progress bar */
+.nk-progress { width: 280px; }
+.nk-progress__head { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: var(--space-2); }
+.nk-progress__label { font-size: 14px; font-weight: 800; letter-spacing: 0.06em; text-transform: uppercase; }
+.nk-progress__count { font-family: var(--font-display); font-size: 16px; font-weight: 400; font-variant-numeric: tabular-nums; color: var(--ink-muted); }
+.nk-progress__track { height: 12px; border-radius: var(--radius-sm); background: var(--plate-700); overflow: hidden; }
+.nk-progress__fill { height: 100%; border-radius: var(--radius-sm); background: var(--fill, var(--danfo)); }
+.nk-progress--done .nk-progress__fill { --fill: var(--success); }
+
+/* Stat meter: segmented, never a raw number */
+.nk-stat { display: grid; grid-template-columns: 120px auto; align-items: center; gap: var(--space-2) var(--space-4); }
+.nk-stat__name { font-size: 13px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: var(--ink-muted); }
+.nk-stat__bar { display: flex; gap: var(--space-1); }
+.nk-stat__seg { width: 22px; height: 12px; border-radius: var(--radius-sm); background: var(--plate-600); }
+.nk-stat__seg.on { background: var(--ink); }
+.nk-stat__seg.up { background: var(--success); }
+.nk-stat__seg.down { background: var(--plate-600); box-shadow: inset 0 0 0 2px var(--danger); }
+
+/* Mode card */
+.nk-mode { width: 232px; padding: var(--space-4); border-radius: var(--radius-lg); background: var(--plate-800); box-shadow: inset 0 0 0 1px var(--plate-600); display: flex; flex-direction: column; gap: var(--space-3); }
+.nk-mode__eyebrow { font-family: var(--font-display); font-size: 17px; line-height: 20px; font-weight: 400; letter-spacing: 0.04em; text-transform: uppercase; color: var(--ink-muted); }
+.nk-mode__title { font-family: var(--font-display); font-size: 30px; line-height: 32px; font-weight: 400; text-transform: uppercase; margin: 0; }
+.nk-mode__meta { display: flex; gap: var(--space-2); flex-wrap: wrap; }
+.nk-mode--selected { box-shadow: inset 0 0 0 3px var(--danfo); }
+.nk-mode--locked { opacity: 1; }
+.nk-mode--locked .nk-mode__title { color: var(--ink-faint); }
+.nk-mode--locked { background: var(--plate-900); }
+
+/* Player card */
+.nk-player { display: flex; align-items: center; gap: var(--space-3); padding: var(--space-3); border-radius: var(--radius-lg); background: var(--plate-800); box-shadow: inset 0 0 0 1px var(--plate-600); }
+.nk-player__avatar { width: 48px; height: 48px; border-radius: var(--radius-pill); background: var(--plate-600); display: grid; place-items: center; font-family: var(--font-display); font-size: 22px; font-weight: 400; color: var(--ink); flex: none; }
+.nk-player__name { font-family: var(--font-display); font-size: 22px; line-height: 24px; font-weight: 400; text-transform: uppercase; }
+.nk-player__sub { font-size: 13px; line-height: 18px; color: var(--ink-muted); }
+.nk-player__body { display: flex; flex-direction: column; gap: 2px; min-width: 0; flex: 1; }
+.nk-player--lobby { flex-direction: column; align-items: flex-start; width: 156px; }
+.nk-player--lobby .nk-player__avatar { width: 64px; height: 64px; }
+.nk-player--ready { box-shadow: inset 0 0 0 3px var(--success); }
+.nk-player--you { box-shadow: inset 0 0 0 3px var(--danfo); }
+
+/* Leaderboard row */
+.nk-lb { width: 440px; display: flex; flex-direction: column; gap: var(--space-1); }
+.nk-lb__row { display: grid; grid-template-columns: 44px 40px 1fr auto auto; align-items: center; gap: var(--space-3); padding: var(--space-2) var(--space-3); border-radius: var(--radius-md); background: var(--plate-800); }
+.nk-lb__pos { font-family: var(--font-display); font-size: 22px; font-weight: 400; font-variant-numeric: tabular-nums; text-align: right; }
+.nk-lb__name { font-weight: 700; font-size: 15px; }
+.nk-lb__rp { font-family: var(--font-display); font-size: 16px; font-weight: 400; font-variant-numeric: tabular-nums; color: var(--ink-muted); }
+.nk-lb__row--you { background: var(--danfo); color: var(--on-danfo); }
+.nk-lb__row--you .nk-lb__rp { color: var(--on-danfo); }
+.nk-lb__gap { text-align: center; color: var(--ink-faint); font-size: 13px; letter-spacing: 0.3em; }
+
+/* Nav rail (landscape, left edge) */
+.nk-rail { width: var(--nav-rail); padding: var(--space-3) 0; border-radius: var(--radius-lg); background: var(--plate-800); display: flex; flex-direction: column; align-items: center; gap: var(--space-2); }
+.nk-rail__item { width: 72px; height: 64px; border-radius: var(--radius-md); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: var(--space-1); color: var(--ink-muted); font-size: 12px; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; }
+.nk-rail__item svg { width: 24px; height: 24px; }
+.nk-rail__item--active { background: var(--danfo); color: var(--on-danfo); }
+.nk-rail__badge { position: relative; }
+.nk-rail__badge::after { content: ""; position: absolute; top: -2px; right: -6px; width: 10px; height: 10px; border-radius: var(--radius-pill); background: var(--lagoon); box-shadow: 0 0 0 2px var(--plate-800); }
+
+/* HUD status: position, lap, minimap */
+.nk-hud { position: relative; width: 900px; height: 220px; border-radius: var(--radius-lg); background: var(--plate-700); overflow: hidden; }
+.nk-hud__pos { position: absolute; left: var(--safe-inset); top: var(--safe-inset); display: flex; align-items: baseline; gap: var(--space-2); font-family: var(--font-display); font-variant-numeric: tabular-nums; }
+.nk-hud__pos b { font-size: 64px; line-height: 60px; font-weight: 400; color: var(--ink); }
+.nk-hud__pos span { font-size: 22px; font-weight: 400; color: var(--ink-muted); }
+.nk-hud__lap { position: absolute; left: 50%; top: var(--safe-inset); transform: translateX(-50%); padding: var(--space-2) var(--space-4); border-radius: var(--radius-pill); background: var(--plate-900); font-family: var(--font-display); font-size: 22px; font-weight: 400; letter-spacing: 0.04em; font-variant-numeric: tabular-nums; }
+.nk-hud__lap--final { background: var(--danfo); color: var(--on-danfo); }
+.nk-hud__map { position: absolute; right: var(--safe-inset); top: var(--safe-inset); width: 136px; height: 136px; border-radius: var(--radius-lg); background: var(--plate-900); }
+.nk-hud__plate { text-shadow: 0 2px 0 var(--plate-900); }
+
+/* HUD controls */
+.nk-ctrl { display: flex; align-items: flex-end; gap: var(--space-4); }
+.nk-ctrl__btn { width: var(--hud-button); height: var(--hud-button); border-radius: var(--radius-pill); background: var(--plate-800); box-shadow: inset 0 0 0 4px var(--ring, var(--plate-600)); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; color: var(--ink); font-size: 12px; font-weight: 800; letter-spacing: 0.06em; text-transform: uppercase; }
+.nk-ctrl__btn svg { width: 32px; height: 32px; }
+.nk-ctrl__btn--drift { width: var(--hud-button-drift); height: var(--hud-button-drift); }
+.nk-ctrl__btn--drift.c1 { --ring: var(--drift-1); }
+.nk-ctrl__btn--drift.c2 { --ring: var(--drift-2); }
+.nk-ctrl__btn--drift.c3 { --ring: var(--drift-3); box-shadow: inset 0 0 0 6px var(--drift-3); }
+.nk-ctrl__btn--boost.ready { background: var(--boost); color: var(--on-boost); box-shadow: none; }
+.nk-ctrl__btn--item.ready { --ring: var(--item-boost); }
+.nk-ctrl__btn--empty { color: var(--ink-faint); }
+.nk-ctrl__cap { margin-top: var(--space-2); text-align: center; font-size: 12px; color: var(--ink-muted); }
+
+/* Race callout */
+.nk-callout { display: inline-flex; flex-direction: column; align-items: center; padding: var(--space-2) var(--space-5); border-radius: var(--radius-md); background: var(--plate-900); font-family: var(--font-display); text-transform: uppercase; }
+.nk-callout b { font-size: 44px; line-height: 44px; font-weight: 400; letter-spacing: 0.01em; }
+.nk-callout small { font-family: var(--font-text); font-size: 13px; font-weight: 700; letter-spacing: 0.06em; color: var(--ink-muted); }
+.nk-callout--gain b { color: var(--success); }
+.nk-callout--threat { background: var(--enforcer); color: var(--on-enforcer); }
+.nk-callout--threat small { color: var(--on-enforcer); }
+.nk-callout--boost { background: var(--boost); color: var(--on-boost); }
+.nk-callout--final { background: var(--danfo); color: var(--on-danfo); }
+.nk-callout--final small { color: var(--on-danfo); }
+.nk-callout--plus b { font-size: 36px; color: var(--success); }
+
+/* Enforcer meter and recovery choice */
+.nk-enf { width: 320px; padding: var(--space-3) var(--space-4); border-radius: var(--radius-lg); background: var(--plate-900); box-shadow: inset 0 0 0 2px var(--enforcer); }
+.nk-enf__head { display: flex; justify-content: space-between; align-items: baseline; font-family: var(--font-display); text-transform: uppercase; }
+.nk-enf__title { font-size: 30px; line-height: 32px; font-weight: 400; color: var(--enforcer); }
+.nk-enf__timer { font-size: 30px; font-weight: 400; font-variant-numeric: tabular-nums; }
+.nk-enf__who { font-size: 13px; font-weight: 700; letter-spacing: 0.06em; color: var(--ink-muted); text-transform: uppercase; margin: 2px 0 var(--space-2); }
+.nk-enf__track { height: 12px; border-radius: var(--radius-sm); background: var(--plate-700); overflow: hidden; }
+.nk-enf__fill { height: 100%; background: var(--enforcer); }
+.nk-enf--escaped { box-shadow: inset 0 0 0 2px var(--success); }
+.nk-enf--escaped .nk-enf__title { color: var(--success); }
+.nk-recover { display: flex; gap: var(--space-3); }
+.nk-recover__opt { width: 168px; padding: var(--space-3); border-radius: var(--radius-lg); background: var(--plate-800); box-shadow: inset 0 0 0 1px var(--plate-600); display: flex; flex-direction: column; gap: var(--space-1); }
+.nk-recover__opt b { font-family: var(--font-display); font-size: 22px; line-height: 24px; font-weight: 400; text-transform: uppercase; }
+.nk-recover__opt span { font-size: 13px; line-height: 18px; color: var(--ink-muted); }
+.nk-recover__opt--default { box-shadow: inset 0 0 0 3px var(--ink); }
+.nk-recover__opt--off b { color: var(--ink-faint); }
+.nk-recover__opt--off { box-shadow: inset 0 0 0 1px var(--plate-600); background: var(--plate-900); }
+.nk-recover__ring { font-size: 12px; font-weight: 700; color: var(--ink-muted); letter-spacing: 0.04em; }
+
+/* Notification card */
+.nk-note { width: 360px; padding: var(--space-4); border-radius: var(--radius-lg); background: var(--plate-800); box-shadow: inset 0 0 0 1px var(--plate-600), var(--lift); display: grid; grid-template-columns: 48px 1fr; gap: var(--space-2) var(--space-3); }
+.nk-note__title { font-family: var(--font-display); font-size: 22px; line-height: 24px; font-weight: 400; text-transform: uppercase; }
+.nk-note__body { font-size: 15px; line-height: 22px; color: var(--ink-muted); }
+.nk-note__actions { grid-column: 2; display: flex; gap: var(--space-2); margin-top: var(--space-2); }
+.nk-note__actions .nk-btn { min-height: 40px; padding: 0 var(--space-4); }
+.nk-note__time { height: 4px; grid-column: 1 / -1; border-radius: var(--radius-sm); background: var(--plate-700); overflow: hidden; }
+.nk-note__time i { display: block; height: 100%; background: var(--lagoon); }
+
+/* Arcade lettering: white display type with a dark stroke and a hard drop, for text that sits on the 3D world */
+.nk-outline { color: var(--ink); text-shadow: -2px -2px 0 var(--outline), 2px -2px 0 var(--outline), -2px 2px 0 var(--outline), 2px 2px 0 var(--outline), 0 -2px 0 var(--outline), 0 2px 0 var(--outline), -2px 0 0 var(--outline), 2px 0 0 var(--outline), 0 5px 0 var(--outline); }
+.nk-outline--lg { text-shadow: -3px -3px 0 var(--outline), 3px -3px 0 var(--outline), -3px 3px 0 var(--outline), 3px 3px 0 var(--outline), 0 -4px 0 var(--outline), 0 4px 0 var(--outline), -4px 0 0 var(--outline), 4px 0 0 var(--outline), 0 8px 0 var(--outline); }
+.nk-callout b, .nk-hud__pos b, .nk-hud__lap, .nk-enf__timer { text-shadow: -2px -2px 0 var(--outline), 2px -2px 0 var(--outline), -2px 2px 0 var(--outline), 2px 2px 0 var(--outline), 0 -2px 0 var(--outline), 0 2px 0 var(--outline), -2px 0 0 var(--outline), 2px 0 0 var(--outline), 0 5px 0 var(--outline); }
+.nk-callout--threat b, .nk-callout--boost b, .nk-callout--final b { text-shadow: none; }
+
+/* HUD plates restyled to the reference: navy glass, hard edge. The .nk-hud frame's gradient is only a stand-in for the 3D scene in previews. */
+.nk-hud { background: linear-gradient(180deg, var(--rank-sharp-sharp) 0%, var(--plate-600) 55%, var(--plate-700) 100%); }
+.nk-hud__pos { gap: 2px; padding: var(--space-2) var(--space-4); border-radius: var(--radius-md); background: var(--plate-glass); box-shadow: var(--edge-plate); align-items: flex-start; }
+.nk-hud__pos b { font-size: 64px; line-height: 60px; }
+.nk-hud__pos sup { font-family: var(--font-display); font-size: 28px; line-height: 28px; color: var(--ink); text-shadow: -1px -1px 0 var(--outline), 1px -1px 0 var(--outline), -1px 1px 0 var(--outline), 1px 1px 0 var(--outline), 0 3px 0 var(--outline); }
+.nk-hud__pos span { align-self: flex-end; font-size: 26px; color: var(--ink); }
+.nk-hud__lap { left: auto; right: var(--safe-inset); transform: none; display: flex; flex-direction: column; align-items: flex-end; gap: var(--space-1); padding: var(--space-2) var(--space-4); border-radius: var(--radius-md); background: var(--plate-glass); box-shadow: var(--edge-plate); }
+.nk-hud__lap b { font-family: var(--font-display); font-weight: 400; font-size: 34px; line-height: 34px; }
+.nk-hud__lap small { font-family: var(--font-display); font-size: 20px; line-height: 22px; color: var(--ink); text-shadow: none; font-variant-numeric: tabular-nums; padding: 2px var(--space-2); border-radius: var(--radius-sm); background: var(--plate-900); }
+.nk-hud__lap--final { background: var(--danfo); color: var(--on-danfo); }
+.nk-hud__map { left: var(--safe-inset); right: auto; top: auto; bottom: var(--safe-inset); width: 112px; height: 112px; border-radius: var(--radius-pill); background: var(--plate-glass); box-shadow: inset 0 0 0 3px var(--plate-600); }
+
+/* Race standings (in-race leaderboard, left edge) */
+.nk-standings { width: 200px; display: flex; flex-direction: column; gap: 3px; }
+.nk-standings__row { display: grid; grid-template-columns: 22px 26px 1fr; align-items: center; gap: var(--space-2); height: 24px; padding: 0 var(--space-2); border-radius: var(--radius-sm); background: var(--plate-glass); font-family: var(--font-display); font-size: 17px; color: var(--ink); }
+.nk-standings__pos { text-align: center; font-variant-numeric: tabular-nums; }
+.nk-standings__face { width: 22px; height: 22px; border-radius: var(--radius-pill); background: var(--plate-600); font-size: 12px; display: grid; place-items: center; }
+.nk-standings__name { font-family: var(--font-text); font-weight: 800; font-size: 14px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.nk-standings__row--you { background: var(--danfo); color: var(--on-danfo); }
+.nk-standings__row--you .nk-standings__face { background: var(--on-danfo); color: var(--danfo); }
+.nk-standings__row--ai .nk-standings__name::after { content: " AI"; font-size: 11px; color: var(--ink-muted); }
+
+/* Speedometer */
+.nk-speedo { position: relative; width: var(--speedometer); height: var(--speedometer); border-radius: var(--radius-pill); background: var(--plate-glass); box-shadow: inset 0 0 0 3px var(--plate-600); }
+.nk-speedo svg { position: absolute; inset: 0; width: 100%; height: 100%; }
+.nk-speedo__arc { fill: none; stroke-width: 12; stroke-linecap: round; }
+.nk-speedo__s1 { stroke: var(--speed-1); } .nk-speedo__s2 { stroke: var(--speed-2); } .nk-speedo__s3 { stroke: var(--speed-3); } .nk-speedo__s4 { stroke: var(--speed-4); } .nk-speedo__s5 { stroke: var(--speed-5); }
+.nk-speedo__off { stroke: var(--plate-700); }
+.nk-speedo__read { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+.nk-speedo__read b { font-family: var(--font-display); font-weight: 400; font-size: 44px; line-height: 40px; font-variant-numeric: tabular-nums; text-shadow: -2px -2px 0 var(--outline), 2px -2px 0 var(--outline), -2px 2px 0 var(--outline), 2px 2px 0 var(--outline), 0 -2px 0 var(--outline), 0 2px 0 var(--outline), -2px 0 0 var(--outline), 2px 0 0 var(--outline), 0 5px 0 var(--outline); }
+.nk-speedo__read span { font-family: var(--font-text); font-weight: 900; font-size: 12px; letter-spacing: 0.06em; color: var(--ink-muted); }
+.nk-speedo__boosts { margin-top: var(--space-1); min-width: 28px; height: 28px; border-radius: var(--radius-pill); display: grid; place-items: center; background: var(--boost); color: var(--on-boost); font-family: var(--font-display); font-size: 18px; }
+
+/* Item slot */
+.nk-item { display: inline-flex; flex-direction: column; align-items: center; gap: var(--space-1); width: 96px; }
+.nk-item__disc { width: 76px; height: 76px; border-radius: var(--radius-pill); background: var(--plate-800); box-shadow: inset 0 0 0 5px var(--rim, var(--plate-600)), 0 4px 0 var(--outline); display: grid; place-items: center; color: var(--ink); }
+.nk-item__disc svg { width: 38px; height: 38px; }
+.nk-item__name { padding: 2px var(--space-2); border-radius: var(--radius-sm); background: var(--plate-glass); font-size: 12px; line-height: 15px; font-weight: 800; text-align: center; color: var(--ink); }
+.nk-item--boost { --rim: var(--item-boost); }
+.nk-item--attack { --rim: var(--item-attack); }
+.nk-item--hazard { --rim: var(--item-hazard); }
+.nk-item--trap { --rim: var(--item-trap); }
+.nk-item--empty .nk-item__disc { color: var(--ink-faint); box-shadow: inset 0 0 0 3px var(--plate-600); }
+.nk-item--cooldown .nk-item__disc { background: conic-gradient(var(--plate-glass) 0 65%, var(--plate-800) 65% 100%); }
+
+/* Portrait callout: character face + skewed banner, bottom-left */
+.nk-portrait { display: inline-flex; align-items: flex-end; }
+.nk-portrait__face { position: relative; z-index: 1; width: 88px; height: 88px; border-radius: var(--radius-pill); background: var(--danfo); box-shadow: inset 0 0 0 4px var(--plate-900), 0 4px 0 var(--outline); display: grid; place-items: center; font-family: var(--font-display); font-size: 40px; color: var(--on-danfo); }
+.nk-portrait__banner { margin-left: -16px; margin-bottom: 8px; padding: var(--space-2) var(--space-4) var(--space-2) var(--space-6); background: var(--plate-glass); border-radius: var(--radius-sm); transform: skewX(-10deg); box-shadow: var(--edge-plate); }
+.nk-portrait__banner > div { transform: skewX(10deg); font-family: var(--font-display); text-transform: uppercase; }
+.nk-portrait__banner b { display: block; font-weight: 400; font-size: 30px; line-height: 30px; color: var(--danfo); text-shadow: -2px -2px 0 var(--outline), 2px -2px 0 var(--outline), -2px 2px 0 var(--outline), 2px 2px 0 var(--outline), 0 -2px 0 var(--outline), 0 2px 0 var(--outline), -2px 0 0 var(--outline), 2px 0 0 var(--outline), 0 5px 0 var(--outline); }
+.nk-portrait__banner span { display: block; font-size: 20px; line-height: 22px; color: var(--ink); }
+.nk-portrait--threat .nk-portrait__banner b { color: var(--enforcer); }
+.nk-portrait--threat .nk-portrait__face { background: var(--enforcer); color: var(--on-enforcer); }
+
+/* Frosted glass HUD. Blur on Tier 2 and 3; more tint and no blur on Tier 1 (.nk-tier1 on the root) or where backdrop blur is unsupported. */
+.nk-glass, .nk-hud__pos, .nk-hud__lap, .nk-hud__map, .nk-standings__row, .nk-speedo, .nk-item__name, .nk-portrait__banner, .nk-callout:not(.nk-callout--threat):not(.nk-callout--boost):not(.nk-callout--final), .nk-enf {
+  background: linear-gradient(180deg, var(--glass-sheen) 0%, transparent 50%), var(--plate-glass);
+  -webkit-backdrop-filter: blur(var(--blur-glass)) saturate(140%);
+  backdrop-filter: blur(var(--blur-glass)) saturate(140%);
+  box-shadow: inset 0 1px 0 var(--glass-edge), inset 0 0 0 1px var(--glass-sheen);
+}
+.nk-standings__row, .nk-item__name { -webkit-backdrop-filter: blur(var(--blur-glass-light)) saturate(140%); backdrop-filter: blur(var(--blur-glass-light)) saturate(140%); }
+.nk-speedo, .nk-hud__map { box-shadow: inset 0 1px 0 var(--glass-edge), inset 0 0 0 2px var(--glass-sheen); }
+.nk-enf { box-shadow: inset 0 0 0 2px var(--enforcer), inset 0 1px 0 var(--glass-edge); }
+.nk-enf--escaped { box-shadow: inset 0 0 0 2px var(--success), inset 0 1px 0 var(--glass-edge); }
+.nk-hud__lap--final { background: var(--danfo); -webkit-backdrop-filter: none; backdrop-filter: none; }
+.nk-standings__row--you { background: var(--danfo); -webkit-backdrop-filter: none; backdrop-filter: none; box-shadow: 0 2px 0 var(--danfo-deep); }
+/* Small text on glass gets a thin outline so it reads over any scene */
+.nk-standings__row:not(.nk-standings__row--you), .nk-item__name, .nk-speedo__read span, .nk-portrait__banner span, .nk-enf__who, .nk-callout small { text-shadow: -1px -1px 0 var(--outline), 1px -1px 0 var(--outline), -1px 1px 0 var(--outline), 1px 1px 0 var(--outline), 0 2px 0 var(--outline); }
+.nk-speedo__read span { color: var(--ink); }
+.nk-enf__who { color: var(--ink); }
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  .nk-glass, .nk-hud__pos, .nk-hud__lap, .nk-hud__map, .nk-standings__row, .nk-speedo, .nk-item__name, .nk-portrait__banner, .nk-enf { background: var(--plate-glass-solid); }
+}
+.nk-tier1 .nk-glass, .nk-tier1 .nk-hud__pos, .nk-tier1 .nk-hud__lap, .nk-tier1 .nk-hud__map, .nk-tier1 .nk-standings__row, .nk-tier1 .nk-speedo, .nk-tier1 .nk-item__name, .nk-tier1 .nk-portrait__banner, .nk-tier1 .nk-enf {
+  background: var(--plate-glass-solid); -webkit-backdrop-filter: none; backdrop-filter: none;
+}
+.nk-tier1 .nk-standings__row--you { background: var(--danfo); }
+
+/* Preview-only stand-in for the 3D race scene, so the glass has something to show through */
+.nk-scene { position: absolute; inset: 0; overflow: hidden; background: linear-gradient(180deg, var(--rank-sharp-sharp) 0%, var(--boost) 46%, var(--plate-600) 46%, var(--plate-700) 100%); }
+.nk-scene i { position: absolute; display: block; }
+
+.nk-item__disc { background: linear-gradient(180deg, var(--glass-sheen) 0%, transparent 50%), var(--plate-glass); -webkit-backdrop-filter: blur(var(--blur-glass)) saturate(140%); backdrop-filter: blur(var(--blur-glass)) saturate(140%); box-shadow: inset 0 0 0 5px var(--rim, var(--glass-edge)), inset 0 0 0 6px var(--glass-edge), 0 4px 0 var(--outline); }
+.nk-tier1 .nk-item__disc { background: var(--plate-glass-solid); -webkit-backdrop-filter: none; backdrop-filter: none; }
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) { .nk-item__disc { background: var(--plate-glass-solid); } }
+
+/* ===== Key-art race HUD (designed at the 1280x720 reference resolution) ===== */
+.nk-race { position: relative; width: 1280px; height: 720px; overflow: hidden; border-radius: var(--radius-lg); font-family: var(--font-display); color: var(--ink); }
+
+/* Position: big numeral, suffix and field size stacked to its right */
+.nk-race .nk-hud__pos { left: 24px; top: 20px; display: flex; align-items: center; gap: 6px; padding: 6px 18px 8px 16px; border-radius: var(--radius-md); }
+.nk-race .nk-hud__pos b { font-size: 84px; line-height: 76px; text-shadow: -3px -3px 0 var(--outline), 3px -3px 0 var(--outline), -3px 3px 0 var(--outline), 3px 3px 0 var(--outline), 0 -3px 0 var(--outline), 0 3px 0 var(--outline), -3px 0 0 var(--outline), 3px 0 0 var(--outline), 0 6px 0 var(--outline); }
+.nk-hud__pos-side { display: flex; flex-direction: column; align-items: flex-start; gap: 2px; }
+.nk-race .nk-hud__pos-side em, .nk-race .nk-hud__pos-side i { font-style: normal; font-size: 34px; line-height: 32px; color: var(--ink); text-shadow: -2px -2px 0 var(--outline), 2px -2px 0 var(--outline), -2px 2px 0 var(--outline), 2px 2px 0 var(--outline), 0 -2px 0 var(--outline), 0 2px 0 var(--outline), -2px 0 0 var(--outline), 2px 0 0 var(--outline), 0 5px 0 var(--outline); }
+
+/* Standings under the position plate */
+.nk-race .nk-standings { position: absolute; left: 24px; top: 108px; width: 230px; gap: 4px; }
+.nk-race .nk-standings__row { height: 28px; grid-template-columns: 20px 26px 1fr; padding: 0 10px 0 8px; font-size: 18px; }
+.nk-race .nk-standings__face { width: 24px; height: 24px; font-size: 13px; color: var(--on-rank); box-shadow: 0 0 0 2px var(--glass-edge); }
+.nk-race .nk-standings__name { font-style: italic; font-weight: 900; font-size: 16px; }
+.nk-race .nk-standings__row--you .nk-standings__face { box-shadow: 0 0 0 2px var(--on-danfo); }
+
+/* Lap and timer, top-right */
+.nk-race .nk-hud__lap { right: 24px; top: 20px; align-items: stretch; gap: 6px; padding: 8px 14px 10px; }
+.nk-hud__lap-row { display: flex; align-items: baseline; justify-content: flex-end; gap: 10px; }
+.nk-hud__lap-row em { font-style: normal; font-size: 26px; line-height: 26px; text-shadow: -2px -2px 0 var(--outline), 2px -2px 0 var(--outline), -2px 2px 0 var(--outline), 2px 2px 0 var(--outline), 0 -2px 0 var(--outline), 0 2px 0 var(--outline), -2px 0 0 var(--outline), 2px 0 0 var(--outline), 0 5px 0 var(--outline); }
+.nk-hud__lap-row b { font-weight: 400; font-size: 46px; line-height: 42px; text-shadow: -3px -3px 0 var(--outline), 3px -3px 0 var(--outline), -3px 3px 0 var(--outline), 3px 3px 0 var(--outline), 0 -3px 0 var(--outline), 0 3px 0 var(--outline), -3px 0 0 var(--outline), 3px 0 0 var(--outline), 0 6px 0 var(--outline); }
+.nk-hud__timer { display: flex; align-items: center; justify-content: center; gap: 8px; padding: 4px 12px; border-radius: var(--radius-sm); background: var(--plate-900); font-size: 22px; line-height: 24px; font-variant-numeric: tabular-nums; }
+.nk-hud__timer svg { width: 20px; height: 20px; }
+
+/* Circular minimap, left edge */
+.nk-race .nk-hud__map { left: 16px; top: auto; bottom: 120px; width: 156px; height: 156px; }
+.nk-hud__map svg { width: 100%; height: 100%; display: block; }
+.nk-map__track { fill: none; stroke: var(--ink); stroke-width: 9; stroke-linecap: round; stroke-linejoin: round; }
+.nk-map__edge { fill: none; stroke: var(--outline); stroke-width: 15; stroke-linecap: round; stroke-linejoin: round; }
+.nk-map__done { fill: none; stroke-width: 9; stroke-linecap: round; stroke-dasharray: 2 10; }
+.nk-map__you { fill: var(--danfo); stroke: var(--outline); stroke-width: 3; }
+.nk-map__rival { stroke: var(--outline); stroke-width: 2; }
+.nk-map__flag-a { fill: var(--ink); } .nk-map__flag-b { fill: var(--outline); }
+
+/* Portrait callout, bottom-left: white two-line reaction like the key art */
+.nk-race .nk-portrait { position: absolute; left: 20px; bottom: 16px; }
+.nk-portrait__banner b { color: var(--ink); }
+.nk-race .nk-portrait__face { width: 92px; height: 92px; background: var(--lagoon); color: var(--on-lagoon); box-shadow: inset 0 0 0 4px var(--ink), 0 0 0 3px var(--outline), 0 5px 0 var(--outline); }
+.nk-race .nk-portrait__banner b { font-size: 34px; line-height: 34px; text-shadow: -2px -2px 0 var(--outline), 2px -2px 0 var(--outline), -2px 2px 0 var(--outline), 2px 2px 0 var(--outline), 0 -2px 0 var(--outline), 0 2px 0 var(--outline), -2px 0 0 var(--outline), 2px 0 0 var(--outline), 0 5px 0 var(--outline); }
+.nk-race .nk-portrait__banner span { font-size: 22px; line-height: 24px; text-shadow: -1px -1px 0 var(--outline), 1px -1px 0 var(--outline), -1px 1px 0 var(--outline), 1px 1px 0 var(--outline), 0 2px 0 var(--outline); }
+
+/* Speedometer: continuous cyan-to-red arc over 270 degrees, boosts disc on the rim */
+.nk-speedo--arc { --v: 0.62; width: 180px; height: 180px; }
+.nk-speedo__ring { position: absolute; inset: 8px; border-radius: var(--radius-pill);
+  background:
+    conic-gradient(from 225deg, transparent 0deg calc(var(--v) * 270deg), var(--plate-700) calc(var(--v) * 270deg) 270deg, transparent 270deg),
+    conic-gradient(from 225deg, var(--speed-1) 0deg, var(--speed-2) 68deg, var(--speed-3) 135deg, var(--speed-4) 203deg, var(--speed-5) 270deg, transparent 270deg);
+  -webkit-mask: radial-gradient(farthest-side, transparent calc(100% - 16px), var(--outline) calc(100% - 15px));
+  mask: radial-gradient(farthest-side, transparent calc(100% - 16px), var(--outline) calc(100% - 15px)); }
+.nk-speedo--arc .nk-speedo__read b { font-size: 54px; line-height: 50px; text-shadow: -3px -3px 0 var(--outline), 3px -3px 0 var(--outline), -3px 3px 0 var(--outline), 3px 3px 0 var(--outline), 0 -3px 0 var(--outline), 0 3px 0 var(--outline), -3px 0 0 var(--outline), 3px 0 0 var(--outline), 0 6px 0 var(--outline); }
+.nk-speedo--arc .nk-speedo__read span { font-size: 13px; }
+.nk-speedo--arc .nk-speedo__boosts { position: absolute; left: 50%; bottom: -10px; transform: translateX(-50%); width: 44px; height: 44px; margin: 0; font-size: 24px; background: var(--plate-900); color: var(--ink); box-shadow: inset 0 0 0 3px var(--boost), 0 3px 0 var(--outline); }
+
+/* Item discs: glowing type rims, two-line labels */
+.nk-race .nk-items { position: absolute; right: 16px; bottom: 14px; display: flex; gap: 10px; }
+.nk-item__disc { box-shadow: inset 0 0 0 5px var(--rim, var(--glass-edge)), 0 0 0 2px var(--outline), 0 0 14px var(--rim, transparent), 0 4px 0 var(--outline); }
+.nk-race .nk-item { width: 92px; }
+.nk-race .nk-item__disc { width: 80px; height: 80px; }
+.nk-race .nk-item__disc svg { width: 42px; height: 42px; }
+.nk-race .nk-item__name { min-width: 72px; font-size: 13px; line-height: 15px; }
+.nk-tier1 .nk-item__disc { box-shadow: inset 0 0 0 5px var(--rim, var(--glass-edge)), 0 0 0 2px var(--outline), 0 4px 0 var(--outline); }
+
+/* Preview-only scene: sky, skyline, lagoon, road in perspective, karts */
+.nk-scene--race { background: linear-gradient(180deg, var(--rank-sharp-sharp) 0%, var(--boost) 44%, var(--plate-600) 44%, var(--plate-700) 100%); }
+.nk-scene--race .road { left: 0; top: 300px; width: 1280px; height: 420px; background: var(--plate-600); clip-path: polygon(46% 0, 56% 0, 100% 100%, 0 100%); }
+.nk-scene--race .lane { background: var(--ink); clip-path: polygon(48% 0, 52% 0, 60% 100%, 40% 100%); }
+.nk-standings__face { text-shadow: none; font-family: var(--font-display); }
+.nk-race .nk-standings { top: 118px; }

@@ -1,0 +1,78 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Finding racers</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="ds/naijakart/tokens.css">
+<link rel="stylesheet" href="ds/naijakart/components/bundle.css">
+<link rel="stylesheet" href="screens.css">
+<link rel="stylesheet" href="mobile.css">
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lilita+One&amp;family=Nunito:ital,wght@0,700;0,800;0,900;1,800;1,900&amp;display=swap">
+<style>body{margin:0}</style>
+</helmet>
+<div class="phone"><div class="screen">
+  <div class="layer scene-city"></div>
+  <div class="layer dim-full"></div>
+
+  <div class="m-col abs" style="left: 0; right: 0; top: 14px; align-items: center; gap: 2px">
+    <span class="m-eyebrow">Quick Race · Third Mainland Rush</span>
+    <h1 class="d ol" style="font-size: 36px; line-height: 38px">Finding racers...</h1>
+    <span class="m-row" style="gap: 10px">
+      <span class="d ol" style="font-size: 26px; color: var(--danfo)">5 / 8</span>
+      <span class="m-chip nk-glass">AI racers join in <b class="d" style="font-size: 15px; color: var(--boost)">0:10</b></span>
+    </span>
+  </div>
+
+  <a href="Lobby.dc.html" aria-label="Match found, go to lobby" class="abs" style="left: var(--sl); right: var(--sr); top: 122px; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; text-decoration: none; color: var(--ink)">
+    <sc-for list="{{ slots }}" as="s" hint-placeholder-count="8">
+      <sc-if value="{{ s.filled }}" hint-placeholder-val="{{ true }}">
+        <span class="nk-glass m-row" style="height: 52px; padding: 0 10px; border-radius: 12px; box-shadow: {{ s.ring }}">
+          <span class="m-av" style="width: 32px; height: 32px; font-size: 14px; background: {{ s.color }}">{{ s.initial }}</span>
+          <span class="m-col" style="gap: 0; min-width: 0"><b class="d" style="font-size: 15px">{{ s.name }}</b><span class="m-small" style="color: var(--ink-muted)">{{ s.sub }}</span></span>
+        </span>
+      </sc-if>
+      <sc-if value="{{ s.empty }}" hint-placeholder-val="{{ false }}">
+        <span class="m-row m-small" style="height: 52px; justify-content: center; border-radius: 12px; border: 2px dashed var(--plate-600); color: var(--ink-muted)">Waiting...</span>
+      </sc-if>
+    </sc-for>
+  </a>
+
+  <div class="nk-glass m-row abs" style="left: var(--sl); right: var(--sr); top: 248px; padding: 10px 14px; border-radius: 12px">
+    <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="var(--danfo)" stroke-width="2.5" stroke-linecap="round"><circle cx="12" cy="12" r="9"></circle><path d="M12 8v5M12 16.5v.5"></path></svg>
+    <span class="m-body">If you see LASTMA, no panic. Find another route.</span>
+  </div>
+
+  <div class="m-row abs" style="left: 0; right: 0; bottom: var(--sb); justify-content: center; gap: 10px">
+    <a class="m-btn m-btn--sec" href="Main.dc.html" style="min-width: 140px">Cancel</a>
+    <span class="m-chip nk-glass" style="height: 44px"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="var(--success)" stroke-width="2.5" stroke-linecap="round"><path d="M4 18h2M9 15v3M14 11v7M19 7v11"></path></svg>Connection good</span>
+  </div>
+
+  <div class="island"></div><div class="homebar"></div>
+</div></div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":872,"height":418}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const people = [
+      { name: 'You', sub: 'Danfo · Chairman', color: 'var(--danfo)', you: true },
+      { name: 'Amaka', sub: 'Keke · Odogwu', color: 'var(--rank-sabi)' },
+      { name: 'Tunde', sub: 'Okada · Sabi', color: 'var(--rank-odogwu)' },
+      { name: 'Musa', sub: 'Danfo · No Dull', color: 'var(--rank-sharp-sharp)' },
+      { name: 'Dami', sub: 'Camry · Chairman', color: 'var(--rank-oga-patapata)' }
+    ];
+    const slots = [];
+    for (let i = 0; i < 8; i++) {
+      const p = people[i];
+      slots.push(p ? { filled: true, empty: false, name: p.name, sub: p.sub, color: p.color, initial: p.name[0], ring: p.you ? 'inset 0 0 0 2px var(--danfo)' : 'inset 0 1px 0 var(--glass-edge)' } : { filled: false, empty: true });
+    }
+    return { slots };
+  }
+}
+</script>
+</body>
+</html>

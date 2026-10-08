@@ -1,0 +1,98 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Create your racer</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="ds/naijakart/tokens.css">
+<link rel="stylesheet" href="ds/naijakart/components/bundle.css">
+<link rel="stylesheet" href="screens.css">
+<link rel="stylesheet" href="mobile.css">
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lilita+One&amp;family=Nunito:ital,wght@0,700;0,800;0,900;1,800;1,900&amp;display=swap">
+<style>body{margin:0}</style>
+</helmet>
+<div class="phone"><div class="screen">
+  <div class="layer scene-city"></div>
+  <div class="layer dim-full"></div>
+
+  <div class="m-sub">
+    <a class="m-icon-btn nk-glass" href="Otp.dc.html" aria-label="Back"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"></path></svg></a>
+    <span class="m-chip nk-glass">Step 3 of 3</span>
+    <h1 class="d ol" style="font-size: 28px; line-height: 30px">Who you be?</h1>
+  </div>
+
+  <div class="nk-glass m-col abs" style="left: var(--sl); top: 66px; bottom: var(--sb); width: 250px; padding: 12px; box-sizing: border-box; border-radius: 18px; align-items: center; gap: 8px">
+    <span class="m-av {{ bigClass }}" role="img" aria-label="Your racer look" style="width: 104px; height: 104px; font-size: 44px; background: {{ bigBg }}; box-shadow: 0 0 0 3px var(--outline), 0 0 0 6px var(--danfo)">{{ bigText }}</span>
+    <span class="d ol-sm" style="font-size: 18px; max-width: 220px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap">{{ name }}</span>
+    <span class="m-label">Pick a look</span>
+    <div style="display: grid; grid-template-columns: repeat(3, 44px); gap: 10px">
+      <sc-for list="{{ looks }}" as="l" hint-placeholder-count="6">
+        <button type="button" onClick="{{ l.pick }}" class="m-av {{ l.cls }}" aria-label="{{ l.label }}" style="width: 44px; height: 44px; border: 0; cursor: pointer; font-size: 18px; background: {{ l.bg }}; box-shadow: {{ l.ring }}">{{ l.text }}</button>
+      </sc-for>
+    </div>
+  </div>
+
+  <div class="m-col abs" style="left: 322px; right: var(--sr); top: 66px; bottom: var(--sb); gap: 8px">
+    <span class="m-label">Racer name</span>
+    <div class="m-field ok" role="textbox" aria-label="Racer name"><span style="flex-grow: 1">{{ name }}</span><span class="m-row m-small" style="gap: 4px; color: var(--success)"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5 9-10"></path></svg>Available</span></div>
+    <span class="m-small" style="color: var(--ink-muted)">3 to 16 letters, numbers or _. Other racers see it.</span>
+    <span class="m-row" style="gap: 6px">
+      <sc-for list="{{ ideas }}" as="i" hint-placeholder-count="3">
+        <button type="button" onClick="{{ i.pick }}" class="m-btn m-btn--sec" style="min-height: 44px; padding: 0 12px; font-size: 12px; text-transform: none; background: {{ i.bg }}; color: {{ i.fg }}">{{ i.text }}</button>
+      </sc-for>
+    </span>
+    <span class="m-label">Home city · for city leaderboards</span>
+    <span class="m-row" style="gap: 6px">
+      <sc-for list="{{ cities }}" as="c" hint-placeholder-count="6">
+        <button type="button" onClick="{{ c.pick }}" class="m-btn" style="min-height: 44px; padding: 0 11px; font-size: 12px; background: {{ c.bg }}; color: {{ c.fg }}; box-shadow: {{ c.sh }}">{{ c.text }}</button>
+      </sc-for>
+    </span>
+    <span style="flex-grow: 1"></span>
+    <a class="m-btn m-btn--primary" href="AccountReady.dc.html" style="align-self: flex-end; min-width: 220px">Save my racer</a>
+  </div>
+
+  <div class="island"></div><div class="homebar"></div>
+</div></div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":872,"height":418}}'>
+class Component extends DCLogic {
+  constructor(props) { super(props); this.state = { name: 'TifeSpeed', look: 0, city: 'Lagos' }; }
+  renderVals() {
+    const s = this.state;
+    const looks = [
+      ['photo', 'var(--plate-700)'], ['A', 'var(--rank-sabi)'], ['K', 'var(--rank-odogwu)'],
+      ['Z', 'var(--rank-sharp-sharp)'], ['O', 'var(--lagoon)'], ['D', 'var(--rank-chairman)']
+    ];
+    const cur = looks[s.look];
+    return {
+      name: s.name,
+      bigClass: cur[0] === 'photo' ? 'photo-face' : '',
+      bigText: cur[0] === 'photo' ? 'T' : cur[0],
+      bigBg: cur[1],
+      looks: looks.map(([t, bg], i) => ({
+        text: t === 'photo' ? 'T' : t, bg, label: 'Look ' + (i + 1),
+        cls: t === 'photo' ? 'photo-face' : '',
+        ring: i === s.look ? '0 0 0 2px var(--outline), 0 0 0 4px var(--danfo)' : '0 0 0 2px var(--outline)',
+        pick: () => this.setState({ look: i })
+      })),
+      ideas: ['TifeSpeed', 'Tife_Eko', 'OgaTife'].map(t => ({
+        text: t, pick: () => this.setState({ name: t }),
+        bg: t === s.name ? 'var(--danfo)' : 'var(--plate-700)',
+        fg: t === s.name ? 'var(--on-danfo)' : 'var(--ink)'
+      })),
+      cities: ['Lagos', 'Abuja', 'Kano', 'PH', 'Ibadan', 'Other'].map(t => ({
+        text: t, pick: () => this.setState({ city: t }),
+        bg: t === s.city ? 'var(--danfo)' : 'var(--plate-700)',
+        fg: t === s.city ? 'var(--on-danfo)' : 'var(--ink)',
+        sh: t === s.city ? '0 3px 0 var(--danfo-deep)' : '0 3px 0 var(--outline)'
+      }))
+    };
+  }
+}
+</script>
+</body>
+</html>

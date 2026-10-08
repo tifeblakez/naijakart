@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Pick your driver</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="ds/naijakart/tokens.css">
+<link rel="stylesheet" href="ds/naijakart/components/bundle.css">
+<link rel="stylesheet" href="screens.css">
+<link rel="stylesheet" href="mobile.css">
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lilita+One&amp;family=Nunito:ital,wght@0,700;0,800;0,900;1,800;1,900&amp;display=swap">
+<style>body{margin:0}</style>
+</helmet>
+<div class="phone"><div class="screen">
+  <div class="layer scene-city"></div>
+  <div class="layer dim-full"></div>
+
+  <div class="m-sub">
+    <a class="m-icon-btn nk-glass" href="OnboardWelcome.dc.html" aria-label="Back"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"></path></svg></a>
+    <span class="m-tag" style="background: var(--danfo); color: var(--on-danfo)">Step 2 of 5</span>
+  </div>
+
+  <div class="m-col abs" style="left: 0; right: 0; top: 16px; align-items: center; gap: 2px">
+    <h1 class="d ol" style="font-size: 32px; line-height: 34px">Who dey drive?</h1>
+    <p class="m-body" style="color: var(--ink-muted)">Pick your driver. Looks only, every driver races the same.</p>
+  </div>
+
+  <div class="nk-glass m-col abs" style="left: var(--sl); top: 84px; bottom: var(--sb); width: 300px; padding: 12px; box-sizing: border-box; border-radius: 18px; align-items: center; justify-content: center; gap: 8px">
+    <span class="m-av {{ bigClass }}" role="img" aria-label="{{ bigName }}" style="width: 132px; height: 132px; font-size: 56px; background: {{ bigBg }}; box-shadow: 0 0 0 3px var(--outline), 0 0 0 7px var(--danfo), 0 0 30px 4px var(--danfo)">{{ bigText }}</span>
+    <span class="d ol" style="font-size: 24px; line-height: 26px">{{ bigName }}</span>
+    <span class="m-small" style="color: var(--ink-muted)">{{ bigLine }}</span>
+  </div>
+
+  <div class="m-col abs" style="left: 378px; right: var(--sr); top: 84px; bottom: var(--sb); gap: 10px">
+    <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px">
+      <sc-for list="{{ drivers }}" as="d" hint-placeholder-count="6">
+        <button type="button" onClick="{{ d.pick }}" class="nk-glass m-col" style="height: 86px; border: 0; border-radius: 14px; cursor: pointer; color: var(--ink); font-family: var(--font-text); align-items: center; justify-content: center; gap: 4px; box-shadow: {{ d.ring }}">
+          <span class="m-av {{ d.cls }}" style="width: 44px; height: 44px; font-size: 20px; background: {{ d.bg }}">{{ d.text }}</span>
+          <b style="font-size: 12px">{{ d.name }}</b>
+        </button>
+      </sc-for>
+    </div>
+    <span style="flex-grow: 1"></span>
+    <div class="m-row" style="justify-content: space-between">
+      <span class="m-col" style="gap: 0"><span class="m-label">Racing as</span><b style="font-size: 15px">Racer 4821</b><span class="m-small" style="color: var(--ink-muted)">Set your name when you save</span></span>
+      <a class="m-btn m-btn--primary" href="Onboarding.dc.html" style="min-width: 180px">Continue</a>
+    </div>
+  </div>
+
+  <div class="island"></div><div class="homebar"></div>
+</div></div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":872,"height":418}}'>
+class Component extends DCLogic {
+  constructor(props) { super(props); this.state = { i: 0 }; }
+  renderVals() {
+    const list = [
+      ['Tife', 'photo', 'var(--plate-700)', 'Eko boy, no dey brake'],
+      ['Amaka', 'A', 'var(--rank-sabi)', 'Corner queen from Enugu'],
+      ['Kunle', 'K', 'var(--rank-odogwu)', 'Danfo driver turned racer'],
+      ['Zainab', 'Z', 'var(--rank-sharp-sharp)', 'Calm head, fast hands'],
+      ['Obi', 'O', 'var(--lagoon)', 'Never misses a shortcut'],
+      ['Dami', 'D', 'var(--rank-chairman)', 'Owambe energy, full speed']
+    ];
+    const cur = list[this.state.i];
+    return {
+      bigName: cur[0], bigLine: cur[3], bigBg: cur[2],
+      bigClass: cur[1] === 'photo' ? 'photo-face' : '',
+      bigText: cur[1] === 'photo' ? 'T' : cur[1],
+      drivers: list.map(([name, t, bg], i) => ({
+        name, bg, text: t === 'photo' ? 'T' : t, cls: t === 'photo' ? 'photo-face' : '',
+        ring: i === this.state.i ? 'inset 0 0 0 3px var(--danfo), 0 4px 0 var(--danfo-deep)' : 'inset 0 1px 0 var(--glass-edge), inset 0 0 0 1px var(--glass-sheen)',
+        pick: () => this.setState({ i })
+      }))
+    };
+  }
+}
+</script>
+</body>
+</html>

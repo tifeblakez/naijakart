@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Save your progress</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="ds/naijakart/tokens.css">
+<link rel="stylesheet" href="ds/naijakart/components/bundle.css">
+<link rel="stylesheet" href="screens.css">
+<link rel="stylesheet" href="mobile.css">
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lilita+One&amp;family=Nunito:ital,wght@0,700;0,800;0,900;1,800;1,900&amp;display=swap">
+<style>body{margin:0}</style>
+</helmet>
+<div class="phone"><div class="screen">
+  <div class="layer scene-race"></div>
+  <div class="layer" style="background: linear-gradient(90deg, var(--scrim) 0%, var(--plate-glass) 60%, var(--scrim) 100%)"></div>
+
+  <div class="m-col abs" style="left: var(--sl); top: 22px; width: 420px; gap: 10px">
+    <span class="m-eyebrow" style="color: var(--danfo)">First race done · 4th of 8</span>
+    <h1 class="d ol-lg" style="font-size: 48px; line-height: 46px">Don't lose am!</h1>
+    <p class="m-body" style="max-width: 380px">Right now your progress lives only on this phone. Save it in under a minute.</p>
+    <div class="nk-glass m-col" style="padding: 10px 12px; border-radius: 14px; gap: 8px">
+      <span class="m-row" style="gap: 10px"><span class="m-coin m-coin--c" style="width: 28px; height: 28px; font-size: 15px">C</span><span class="m-col" style="gap: 0"><b style="font-size: 13px">Keep your Coins and karts</b><span class="m-small" style="color: var(--ink-muted)">Even if you change phone</span></span></span>
+      <span class="m-row" style="gap: 10px"><span class="m-av" style="width: 28px; height: 28px; font-size: 13px; background: var(--lagoon); color: var(--on-lagoon)">B</span><span class="m-col" style="gap: 0"><b style="font-size: 13px">Friends can bail you from LASTMA</b><span class="m-small" style="color: var(--ink-muted)">And you can bail them</span></span></span>
+      <span class="m-row" style="gap: 10px"><span class="m-av" style="width: 28px; height: 28px; font-size: 13px; background: var(--rank-jjc)">#</span><span class="m-col" style="gap: 0"><b style="font-size: 13px">Climb the Nigeria leaderboard</b><span class="m-small" style="color: var(--ink-muted)">Ranked unlocks after saving</span></span></span>
+    </div>
+    <span class="m-row" style="gap: 6px; flex-wrap: wrap">
+      <span class="m-chip nk-glass" style="color: var(--danfo)">+850 Coins</span>
+      <span class="m-chip nk-glass">Danfo kart</span>
+      <span class="m-chip nk-glass" style="color: var(--rank-jjc)">JJC rank</span>
+    </span>
+  </div>
+
+  <div class="nk-glass m-col abs" style="right: var(--sr); top: 22px; bottom: var(--sb); width: 320px; padding: 14px; box-sizing: border-box; border-radius: 18px; gap: 8px">
+    <span class="d ol-sm" style="font-size: 20px">Save with</span>
+    <a class="m-btn m-btn--primary" href="PhoneNumber.dc.html" style="width: 100%">Phone number</a>
+    <button type="button" class="m-btn m-btn--sec" style="width: 100%; min-height: 48px"><span class="m-av" style="width: 24px; height: 24px; font-size: 13px; background: var(--ink); color: var(--plate-900); box-shadow: none">G</span>Continue with Google</button>
+    <button type="button" class="m-btn m-btn--sec" style="width: 100%; min-height: 48px"><svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor" aria-hidden="true"><path d="M16.4 12.6c0-2.3 1.9-3.4 2-3.5-1.1-1.6-2.8-1.8-3.4-1.8-1.4-.1-2.8.9-3.5.9s-1.9-.9-3.1-.8C6.8 7.4 5.3 8.3 4.5 9.8c-1.7 2.9-.4 7.3 1.2 9.7.8 1.2 1.8 2.5 3 2.4 1.2 0 1.7-.8 3.1-.8s1.9.8 3.1.8c1.3 0 2.1-1.2 2.9-2.4.9-1.3 1.3-2.6 1.3-2.7-.1 0-2.7-1-2.7-4.2zM14.1 5.7c.7-.8 1.1-1.9 1-3-1 0-2.1.6-2.8 1.4-.6.7-1.2 1.8-1 2.9 1 .1 2.1-.5 2.8-1.3z"></path></svg>Continue with Apple</button>
+    <span style="flex-grow: 1"></span>
+    <a class="m-btn" href="Main.dc.html" style="width: 100%; background: transparent; color: var(--ink-muted)">Later, keep racing</a>
+    <span class="m-small" style="text-align: center; color: var(--ink-muted)">Have an account? <a href="PhoneNumber.dc.html" style="color: var(--danfo)">Sign in</a></span>
+  </div>
+
+  <div class="island"></div><div class="homebar"></div>
+</div></div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":872,"height":418}}'>
+class Component extends DCLogic {
+  renderVals() { return {}; }
+}
+</script>
+</body>
+</html>

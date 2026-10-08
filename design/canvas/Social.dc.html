@@ -1,0 +1,95 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Social</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="ds/naijakart/tokens.css">
+<link rel="stylesheet" href="ds/naijakart/components/bundle.css">
+<link rel="stylesheet" href="screens.css">
+<link rel="stylesheet" href="mobile.css">
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lilita+One&amp;family=Nunito:ital,wght@0,700;0,800;0,900;1,800;1,900&amp;display=swap">
+<style>body{margin:0}</style>
+</helmet>
+<div class="phone"><div class="screen">
+  <div class="layer scene-city"></div>
+  <div class="layer dim-full"></div>
+
+  <nav class="m-rail nk-glass" aria-label="Main">
+    <a href="Main.dc.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linejoin="round"><path d="M3 11l9-7 9 7v9a1 1 0 0 1-1 1h-5v-6h-6v6H4a1 1 0 0 1-1-1z"></path></svg>Home</a>
+    <a href="Garage.dc.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linejoin="round"><path d="M3 15l2-6h14l2 6v4H3z"></path><circle cx="7.5" cy="19" r="1.5"></circle><circle cx="16.5" cy="19" r="1.5"></circle></svg>Garage</a>
+    <a class="on" href="Social.dc.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><circle cx="9" cy="8" r="3.5"></circle><path d="M2.5 20c.8-3.5 3.4-5.5 6.5-5.5s5.7 2 6.5 5.5"></path><path d="M16 4.8a3.5 3.5 0 0 1 0 6.4M18.5 14.8c1.6.9 2.6 2.6 3 5.2"></path></svg>Social</a>
+    <a href="Profile.dc.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><circle cx="12" cy="8" r="4"></circle><path d="M4 21c1-4 4-6 8-6s7 2 8 6"></path></svg>Profile</a>
+  </nav>
+
+  <div class="m-top">
+    <div class="m-tabs nk-glass">
+      <button type="button" class="m-tab on">Friends 23</button>
+      <button type="button" class="m-tab">Requests 2</button>
+      <a class="m-tab" href="Rivalry.dc.html">Rivals</a>
+    </div>
+    <span style="flex-grow: 1"></span>
+    <div class="m-row nk-glass" style="gap: 5px; padding: 4px 4px 4px 12px; border-radius: 999px">
+      <span class="m-eyebrow">Party</span>
+      <span class="m-av photo-face" role="img" aria-label="You" style="width: 32px; height: 32px">T</span>
+      <span class="m-av" style="width: 32px; height: 32px; font-size: 14px; background: var(--rank-odogwu)">C</span>
+      <button type="button" class="m-av" aria-label="Invite to party" style="width: 36px; height: 36px; background: var(--plate-700); color: var(--ink); border: 2px dashed var(--ink-muted); box-shadow: none; font-size: 18px; cursor: pointer">+</button>
+    </div>
+  </div>
+
+  <div class="abs" style="left: 128px; top: 66px; width: 392px; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px">
+    <sc-for list="{{ friends }}" as="f" hint-placeholder-count="8">
+      <div class="nk-glass m-row" style="height: 54px; padding: 0 6px 0 8px; box-sizing: border-box; border-radius: 12px; gap: 6px">
+        <span class="m-av" style="width: 32px; height: 32px; font-size: 14px; background: {{ f.color }}">{{ f.initial }}</span>
+        <span class="m-col" style="gap: 0; flex-grow: 1; min-width: 0"><b class="d" style="font-size: 14px">{{ f.name }}</b><span class="m-small" style="color: {{ f.dot }}; white-space: nowrap; overflow: hidden; text-overflow: ellipsis">{{ f.sub }}</span></span>
+        <a class="m-btn {{ f.btnClass }} m-btn--sm" href="{{ f.href }}" style="padding: 0 8px">{{ f.action }}</a>
+      </div>
+    </sc-for>
+  </div>
+
+  <div class="m-col abs" style="left: 532px; right: var(--sr); top: 66px; gap: 8px">
+    <div class="nk-glass m-col" style="padding: 10px 12px; border-radius: 16px; gap: 6px; box-shadow: inset 0 0 0 2px var(--lagoon), inset 0 1px 0 var(--glass-edge)">
+      <span class="m-row"><span class="m-av" style="width: 32px; height: 32px; font-size: 14px; background: var(--rank-sharp-sharp)">M</span><span class="m-col" style="gap: 0"><b class="d" style="font-size: 15px">Musa dey LASTMA hand</b><span class="m-small" style="color: var(--ink-muted)">Bail am? Costs 150 of your Coins.</span></span></span>
+      <span class="m-row"><button type="button" class="m-btn m-btn--social m-btn--sm" style="flex-grow: 1">Bail am</button><button type="button" class="m-btn m-btn--sec m-btn--sm">Not now</button></span>
+      <span style="height: 4px; border-radius: 2px; background: var(--plate-700); overflow: hidden"><span style="display: block; width: 55%; height: 100%; background: var(--lagoon)"></span></span>
+    </div>
+    <div class="nk-glass m-col" style="padding: 10px 12px; border-radius: 16px; gap: 6px">
+      <span class="d ol-sm" style="font-size: 18px">Invite your people</span>
+      <button type="button" class="m-btn m-btn--social">Share on WhatsApp</button>
+      <span class="m-row" style="justify-content: space-between"><span class="m-col" style="gap: 0"><span class="m-eyebrow">Your code</span><span class="d" style="font-size: 17px; letter-spacing: 0.06em">TIFE-4K2</span></span><button type="button" class="m-btn m-btn--sec m-btn--sm">Copy</button></span>
+    </div>
+  </div>
+
+  <div class="island"></div><div class="homebar"></div>
+</div></div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":872,"height":418}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const list = [
+      ['Chuks', 'Online', 'var(--rank-odogwu)', 'on', 'Race'],
+      ['Bisi', 'Racing · lap 2', 'var(--rank-sabi)', 'racing', 'Watch'],
+      ['Musa', 'Online', 'var(--rank-sharp-sharp)', 'on', 'Race'],
+      ['Ngozi', 'Private Room', 'var(--rank-oga-patapata)', 'racing', 'Join'],
+      ['Femi', 'Online', 'var(--rank-no-dull)', 'on', 'Race'],
+      ['Hauwa', 'Seen 2h ago', 'var(--rank-chairman)', 'off', 'Ping'],
+      ['Kelechi', 'Seen yesterday', 'var(--rank-jjc)', 'off', 'Ping'],
+      ['Zainab', 'Seen 3 days ago', 'var(--rank-jjc)', 'off', 'Ping']
+    ];
+    return {
+      friends: list.map(([name, sub, color, st, action]) => ({
+        name, sub, color, action, initial: name[0],
+        dot: st === 'on' ? 'var(--lagoon)' : st === 'racing' ? 'var(--danfo)' : 'var(--ink-muted)',
+        btnClass: action === 'Race' ? 'm-btn--social' : 'm-btn--sec',
+        href: action === 'Race' ? 'Rivalry.dc.html' : 'Social.dc.html'
+      }))
+    };
+  }
+}
+</script>
+</body>
+</html>

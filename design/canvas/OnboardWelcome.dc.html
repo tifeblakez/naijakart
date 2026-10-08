@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Welcome</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="ds/naijakart/tokens.css">
+<link rel="stylesheet" href="ds/naijakart/components/bundle.css">
+<link rel="stylesheet" href="screens.css">
+<link rel="stylesheet" href="mobile.css">
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lilita+One&amp;family=Nunito:ital,wght@0,700;0,800;0,900;1,800;1,900&amp;display=swap">
+<style>body{margin:0}</style>
+</helmet>
+<div class="phone"><div class="screen">
+  <div class="layer scene-race"></div>
+  <div class="layer" style="background: linear-gradient(180deg, var(--scrim) 0%, transparent 38%, transparent 55%, var(--scrim) 100%)"></div>
+
+  <span class="m-tag abs" style="left: var(--sl); top: 18px; background: var(--danfo); color: var(--on-danfo)">Step 1 of 5</span>
+
+  <div class="m-col abs" style="left: 0; right: 0; top: 22px; align-items: center; gap: 0">
+    <span class="d ol-lg" style="font-size: 64px; line-height: 60px; color: var(--danfo)">Naija Kart</span>
+    <span class="d ol" style="font-size: 20px; line-height: 22px">Race your guys through Lagos traffic</span>
+  </div>
+
+  <div class="m-col abs" style="left: var(--sl); bottom: var(--sb); gap: 6px">
+    <span class="m-row m-small nk-glass" style="gap: 6px; padding: 6px 10px; border-radius: 10px"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="var(--success)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5 9-10"></path></svg>First track is already on your phone. No download to start.</span>
+    <span class="m-small" style="padding-left: 2px">Have an account? <a href="PhoneNumber.dc.html" style="color: var(--danfo)">Sign in</a></span>
+  </div>
+
+  <div class="m-col abs" style="right: var(--sr); bottom: var(--sb); align-items: flex-end; gap: 6px">
+    <a class="m-btn m-btn--primary m-btn--xl" href="OnboardDriver.dc.html" style="min-width: 260px">Start racing</a>
+    <span class="m-small ol-sm">No sign-up. Play first, save later.</span>
+  </div>
+
+  <div class="island"></div><div class="homebar"></div>
+</div></div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":872,"height":418}}'>
+class Component extends DCLogic {
+  renderVals() { return {}; }
+}
+</script>
+</body>
+</html>

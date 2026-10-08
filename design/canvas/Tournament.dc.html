@@ -1,0 +1,88 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Lagos Championship</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="ds/naijakart/tokens.css">
+<link rel="stylesheet" href="ds/naijakart/components/bundle.css">
+<link rel="stylesheet" href="screens.css">
+<link rel="stylesheet" href="mobile.css">
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lilita+One&amp;family=Nunito:ital,wght@0,700;0,800;0,900;1,800;1,900&amp;display=swap">
+<style>body{margin:0}</style>
+</helmet>
+<div class="phone"><div class="screen">
+  <div class="layer scene-city"></div>
+  <div class="layer dim-full"></div>
+
+  <div class="m-sub">
+    <a class="m-icon-btn nk-glass" href="ModeSelect.dc.html" aria-label="Back"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"></path></svg></a>
+    <span class="m-col" style="gap: 0"><span class="m-eyebrow" style="color: var(--danfo)">Tournament · 32 racers</span><h1 class="d ol" style="font-size: 24px; line-height: 26px">Lagos Championship</h1></span>
+  </div>
+
+  <div class="abs" style="left: var(--sl); right: var(--sr); top: 64px; display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 6px">
+    <sc-for list="{{ rounds }}" as="r" hint-placeholder-count="5">
+      <div class="nk-glass m-col" style="gap: 0; padding: 5px 10px; border-radius: 10px; box-shadow: {{ r.ring }}">
+        <span class="d ol-sm" style="font-size: 15px; color: {{ r.labelColor }}">{{ r.label }}</span>
+        <span class="m-small" style="color: {{ r.stateColor }}">{{ r.state }}</span>
+      </div>
+    </sc-for>
+  </div>
+
+  <div class="nk-glass m-col abs" style="left: var(--sl); top: 116px; width: 440px; padding: 8px; box-sizing: border-box; border-radius: 14px; gap: 3px">
+    <span class="m-row" style="justify-content: space-between; padding: 0 6px 2px"><span class="m-eyebrow">Round 3 · top 8 advance</span><span class="m-small" style="color: var(--ink-muted)">Race 3 of 3 next</span></span>
+    <sc-for list="{{ table }}" as="t" hint-placeholder-count="7">
+      <div class="m-row" style="height: 27px; padding: 0 10px; border-radius: 6px; gap: 8px; background: {{ t.bg }}; color: {{ t.fg }}; box-shadow: {{ t.line }}">
+        <span class="d" style="width: 18px; font-size: 14px; text-align: right">{{ t.pos }}</span>
+        <b style="flex-grow: 1; font-size: 13px; font-style: italic">{{ t.name }}</b>
+        <span class="m-small">{{ t.note }}</span>
+        <span class="d" style="width: 48px; text-align: right; font-size: 14px">{{ t.pts }} pts</span>
+      </div>
+    </sc-for>
+  </div>
+
+  <div class="m-col abs" style="left: 510px; right: var(--sr); top: 116px; gap: 8px">
+    <div class="nk-glass m-col" style="padding: 8px 12px; border-radius: 14px; gap: 3px">
+      <span class="m-eyebrow">Rewards · looks only</span>
+      <span class="m-row m-small" style="justify-content: space-between"><span>Champion</span><span style="color: var(--danfo)">Gold crown banner</span></span>
+      <span class="m-row m-small" style="justify-content: space-between"><span>Top 8</span><span>Lagos Finalist badge</span></span>
+      <span class="m-row m-small" style="justify-content: space-between"><span>Everyone</span><span>Coins every race</span></span>
+    </div>
+    <div class="nk-glass m-col" style="padding: 6px 12px; border-radius: 14px; gap: 0; align-items: center">
+      <span class="m-eyebrow">Next · Lekki Toll Dash</span>
+      <span class="d ol" style="font-size: 32px; line-height: 34px; color: var(--danfo)">04:32</span>
+    </div>
+  </div>
+  <a class="m-btn m-btn--primary abs" href="Lobby.dc.html" style="left: 510px; right: var(--sr); bottom: var(--sb)">Enter race</a>
+
+  <div class="island"></div><div class="homebar"></div>
+</div></div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":872,"height":418}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const rounds = [['Round 1', 'Advanced'], ['Round 2', 'Advanced'], ['Round 3', 'Now'], ['Semi', 'Sat 7pm'], ['Final', 'Sun 8pm']];
+    const table = [[1, 'Abdul K', 46, ''], [2, 'Ngozi', 44, ''], [3, 'Tife (you)', 41, 'You'], [4, 'Lola Speed', 39, ''], [7, 'Hauwa', 31, ''], [8, 'Kayode', 30, 'Cut line'], [9, 'Bisi', 28, '2 behind']];
+    return {
+      rounds: rounds.map(([label, state], i) => ({
+        label, state,
+        ring: i === 2 ? 'inset 0 0 0 2px var(--danfo), 0 3px 0 var(--danfo-deep)' : 'inset 0 1px 0 var(--glass-edge)',
+        labelColor: i === 2 ? 'var(--danfo)' : 'var(--ink)',
+        stateColor: i < 2 ? 'var(--success)' : i === 2 ? 'var(--danfo)' : 'var(--ink-muted)'
+      })),
+      table: table.map(([pos, name, pts, note]) => ({
+        pos, name, pts, note,
+        bg: note === 'You' ? 'var(--danfo)' : 'var(--plate-glass-solid)',
+        fg: note === 'You' ? 'var(--on-danfo)' : 'var(--ink)',
+        line: pos === 8 ? 'inset 0 -3px 0 var(--success)' : 'none'
+      }))
+    };
+  }
+}
+</script>
+</body>
+</html>

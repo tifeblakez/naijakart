@@ -1,0 +1,86 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Race results</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="ds/naijakart/tokens.css">
+<link rel="stylesheet" href="ds/naijakart/components/bundle.css">
+<link rel="stylesheet" href="screens.css">
+<link rel="stylesheet" href="mobile.css">
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lilita+One&amp;family=Nunito:ital,wght@0,700;0,800;0,900;1,800;1,900&amp;display=swap">
+<style>body{margin:0}</style>
+</helmet>
+<div class="phone"><div class="screen">
+  <div class="layer scene-race"></div>
+  <div class="layer" style="background: linear-gradient(90deg, var(--scrim) 0%, var(--plate-glass) 55%, var(--scrim) 100%)"></div>
+
+  <div class="m-col abs" style="left: var(--sl); top: 12px; width: 420px; gap: 8px">
+    <span class="m-eyebrow" style="color: var(--danfo)">Third Mainland Rush · Quick Race</span>
+    <span class="m-row" style="gap: 12px; align-items: flex-end">
+      <span class="d ol-lg" style="font-size: 76px; line-height: 68px; color: var(--danfo)">1ST</span>
+      <span class="m-col" style="gap: 0; padding-bottom: 6px"><span class="d ol" style="font-size: 26px; line-height: 26px">You win am!</span><span class="d ol-sm" style="font-size: 17px">3:21.44</span></span>
+    </span>
+    <div class="m-row" style="gap: 6px">
+      <span class="nk-glass m-col" style="gap: 0; padding: 6px 12px; border-radius: 12px"><span class="d ol-sm" style="font-size: 22px; color: var(--boost)">+420</span><span class="m-small" style="color: var(--ink-muted)">XP</span></span>
+      <span class="nk-glass m-col" style="gap: 0; padding: 6px 12px; border-radius: 12px"><span class="d ol-sm" style="font-size: 22px; color: var(--danfo)">+850</span><span class="m-small" style="color: var(--ink-muted)">COINS</span></span>
+      <span class="nk-glass m-col" style="gap: 4px; padding: 6px 12px; border-radius: 12px; flex-grow: 1">
+        <span class="m-row" style="justify-content: space-between"><span class="m-small" style="color: var(--rank-chairman)">CHAIRMAN II</span><span class="d ol-sm" style="font-size: 17px; color: var(--success)">+24 RP</span></span>
+        <span class="m-track"><span class="m-fill" style="display: block; width: 88%"></span></span>
+        <span class="m-small" style="color: var(--ink-muted)">12 RP to Chairman I</span>
+      </span>
+    </div>
+    <div class="nk-glass m-card" style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px 14px; padding: 10px 12px">
+      <p class="m-eyebrow" style="grid-column: 1 / -1; color: var(--danfo)">Your wahala</p>
+      <span class="m-row" style="gap: 6px"><span class="d ol-sm" style="font-size: 18px; color: var(--success)">x2</span><b style="font-size: 13px">LASTMA escaped</b></span>
+      <span class="m-row" style="gap: 6px"><span class="d ol-sm" style="font-size: 18px; color: var(--boost)">x18</span><b style="font-size: 13px">Overtakes</b></span>
+      <span class="m-row" style="gap: 6px"><span class="d ol-sm" style="font-size: 18px; color: var(--drift-3)">x4</span><b style="font-size: 13px">Perfect drifts</b></span>
+      <span class="m-row" style="gap: 6px"><span class="d ol-sm" style="font-size: 18px; color: var(--danfo)">4th-1st</span><b style="font-size: 13px">Last lap</b></span>
+    </div>
+  </div>
+
+  <div class="nk-glass m-col abs" style="right: var(--sr); top: 12px; width: 280px; padding: 8px; border-radius: 14px; gap: 3px">
+    <sc-for list="{{ rows }}" as="r" hint-placeholder-count="8">
+      <div class="m-row" style="height: 26px; padding: 0 8px; border-radius: 6px; gap: 6px; background: {{ r.bg }}; color: {{ r.fg }}">
+        <span class="d" style="width: 14px; font-size: 14px; text-align: center">{{ r.pos }}</span>
+        <span class="m-av" style="width: 18px; height: 18px; font-size: 10px; background: {{ r.face }}; box-shadow: none">{{ r.initial }}</span>
+        <b style="flex-grow: 1; font-size: 12px; font-style: italic">{{ r.name }}</b>
+        <span style="font-size: 11px; font-weight: 900">{{ r.tag }}</span>
+        <span class="d" style="font-size: 13px">{{ r.time }}</span>
+      </div>
+    </sc-for>
+  </div>
+
+  <div class="m-row abs" style="right: var(--sr); bottom: var(--sb); gap: 8px">
+    <a class="m-btn m-btn--sec" href="Main.dc.html">Home</a>
+    <a class="m-btn m-btn--sec" href="Rivalry.dc.html">Rivals</a>
+    <a class="m-btn m-btn--primary" href="Lobby.dc.html" style="min-width: 160px">Run am back</a>
+  </div>
+
+  <div class="island"></div><div class="homebar"></div>
+</div></div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":872,"height":418}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const list = [
+      ['You', '3:21.44', 'var(--danfo)', ''], ['Amaka', '3:22.07', 'var(--rank-sabi)', ''], ['Tunde', '3:23.90', 'var(--rank-odogwu)', 'Bailed you'],
+      ['Musa', '3:25.12', 'var(--rank-sharp-sharp)', ''], ['Damilola', '3:26.48', 'var(--rank-oga-patapata)', ''], ['Kunle', '3:28.33', 'var(--rank-jjc)', 'AI'],
+      ['Ada', '3:30.01', 'var(--rank-jjc)', 'AI'], ['Sani', '3:31.76', 'var(--rank-jjc)', 'AI']
+    ];
+    return {
+      rows: list.map(([name, time, face, tag], i) => ({
+        pos: i + 1, name, time, face, tag, initial: name[0],
+        bg: name === 'You' ? 'var(--danfo)' : 'var(--plate-glass-solid)',
+        fg: name === 'You' ? 'var(--on-danfo)' : 'var(--ink)'
+      }))
+    };
+  }
+}
+</script>
+</body>
+</html>

@@ -26,6 +26,7 @@ namespace NaijaKart.Core.Config
         public ProgressionConfig progression = new ProgressionConfig();
         public AccountsConfig accounts = new AccountsConfig();
         public RankedConfig ranked = new RankedConfig();
+        public SocialConfig social = new SocialConfig();
         public AntiCheatConfig antiCheat = new AntiCheatConfig();
         public LiveEventsConfig liveEvents = new LiveEventsConfig();
     }
@@ -35,6 +36,19 @@ namespace NaijaKart.Core.Config
     /// by UTC weekday (0 = Sunday … 6 = Saturday). Missing weekday = normal rules. Replaceable by a
     /// live-ops feed later; the shape is the contract.
     /// </summary>
+    /// <summary>Rooms, invites and sharing (design screens 03.2, 03.3, 16).</summary>
+    [Serializable]
+    public sealed class SocialConfig
+    {
+        /// <summary>Room links open the game or the store: shareLinkBase + room code.</summary>
+        public string shareLinkBase = "https://naijakart.ng/r/";
+        /// <summary>Room codes look like EKO-427: letters, dash, digits.</summary>
+        public int roomCodeLetters = 3;
+        public int roomCodeDigits = 3;
+        /// <summary>LASTMA "Madness" option in private rooms multiplies the patrol interval.</summary>
+        public float lastmaMadnessIntervalMultiplier = 0.5f;
+    }
+
     /// <summary>Guest-first accounts: phone/social claim, racer names, referrals (design screens 21–25, ADR-0009).</summary>
     [Serializable]
     public sealed class AccountsConfig
@@ -236,6 +250,10 @@ namespace NaijaKart.Core.Config
         public float maxRaceDurationSeconds = 420f;
         /// <summary>Seconds a disconnected player may reconnect before being marked DNF.</summary>
         public float reconnectWindowSeconds = 20f;
+        /// <summary>While a racer is disconnected an AI stand-in drives their kart ("AI driving · holding your place").</summary>
+        public bool aiStandInWhileDisconnected = true;
+        /// <summary>How many reconnect tries the client makes inside the window (shown as "try 2 of 5").</summary>
+        public int reconnectAttempts = 5;
         /// <summary>Grid spacing between start positions (metres) along and across the track.</summary>
         public float gridRowSpacing = 4f;
         public float gridColumnSpacing = 2.5f;

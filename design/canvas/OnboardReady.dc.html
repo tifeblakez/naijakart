@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Ready to race</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="ds/naijakart/tokens.css">
+<link rel="stylesheet" href="ds/naijakart/components/bundle.css">
+<link rel="stylesheet" href="screens.css">
+<link rel="stylesheet" href="mobile.css">
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lilita+One&amp;family=Nunito:ital,wght@0,700;0,800;0,900;1,800;1,900&amp;display=swap">
+<style>body{margin:0}</style>
+</helmet>
+<div class="phone"><div class="screen">
+  <div class="layer scene-city"></div>
+  <div class="layer dim-full"></div>
+
+  <div class="m-sub">
+    <a class="m-icon-btn nk-glass" href="OnboardPractice.dc.html" aria-label="Back"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"></path></svg></a>
+    <span class="m-tag" style="background: var(--danfo); color: var(--on-danfo)">Step 5 of 5</span>
+  </div>
+
+  <div class="m-col abs" style="left: var(--sl); top: 70px; width: 400px; gap: 10px">
+    <h1 class="d ol-lg" style="font-size: 44px; line-height: 44px">You don ready!</h1>
+    <p class="m-body" style="color: var(--ink-muted)">Your first race: Quick Race on Third Mainland Rush, 3 laps, 8 racers.</p>
+    <div class="nk-glass m-col" style="padding: 8px 12px; border-radius: 14px; gap: 2px">
+      <span class="m-row" style="min-height: 44px; justify-content: space-between"><span class="m-col" style="gap: 0"><span class="m-label">Controls</span><b style="font-size: 14px">Tilt</b></span><a class="m-btn m-btn--sec m-btn--sm" href="Onboarding.dc.html" style="min-height: 44px">Change</a></span>
+      <span class="m-row" style="min-height: 44px; justify-content: space-between"><span class="m-col" style="gap: 0"><span class="m-label">Graphics</span><b style="font-size: 14px">Medium · picked for your phone</b></span><a class="m-btn m-btn--sec m-btn--sm" href="Settings.dc.html" style="min-height: 44px">Change</a></span>
+    </div>
+  </div>
+
+  <div class="m-col abs" style="right: var(--sr); top: 70px; bottom: var(--sb); width: 320px; gap: 10px">
+    <div class="nk-glass m-col" style="padding: 10px 12px; border-radius: 14px; gap: 6px">
+      <span class="m-label">Data</span>
+      <span class="m-small">One race uses about [measured] MB.</span>
+      <button type="button" onClick="{{ flip }}" aria-pressed="{{ lowOn }}" class="m-row" style="min-height: 44px; border: 0; padding: 0; background: transparent; color: var(--ink); text-align: left; cursor: pointer; gap: 10px">
+        <span class="m-col" style="gap: 0; flex-grow: 1"><b style="font-size: 13px">Low Data Mode</b><span class="m-small" style="color: var(--ink-muted)">Uses less data, same race</span></span>
+        <span style="width: 48px; height: 28px; flex: none; border-radius: 999px; position: relative; background: {{ track }}; box-shadow: 0 0 0 1.5px var(--outline)"><span style="position: absolute; top: 3px; left: {{ knob }}; width: 22px; height: 22px; border-radius: 50%; background: var(--ink); box-shadow: 0 2px 0 var(--outline)"></span></span>
+      </button>
+    </div>
+    <span class="m-row m-small" style="gap: 6px; color: var(--ink-muted)"><span class="m-tag" style="height: 18px">AI</span>Some racers may be AI. They always show this tag.</span>
+    <span style="flex-grow: 1"></span>
+    <a class="m-btn m-btn--primary m-btn--xl" href="Matchmaking.dc.html">Race now</a>
+  </div>
+
+  <div class="island"></div><div class="homebar"></div>
+</div></div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":872,"height":418}}'>
+class Component extends DCLogic {
+  constructor(props) { super(props); this.state = { low: false }; }
+  renderVals() {
+    const on = this.state.low;
+    return {
+      flip: () => this.setState({ low: !on }),
+      lowOn: on ? 'true' : 'false',
+      track: on ? 'var(--lagoon)' : 'var(--plate-700)',
+      knob: on ? '23px' : '3px'
+    };
+  }
+}
+</script>
+</body>
+</html>

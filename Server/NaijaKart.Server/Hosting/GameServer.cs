@@ -156,20 +156,28 @@ namespace NaijaKart.Server.Hosting
                     if (s.Room != null) { SendError(s.PlayerId, "Already in a room"); break; }
                     string trackId = Content.GetTrack(msg.TrackId) != null ? msg.TrackId : Content.TrackIds[0];
                     var room = CreateRoom(msg.Mode == RaceMode.Practice ? RaceMode.Practice : RaceMode.PrivateRoom, trackId, msg.Laps, s.PlayerId);
-                    room.Configure(trackId, msg.Laps, msg.ItemsEnabled, msg.LastmaEnabled);
+                    room.Configure(trackId, msg.Laps, msg.ItemsMode ?? (msg.ItemsEnabled ? "On" : "Off"), msg.LastmaMode ?? (msg.LastmaEnabled ? "On" : "Off"), msg.FillWithAi);
                     JoinRoom(s, room, msg.VehicleId, msg.CharacterId);
                     break;
                 }
                 case ClientMessageKind.JoinRoom:
                 {
                     if (s.Room != null) { SendError(s.PlayerId, "Already in a room"); break; }
-                    if (msg.RoomCode == null || !_rooms.TryGetValue(msg.RoomCode.ToUpperInvariant(), out var room)) { SendError(s.PlayerId, "Room not found"); break; }
+                    if (msg.RoomCode == null || !_rooms.TryGetValue(NormalizeRoomCode(msg.RoomCode), out var room)) { SendError(s.PlayerId, "Room not found"); break; }
                     if (!JoinRoom(s, room, msg.VehicleId, msg.CharacterId)) SendError(s.PlayerId, "Room is full or already racing");
                     break;
                 }
                 case ClientMessageKind.LeaveRoom:
                     LeaveRoom(s);
                     break;
+                case ClientMessageKind.InviteFriend:
+                {
+                    if (s.Room == null) { SendError(s.PlayerId, "Not in a room"); break; }
+                    if (string.IsNullOrWhiteSpace(msg.TargetPlayerId) || msg.TargetPlayerId == s.PlayerId) { SendError(s.PlayerId, "Invalid friend id"); break; }
+                    s.Room.Invite(msg.TargetPlayerId);
+                    SendTo(msg.TargetPlayerId, new ServerEnvelope { Kind = ServerMessageKind.RoomInvite, Room = s.Room.ToDto(), PlayerId = s.PlayerId, Text = s.DisplayName });
+                    break;
+                }
                 case ClientMessageKind.AddFriend:
                     HandleAddFriend(s, msg.TargetPlayerId);
                     break;
@@ -322,11 +330,29 @@ namespace NaijaKart.Server.Hosting
             if (_byPlayer.TryGetValue(playerId, out var s)) s.Room = null;
         }
 
+        private float _queueStatusTimer;
+
         private void TickMatchmaking()
         {
             if (_queue.Count == 0) return;
             var rules = Content.Game.raceRules;
             int max = Content.Game.simulation.maxPlayersPerRace;
+            // "Finding racers... 5 / 8 · AI racers join in 0:10" (design 04): one status a second to everyone queued.
+            _queueStatusTimer -= _dt;
+            if (_queueStatusTimer <= 0f)
+            {
+                _queueStatusTimer = 1f;
+                foreach (RaceMode mode in new[] { RaceMode.QuickRace, RaceMode.Ranked })
+                {
+                    int found = 0; float oldestAt = float.MaxValue;
+                    foreach (var s in _queue) if (s.QueuedMode == mode) { found++; if (s.QueuedAt < oldestAt) oldestAt = s.QueuedAt; }
+                    if (found == 0) continue;
+                    int toAi = (int)Math.Ceiling(Math.Max(0f, rules.matchmakingWaitSeconds - (_now - oldestAt)));
+                    foreach (var s in _queue)
+                        if (s.QueuedMode == mode && s.ConnectionId != null)
+                            _transport.Send(s.ConnectionId, new ServerEnvelope { Kind = ServerMessageKind.QueueStatus, Text = "searching", Tick = found, QueueFound = found, QueueMax = max, QueueSecondsToAi = toAi });
+                }
+            }
             foreach (RaceMode mode in new[] { RaceMode.QuickRace, RaceMode.Ranked })
             {
                 var group = new List<Session>();
@@ -353,12 +379,27 @@ namespace NaijaKart.Server.Hosting
             }
         }
 
+        /// <summary>Room codes read like "EKO-427" (design 03.2): letters, dash, digits; easy to say over WhatsApp.</summary>
         private string NewRoomCode()
         {
-            const string alphabet = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
-            var chars = new char[5];
-            for (int i = 0; i < chars.Length; i++) chars[i] = alphabet[_codeRng.Range(0, alphabet.Length)];
-            return new string(chars);
+            const string letters = "ABCDEFGHJKLMNPQRSTUVWXYZ";
+            var cfg = Content.Game.social;
+            var sb = new System.Text.StringBuilder();
+            for (int i = 0; i < Math.Max(1, cfg.roomCodeLetters); i++) sb.Append(letters[_codeRng.Range(0, letters.Length)]);
+            sb.Append('-');
+            for (int i = 0; i < Math.Max(1, cfg.roomCodeDigits); i++) sb.Append((char)('0' + _codeRng.Range(0, 10)));
+            return sb.ToString();
+        }
+
+        /// <summary>Accepts "eko427", "EKO 427", "eko-427" and the share link.</summary>
+        public string NormalizeRoomCode(string raw)
+        {
+            if (raw == null) return "";
+            int slash = raw.LastIndexOf('/');
+            if (slash >= 0) raw = raw.Substring(slash + 1);
+            var letters = new System.Text.StringBuilder(); var digits = new System.Text.StringBuilder();
+            foreach (char ch in raw.ToUpperInvariant()) { if (char.IsLetter(ch)) letters.Append(ch); else if (char.IsDigit(ch)) digits.Append(ch); }
+            return letters.Length > 0 && digits.Length > 0 ? letters + "-" + digits : raw.ToUpperInvariant().Trim();
         }
 
         // ---- helpers used by rooms ----

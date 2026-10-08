@@ -1,0 +1,89 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Shop</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="ds/naijakart/tokens.css">
+<link rel="stylesheet" href="ds/naijakart/components/bundle.css">
+<link rel="stylesheet" href="screens.css">
+<link rel="stylesheet" href="mobile.css">
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lilita+One&amp;family=Nunito:ital,wght@0,700;0,800;0,900;1,800;1,900&amp;display=swap">
+<style>body{margin:0}</style>
+</helmet>
+<div class="phone"><div class="screen">
+  <div class="layer scene-city"></div>
+  <div class="layer dim-full"></div>
+
+  <div class="m-sub">
+    <a class="m-icon-btn nk-glass" href="Main.dc.html" aria-label="Back"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"></path></svg></a>
+    <h1 class="d ol" style="font-size: 26px; line-height: 28px">Shop</h1>
+    <span class="m-chip nk-glass">Looks only. Nothing here makes you faster.</span>
+    <span style="flex-grow: 1"></span>
+    <span class="m-cur nk-glass"><span class="m-coin m-coin--c">C</span>12,480</span>
+    <span class="m-cur nk-glass"><span class="m-coin m-coin--p">P</span>350</span>
+  </div>
+
+  <div class="m-tabs nk-glass abs" style="left: var(--sl); top: 62px">
+    <sc-for list="{{ cats }}" as="c" hint-placeholder-count="6">
+      <button type="button" onClick="{{ c.pick }}" class="m-tab" style="background: {{ c.bg }}; color: {{ c.fg }}">{{ c.name }}</button>
+    </sc-for>
+  </div>
+
+  <div class="nk-glass m-col abs" style="left: var(--sl); top: 112px; bottom: var(--sb); width: 344px; border-radius: 16px; overflow: hidden; gap: 0">
+    <div class="photo-danfo" role="img" aria-label="Molue Danfo skin preview" style="height: 124px; flex: none"></div>
+    <div class="m-col" style="padding: 8px 12px; gap: 4px">
+      <span class="m-row" style="justify-content: space-between"><span class="d ol-sm" style="font-size: 20px; line-height: 22px">Molue Danfo skin</span><span class="m-tag" style="color: var(--rank-oga-patapata)">3 days left</span></span>
+      <span class="m-small" style="color: var(--ink-muted)">Old-school Lagos molue livery, chrome bumpers</span>
+      <span class="m-row" style="gap: 6px; margin-top: 2px">
+        <button type="button" class="m-btn m-btn--sec m-btn--sm" style="min-height: 44px">Try on</button>
+        <button type="button" class="m-btn m-btn--primary" style="flex-grow: 1; min-height: 44px; font-size: 18px">600 P · ₦[price]</button>
+      </span>
+    </div>
+  </div>
+
+  <div class="abs" style="left: 414px; right: var(--sr); top: 112px; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px">
+    <sc-for list="{{ items }}" as="it" hint-placeholder-count="6">
+      <div class="nk-glass m-row" style="height: 80px; box-sizing: border-box; padding: 8px; border-radius: 12px; gap: 8px">
+        <span style="width: 56px; height: 56px; flex: none; border-radius: 10px; display: grid; place-items: center; background: {{ it.swatch }}; box-shadow: 0 0 0 1.5px var(--outline)"><span class="d" style="font-size: 12px; color: {{ it.swatchInk }}">{{ it.kind }}</span></span>
+        <span class="m-col" style="gap: 2px; min-width: 0">
+          <b style="font-size: 12px; line-height: 15px">{{ it.name }}</b>
+          <span class="m-row" style="gap: 4px"><span class="m-coin {{ it.coinClass }}" style="width: 18px; height: 18px; font-size: 10px">{{ it.coin }}</span><b class="d" style="font-size: 14px">{{ it.price }}</b></span>
+          <span class="m-small" style="color: {{ it.stateColor }}">{{ it.state }}</span>
+        </span>
+      </div>
+    </sc-for>
+  </div>
+
+  <div class="island"></div><div class="homebar"></div>
+</div></div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":872,"height":418}}'>
+class Component extends DCLogic {
+  constructor(props) { super(props); this.state = { cat: 'Featured' }; }
+  renderVals() {
+    const cats = ['Featured', 'Kart skins', 'Outfits', 'Trails', 'Emotes', 'Pass'];
+    const items = [
+      ['Trail', 'Jollof smoke trail', 'var(--enforcer)', 'var(--on-enforcer)', 'P', '250', 'New', 'var(--danfo)'],
+      ['Outfit', 'Owambe agbada', 'var(--rank-chairman)', 'var(--on-rank)', 'P', '400', '', ''],
+      ['Horn', 'Agbero whistle', 'var(--item-attack)', 'var(--ink)', 'C', '1,500', 'Coins', 'var(--ink-muted)'],
+      ['Emote', 'Shaku shaku', 'var(--lagoon)', 'var(--on-lagoon)', 'P', '150', '', ''],
+      ['Wheels', 'Chrome okada rims', 'var(--plate-600)', 'var(--ink)', 'C', '2,000', 'Coins', 'var(--ink-muted)'],
+      ['Banner', 'Eko for show', 'var(--drift-3)', 'var(--ink)', 'P', '200', 'Owned', 'var(--success)']
+    ];
+    return {
+      cats: cats.map(n => ({ name: n, pick: () => this.setState({ cat: n }), bg: n === this.state.cat ? 'var(--danfo)' : 'transparent', fg: n === this.state.cat ? 'var(--on-danfo)' : 'var(--ink-muted)' })),
+      items: items.map(([kind, name, swatch, swatchInk, coin, price, state, stateColor]) => ({
+        kind, name, swatch, swatchInk, coin, price, state, stateColor,
+        coinClass: coin === 'C' ? 'm-coin--c' : 'm-coin--p'
+      }))
+    };
+  }
+}
+</script>
+</body>
+</html>

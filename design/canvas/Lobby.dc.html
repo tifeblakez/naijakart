@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Race lobby</title>
+<script src="./support.js"></script>
+<link rel="stylesheet" href="ds/naijakart/tokens.css">
+<link rel="stylesheet" href="ds/naijakart/components/bundle.css">
+<link rel="stylesheet" href="screens.css">
+<link rel="stylesheet" href="mobile.css">
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lilita+One&amp;family=Nunito:ital,wght@0,700;0,800;0,900;1,800;1,900&amp;display=swap">
+<style>body{margin:0}</style>
+</helmet>
+<div class="phone"><div class="screen">
+  <div class="layer scene-race"></div>
+
+  <div class="m-sub">
+    <a class="m-icon-btn nk-glass" href="Main.dc.html" aria-label="Leave lobby"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"></path></svg></a>
+    <div class="nk-glass m-col" style="gap: 0; padding: 4px 12px; border-radius: 12px">
+      <span class="m-eyebrow">Quick Race · 3 laps</span>
+      <span class="d ol-sm" style="font-size: 18px; line-height: 20px">Third Mainland Rush</span>
+    </div>
+    <span style="flex-grow: 1"></span>
+    <div class="nk-glass m-col" style="gap: 0; padding: 4px 12px; border-radius: 12px; align-items: flex-end">
+      <span class="m-eyebrow">Starts in</span>
+      <span class="d ol" style="font-size: 24px; line-height: 24px; color: var(--danfo)">0:08</span>
+    </div>
+  </div>
+
+  <div class="m-col abs" style="right: var(--sr); top: 64px; gap: 6px">
+    <button type="button" class="m-icon-btn nk-glass" aria-label="Honk"><svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="3" stroke-linejoin="round"><path d="M5 13v6h5l9 6V7l-9 6z"></path><path d="M24 11c1.5 1.4 2 3 2 5s-.5 3.6-2 5" stroke-linecap="round"></path></svg></button>
+    <button type="button" class="m-icon-btn nk-glass" aria-label="Emote"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><circle cx="12" cy="12" r="9"></circle><path d="M8 14c1 1.5 2.4 2.3 4 2.3s3-.8 4-2.3M9 9.5h.01M15 9.5h.01"></path></svg></button>
+    <a class="m-icon-btn nk-glass" href="Garage.dc.html" aria-label="Change kart"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linejoin="round"><path d="M3 15l2-6h14l2 6v4H3z"></path><circle cx="7.5" cy="19" r="1.5"></circle><circle cx="16.5" cy="19" r="1.5"></circle></svg></a>
+  </div>
+
+  <div class="abs" style="left: var(--sl); right: var(--sr); bottom: 84px; display: grid; grid-template-columns: repeat(8, minmax(0, 1fr)); gap: 6px">
+    <sc-for list="{{ racers }}" as="r" hint-placeholder-count="8">
+      <div class="nk-glass m-col" style="height: 96px; gap: 3px; padding: 8px 4px; box-sizing: border-box; border-radius: 12px; align-items: center; text-align: center; box-shadow: {{ r.ring }}">
+        <span class="m-av {{ r.photo }}" style="width: 30px; height: 30px; font-size: 13px; background: {{ r.color }}">{{ r.initial }}</span>
+        <span class="d ol-sm" style="font-size: 14px; line-height: 15px">{{ r.name }}</span>
+        <span class="m-small" style="color: var(--ink-muted)">{{ r.kart }}</span>
+        <span class="m-tag" style="height: 18px; background: {{ r.tagBg }}; color: {{ r.tagInk }}">{{ r.tag }}</span>
+      </div>
+    </sc-for>
+  </div>
+
+  <div class="m-row abs" style="left: var(--sl); right: var(--sr); bottom: var(--sb); justify-content: space-between">
+    <span class="m-row m-small nk-glass" style="padding: 6px 10px; border-radius: 10px"><span class="m-tag" style="background: var(--ink); color: var(--plate-900)">AI</span>3 seats filled by AI. They don't affect rank.</span>
+    <a class="m-btn m-btn--primary" href="Countdown.dc.html" style="min-width: 180px">Ready</a>
+  </div>
+
+  <div class="island"></div><div class="homebar"></div>
+</div></div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":872,"height":418}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const list = [
+      ['You', 'Danfo', 'var(--danfo)', 'you'], ['Amaka', 'Keke', 'var(--rank-sabi)', 'ready'], ['Tunde', 'Okada', 'var(--rank-odogwu)', 'ready'], ['Musa', 'Danfo', 'var(--rank-sharp-sharp)', 'wait'],
+      ['Dami', 'Camry', 'var(--rank-oga-patapata)', 'ready'], ['Kunle', 'Keke', 'var(--rank-jjc)', 'ai'], ['Ada', 'Okada', 'var(--rank-jjc)', 'ai'], ['Sani', 'Danfo', 'var(--rank-jjc)', 'ai']
+    ];
+    return {
+      racers: list.map(([name, kart, color, s]) => ({
+        name, kart, color, initial: name[0], photo: s === 'you' ? 'photo-face' : '',
+        ring: s === 'you' ? 'inset 0 0 0 2px var(--danfo)' : s === 'ready' ? 'inset 0 0 0 2px var(--success)' : 'inset 0 1px 0 var(--glass-edge)',
+        tag: s === 'ai' ? 'AI' : s === 'wait' ? 'Picking' : 'Ready',
+        tagBg: s === 'ai' ? 'var(--ink)' : s === 'wait' ? 'var(--plate-700)' : 'var(--success)',
+        tagInk: s === 'ai' ? 'var(--plate-900)' : s === 'wait' ? 'var(--ink-muted)' : 'var(--on-lagoon)'
+      }))
+    };
+  }
+}
+</script>
+</body>
+</html>
