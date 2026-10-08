@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Text.Json;
+using NaijaKart.Core.Accounts;
 using NaijaKart.Core.Challenges;
 using NaijaKart.Core.Config;
 using NaijaKart.Core.Economy;
@@ -26,6 +27,7 @@ namespace NaijaKart.Server.Persistence
             public Dictionary<string, PlayerProfile> Profiles = new Dictionary<string, PlayerProfile>();
             public Dictionary<string, Rivalry> Rivalries = new Dictionary<string, Rivalry>();
             public Dictionary<string, List<ChallengeProgress>> Challenges = new Dictionary<string, List<ChallengeProgress>>();
+            public Dictionary<string, AccountRecord> Accounts = new Dictionary<string, AccountRecord>();
         }
 
         private readonly string _path;
@@ -39,6 +41,7 @@ namespace NaijaKart.Server.Persistence
         public IProfileStore Profiles { get; }
         public IRivalryStore Rivalries { get; }
         public IChallengeProgressStore Challenges { get; }
+        public IAccountStore Accounts { get; }
 
         public JsonFileStateStore(string path, ProgressionConfig progression)
         {
@@ -50,6 +53,7 @@ namespace NaijaKart.Server.Persistence
             Profiles = new ProfileStore(this, progression);
             Rivalries = new RivalryStore(this);
             Challenges = new ChallengeStore(this);
+            Accounts = new AccountStore(this);
         }
 
         public int PlayerCount { get { lock (_lock) return _state.Profiles.Count; } }
@@ -167,6 +171,29 @@ namespace NaijaKart.Server.Persistence
                     foreach (var r in _s._state.Rivalries.Values) if (r.PlayerA == playerId || r.PlayerB == playerId) list.Add(r);
                     return list;
                 }
+            }
+        }
+
+        private sealed class AccountStore : IAccountStore
+        {
+            private readonly JsonFileStateStore _s;
+            public AccountStore(JsonFileStateStore s) { _s = s; }
+            public AccountRecord Get(string playerId) { lock (_s._lock) return _s._state.Accounts.TryGetValue(playerId, out var a) ? a : null; }
+            public void Save(AccountRecord account) { lock (_s._lock) { _s._state.Accounts[account.PlayerId] = account; _s.MarkDirty(); } }
+            public AccountRecord FindByProvider(string provider, string subject)
+            {
+                lock (_s._lock) foreach (var a in _s._state.Accounts.Values) if (a.Status == AccountStatus.Claimed && a.Provider == provider && a.ProviderSubject == subject) return a;
+                return null;
+            }
+            public AccountRecord FindByName(string racerName)
+            {
+                lock (_s._lock) foreach (var a in _s._state.Accounts.Values) if (a.RacerName != null && string.Equals(a.RacerName, racerName, StringComparison.OrdinalIgnoreCase)) return a;
+                return null;
+            }
+            public AccountRecord FindByReferralCode(string code)
+            {
+                lock (_s._lock) foreach (var a in _s._state.Accounts.Values) if (a.ReferralCode != null && string.Equals(a.ReferralCode, code, StringComparison.OrdinalIgnoreCase)) return a;
+                return null;
             }
         }
 

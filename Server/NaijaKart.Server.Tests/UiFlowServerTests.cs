@@ -16,6 +16,7 @@ namespace NaijaKart.Server.Tests
             g.lastma.firstTriggerMinSeconds = 2f; g.lastma.minIntervalSeconds = 1f; g.lastma.maxIntervalSeconds = 2f;
             g.lastma.warningSeconds = 0.5f; g.lastma.pursuitSeconds = 2f; g.lastma.pressureGainPerSecond = 2f;
             g.lastma.positionWeights = new[] { 1f }; g.roadEvents.enabled = false;
+            g.accounts.rankedRequiresAccount = false;   // these tests race as guests
         });
 
         [Test]

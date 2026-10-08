@@ -140,7 +140,7 @@ namespace NaijaKart.Server.Tests
         [Test]
         public void RankedMatchmakingFillsAtEightAndSettlesRating()
         {
-            var h = new ServerHarness(g => { g.raceRules.defaultLaps = 1; g.lastma.enabled = false; });
+            var h = new ServerHarness(g => { g.accounts.rankedRequiresAccount = false; g.raceRules.defaultLaps = 1; g.lastma.enabled = false; });
             var clients = new List<TestClient>();
             for (int i = 0; i < 8; i++) { var c = h.NewClient("r" + i, 0.5f + 0.05f * i); c.Connect(); clients.Add(c); }
             var arr = clients.ToArray();

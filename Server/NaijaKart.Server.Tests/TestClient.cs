@@ -37,6 +37,8 @@ namespace NaijaKart.Server.Tests
         public string LiveEventName { get; private set; }
         public LastmaOptionsDto LastOptions { get; private set; }
         public ServerEnvelope Garage { get; private set; }
+        public AccountDto Account { get; private set; }
+        public long LastBalance { get; private set; }
         /// <summary>What to do when pulled over: "pay", "bail", "penalty" or null (let the timer decide).</summary>
         public string PullOverChoice = "pay";
         public int SnapshotsReceived { get; private set; }
@@ -93,6 +95,7 @@ namespace NaijaKart.Server.Tests
                 case ServerMessageKind.LiveEvent: LiveEventName = m.Text; break;
                 case ServerMessageKind.LastmaOptions: LastOptions = m.LastmaOptions; break;
                 case ServerMessageKind.Garage: Garage = m; break;
+                case ServerMessageKind.Account: Account = m.Account; LastBalance = m.Amount; break;
                 case ServerMessageKind.RaceResults:
                     if (Results != null && m.Results != null && Results.RaceId == m.Results.RaceId) break; // re-sent copy
                     Results = m.Results;

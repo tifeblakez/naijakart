@@ -109,9 +109,11 @@ namespace NaijaKart.Server
             using var transport = new TcpJsonServerTransport(port, log);
             transport.Start();
             using var state = dataFile != null ? new JsonFileStateStore(dataFile, content.Game.progression) : null;
+            // One-time codes: a console sender for development; production binds an SMS/WhatsApp provider.
+            var otp = new ConsoleOtpSender(log);
             var server = state != null
-                ? new GameServer(content, transport, log, state.Coins, state.Profiles, state.Rivalries, challengeProgress: state.Challenges)
-                : new GameServer(content, transport, log);
+                ? new GameServer(content, transport, log, state.Coins, state.Profiles, state.Rivalries, challengeProgress: state.Challenges, accounts: state.Accounts, otpSender: otp)
+                : new GameServer(content, transport, log, otpSender: otp);
             log.Info("server", $"Naija Kart server listening on TCP {transport.Port}, tick {content.Game.simulation.tickRate} Hz, config {configDir}, data {(dataFile ?? "in-memory")}");
             if (state != null) log.Info("server", $"Loaded {state.PlayerCount} player profiles");
 
@@ -137,6 +139,14 @@ namespace NaijaKart.Server
             }
             log.Info("server", "Shutting down");
             return 0;
+        }
+
+        private sealed class ConsoleOtpSender : NaijaKart.Core.Accounts.IOtpSender
+        {
+            private readonly ILogger _log;
+            public ConsoleOtpSender(ILogger log) { _log = log; }
+            public void Send(string phoneE164, string code, NaijaKart.Core.Accounts.OtpChannel channel) =>
+                _log.Info("otp", $"[DEV] one-time code for {NaijaKart.Core.Accounts.AccountService.MaskPhone(phoneE164)} via {channel}: {code}");
         }
 
         /// <summary>Records positions, hazards and events each tick for the world previewer.</summary>

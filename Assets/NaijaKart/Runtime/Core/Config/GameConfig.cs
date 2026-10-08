@@ -24,6 +24,7 @@ namespace NaijaKart.Core.Config
         public LastmaConfig lastma = new LastmaConfig();
         public EconomyConfig economy = new EconomyConfig();
         public ProgressionConfig progression = new ProgressionConfig();
+        public AccountsConfig accounts = new AccountsConfig();
         public AntiCheatConfig antiCheat = new AntiCheatConfig();
         public LiveEventsConfig liveEvents = new LiveEventsConfig();
     }
@@ -33,6 +34,27 @@ namespace NaijaKart.Core.Config
     /// by UTC weekday (0 = Sunday … 6 = Saturday). Missing weekday = normal rules. Replaceable by a
     /// live-ops feed later; the shape is the contract.
     /// </summary>
+    /// <summary>Guest-first accounts: phone/social claim, racer names, referrals (design screens 21–25, ADR-0009).</summary>
+    [Serializable]
+    public sealed class AccountsConfig
+    {
+        public int otpDigits = 6;
+        public int otpTtlSeconds = 300;
+        public int otpMaxAttempts = 5;
+        public int otpResendSeconds = 45;
+        public string defaultCountryCode = "+234";
+        /// <summary>Coins paid once when the account is saved.</summary>
+        public long accountBonusCoins = 500;
+        /// <summary>Coins paid to both sides after the invited friend's first race.</summary>
+        public long referralBonusCoins = 300;
+        public int nameMinLength = 3;
+        public int nameMaxLength = 16;
+        public string[] reservedNames = { "admin", "lastma", "naijakart", "moderator" };
+        public string[] cities = { "Lagos", "Abuja", "Kano", "PH", "Ibadan", "Other" };
+        /// <summary>Ranked unlocks after saving progress.</summary>
+        public bool rankedRequiresAccount = true;
+    }
+
     [Serializable]
     public sealed class LiveEventsConfig
     {

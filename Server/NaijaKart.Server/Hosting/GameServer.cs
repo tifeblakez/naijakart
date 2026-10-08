@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using NaijaKart.Core.Accounts;
 using NaijaKart.Core.Challenges;
 using NaijaKart.Core.Config;
 using NaijaKart.Core.Economy;
@@ -47,6 +48,8 @@ namespace NaijaKart.Server.Hosting
         public RankLadder RankLadder { get; }
         public ChallengeEvaluator Challenges { get; }
         public IChallengeProgressStore ChallengeProgress { get; }
+        public AccountService Accounts { get; }
+        public IOtpSender OtpSender { get; }
         /// <summary>Overrides the UTC clock (tests, Wahala Calendar).</summary>
         public Func<DateTime> UtcNow { get; set; } = () => DateTime.UtcNow;
         public int RoomCount => _rooms.Count;
@@ -56,7 +59,7 @@ namespace NaijaKart.Server.Hosting
 
         public GameServer(IConfigSource content, IServerTransport transport, ILogger log = null,
             ICoinStore coinStore = null, IProfileStore profiles = null, IRivalryStore rivalries = null, ulong seed = 12345,
-            IChallengeProgressStore challengeProgress = null)
+            IChallengeProgressStore challengeProgress = null, IAccountStore accounts = null, IOtpSender otpSender = null)
         {
             Content = content ?? throw new ArgumentNullException(nameof(content));
             _transport = transport ?? throw new ArgumentNullException(nameof(transport));
@@ -71,6 +74,8 @@ namespace NaijaKart.Server.Hosting
             RankLadder = new RankLadder(content.Game.progression);
             ChallengeProgress = challengeProgress ?? new InMemoryChallengeProgressStore();
             Challenges = new ChallengeEvaluator(content.Challenges, ChallengeProgress, Ledger, () => UtcNow());
+            OtpSender = otpSender ?? new RecordingOtpSender();
+            Accounts = new AccountService(accounts ?? new InMemoryAccountStore(), OtpSender, content.Game.accounts, Ledger, () => new DateTimeOffset(UtcNow()).ToUnixTimeMilliseconds(), seed ^ 0x5EEDUL);
             _codeRng = new DeterministicRandom(seed);
             _dt = 1f / content.Game.simulation.tickRate;
 
@@ -138,6 +143,7 @@ namespace NaijaKart.Server.Hosting
                     break;
                 case ClientMessageKind.JoinQueue:
                     if (s.Room != null) { SendError(s.PlayerId, "Leave your room first"); break; }
+                    if (msg.Mode == RaceMode.Ranked && !Accounts.RankedAllowed(s.PlayerId)) { SendError(s.PlayerId, "Save your progress to play Ranked"); break; }
                     if (!_queue.Contains(s)) { s.QueuedAt = _now; s.QueuedMode = msg.Mode == RaceMode.Ranked ? RaceMode.Ranked : RaceMode.QuickRace; _queue.Add(s); }
                     _transport.Send(connectionId, new ServerEnvelope { Kind = ServerMessageKind.QueueStatus, Text = "searching", Tick = _queue.Count });
                     break;
@@ -184,6 +190,49 @@ namespace NaijaKart.Server.Hosting
                     break;
                 case ClientMessageKind.GetGarage:
                     SendGarage(s);
+                    break;
+                case ClientMessageKind.ClaimStart:
+                {
+                    var r = Accounts.StartClaim(s.PlayerId, msg.Text, msg.Flag ? OtpChannel.WhatsApp : OtpChannel.Sms);
+                    SendAccount(s, r.ToString());
+                    break;
+                }
+                case ClientMessageKind.ClaimVerify:
+                {
+                    var r = Accounts.VerifyClaim(s.PlayerId, msg.Text, out string signIn);
+                    SendAccount(s, r.ToString(), signIn);
+                    break;
+                }
+                case ClientMessageKind.ClaimWithProvider:
+                {
+                    var r = Accounts.ClaimWithProvider(s.PlayerId, msg.Text, msg.AuthToken, out string signIn);
+                    SendAccount(s, r.ToString(), signIn);
+                    break;
+                }
+                case ClientMessageKind.SetRacer:
+                {
+                    if (!Accounts.SetRacer(s.PlayerId, msg.DisplayName, msg.CharacterId, msg.Text, out string err)) { SendError(s.PlayerId, err); SendAccount(s, "Invalid"); break; }
+                    var acc = Accounts.Get(s.PlayerId);
+                    if (acc.RacerName != null)
+                    {
+                        s.DisplayName = acc.RacerName;
+                        var profile = Profiles.Get(s.PlayerId); profile.DisplayName = acc.RacerName; Profiles.Save(profile);
+                    }
+                    if (acc.LookId != null) { string v = null, c = acc.LookId; ResolveLoadout(s.PlayerId, ref v, ref c); }
+                    SendAccount(s, "Ok");
+                    break;
+                }
+                case ClientMessageKind.CheckName:
+                    SendAccount(s, "Ok", null, Accounts.CheckName(msg.Text, s.PlayerId).ToString());
+                    break;
+                case ClientMessageKind.ApplyReferral:
+                {
+                    if (!Accounts.ApplyReferral(s.PlayerId, msg.Text, out string err)) { SendError(s.PlayerId, err); SendAccount(s, "Invalid"); break; }
+                    SendAccount(s, "Ok");
+                    break;
+                }
+                case ClientMessageKind.GetAccount:
+                    SendAccount(s, "Ok");
                     break;
                 case ClientMessageKind.PurchaseVehicle:
                     HandlePurchase(s, msg.VehicleId, isVehicle: true);
@@ -361,14 +410,40 @@ namespace NaijaKart.Server.Hosting
             }
             foreach (var e in results.Entries)
             {
-                if (e.IsBot || !e.Finished || e.FinishPosition != 1) continue;
+                if (e.IsBot) continue;
                 var profile = Profiles.Get(e.PlayerId);
-                if (!profile.TracksWon.Contains(results.TrackId)) { profile.TracksWon.Add(results.TrackId); Profiles.Save(profile); }
+                if (e.Finished && e.FinishPosition == 1 && !profile.TracksWon.Contains(results.TrackId)) { profile.TracksWon.Add(results.TrackId); Profiles.Save(profile); }
+                // "Bring your guys": the referral pays both sides after the invited racer's first race.
+                if (profile.Races == 1 && Accounts.RewardReferralAfterFirstRace(e.PlayerId, out string referrer))
+                {
+                    foreach (string id in new[] { e.PlayerId, referrer })
+                        if (_byPlayer.TryGetValue(id, out var sess)) SendAccount(sess, "ReferralRewarded");
+                }
             }
             RaceSettled?.Invoke(room, results);
         }
 
         public WeekdayRule TodayRule() => Content.Game.liveEvents?.RuleFor((int)UtcNow().DayOfWeek);
+
+        // ---- accounts ----
+        private void SendAccount(Session s, string result, string signInPlayerId = null, string nameStatus = null)
+        {
+            var a = Accounts.Get(s.PlayerId);
+            var cfg = Content.Game.accounts;
+            _transport.Send(s.ConnectionId, new ServerEnvelope
+            {
+                Kind = ServerMessageKind.Account,
+                Amount = Ledger.GetBalance(s.PlayerId),
+                Account = new AccountDto
+                {
+                    PlayerId = s.PlayerId, Status = a.Status.ToString(), Provider = a.Provider,
+                    PhoneMasked = a.Provider == "phone" ? AccountService.MaskPhone(a.ProviderSubject) : (a.PendingPhone != null ? AccountService.MaskPhone(a.PendingPhone) : null),
+                    RacerName = a.RacerName, HomeCity = a.HomeCity, LookId = a.LookId, ReferralCode = a.ReferralCode, ReferredBy = a.ReferredBy,
+                    Result = result, NameStatus = nameStatus, SignInPlayerId = signInPlayerId, ResendInSeconds = Accounts.ResendInSeconds(s.PlayerId),
+                    RankedUnlocked = Accounts.RankedAllowed(s.PlayerId), AccountBonusCoins = cfg.accountBonusCoins, ReferralBonusCoins = cfg.referralBonusCoins, Cities = cfg.cities ?? Array.Empty<string>()
+                }
+            });
+        }
 
         // ---- garage ----
         public bool OwnsVehicle(PlayerProfile p, VehicleDefinition v) =>

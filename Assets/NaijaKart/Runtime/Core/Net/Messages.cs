@@ -35,7 +35,20 @@ namespace NaijaKart.Core.Net
         GetChallenges,
         GetLeaderboard,
         GetRivalries,
-        GetProfile
+        GetProfile,
+        /// <summary>Save progress: Text = phone number, Flag = WhatsApp instead of SMS.</summary>
+        ClaimStart,
+        /// <summary>Text = the one-time code.</summary>
+        ClaimVerify,
+        /// <summary>Social sign-in after the backend verified the provider token: Text = provider, AuthToken = subject.</summary>
+        ClaimWithProvider,
+        /// <summary>DisplayName = racer name, CharacterId = look, Text = home city.</summary>
+        SetRacer,
+        /// <summary>Text = candidate racer name.</summary>
+        CheckName,
+        /// <summary>Text = a friend's referral code.</summary>
+        ApplyReferral,
+        GetAccount
     }
 
     [Serializable]
@@ -80,7 +93,33 @@ namespace NaijaKart.Core.Net
         LiveEvent,
         /// <summary>Sent to the caught racer with LastmaCaught: fine, friends online, what is allowed.</summary>
         LastmaOptions,
-        Garage
+        Garage,
+        Account
+    }
+
+    [Serializable]
+    public sealed class AccountDto
+    {
+        public string PlayerId;
+        /// <summary>Guest or Claimed.</summary>
+        public string Status;
+        public string PhoneMasked;
+        public string Provider;
+        public string RacerName;
+        public string HomeCity;
+        public string LookId;
+        public string ReferralCode;
+        public string ReferredBy;
+        /// <summary>Outcome of the request that produced this message (ClaimResult / NameStatus / "Ok").</summary>
+        public string Result;
+        public string NameStatus;
+        /// <summary>Set when the phone belongs to another account: Hello again as this player id.</summary>
+        public string SignInPlayerId;
+        public int ResendInSeconds;
+        public bool RankedUnlocked;
+        public long AccountBonusCoins;
+        public long ReferralBonusCoins;
+        public string[] Cities = Array.Empty<string>();
     }
 
     [Serializable]
@@ -245,5 +284,6 @@ namespace NaijaKart.Core.Net
         public GarageItemDto[] Vehicles;
         public GarageItemDto[] Characters;
         public long PremiumBalance;
+        public AccountDto Account;
     }
 }

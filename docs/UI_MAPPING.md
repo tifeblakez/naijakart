@@ -39,3 +39,39 @@ Mapping:
 * Item boxes → orange hologram cube with a gold "?" on two faces.
 * HUD → the Race HUD PDF remains the layout of record; this board's stacked item counts are a
   variant to revisit when the inventory UI is finalised.
+
+## Design canvas: every screen → system (canvas "Naija Kart Game Screens", 34 artboards, read 2026-10-08)
+
+The canvas is the layout of record (844×390 pt phone frame, Lilita One + Nunito, navy glass
+plates, danfo yellow for "you" and the one primary action). The previewer HUD is built from its
+`RaceHUD`, `Countdown`, `LastmaChase`, `Caught` and `Results` artboards using the same tokens and
+classes, so the video shows the designed UI over the generated world.
+
+| # | Screen | Backs onto | Status |
+| --- | --- | --- | --- |
+| 01.1–01.5 | Onboarding: welcome, pick driver, choose controls, practice lap, ready | Client only; practice lap = `LocalPracticeHost`; AI disclosure from `RoomStateDto` bot tags | Client flow pending |
+| 02 | Home | `Welcome`, `GetProfile`, `GetChallenges`, `LiveEvent` (Wahala today), friends online | Served |
+| 03 | Choose mode | `JoinQueue` (QuickRace/Ranked), `CreateRoom` (PrivateRoom/Practice) | Served |
+| 03.1 | Ranked hub | Rating + rank ladder (`GetProfile`, `GetLeaderboard`); RP sub-tiers, Rush Hour, "last 5 races" | RP/season layer pending |
+| 03.2 / 03.3 | Private room, invite friends | `CreateRoom` + `JoinRoom` by code, `RoomState`; host options beyond laps/items/LASTMA, invite list, WhatsApp link | Options + invites pending |
+| 04 | Matchmaking | `QueueStatus`; found-count and AI-fill countdown | Status detail pending |
+| 05 | Lobby | `RoomState` members, `Ready`, bot tags | Served |
+| 06 | Countdown | `RaceSnapshot` countdown, tilt calibration (client) | Served |
+| 07 | Race HUD | `RaceSnapshot` (position, lap, items, boost charges, drift level), `RaceEvent` callouts | Served |
+| 08 | LASTMA chase | `LastmaPhase/Pressure/TimeRemaining` in the snapshot | Served |
+| 09 | Caught: recovery choice | `LastmaOptions`, intents `TakePenalty` / `PayFine` / `RequestBail` | Served |
+| 10 | Results | `RaceResults` + `SettledRewardDto` (XP, coins, rating), stats | Served (RP display pending) |
+| 11 | Network issue | reconnect by `Hello`; AI drives while away; attempt count; Ranked rule | Bot takeover pending |
+| 12 | Rivalry | `GetRivalries` (wins, streaks, fastest laps); bails count, last-5 | Extra stats pending |
+| 13–13.2 | Garage: karts, racers, style | `GetGarage`, `PurchaseVehicle/Character`; cosmetics (colours, rims, trails) | Cosmetics pending |
+| 14 | Profile | `GetProfile` (level, rank, stats, achievements, title) | Served (share code via accounts) |
+| 15 | Leaderboards | `GetLeaderboard` (rating/wins/streak/lastma/level, friends filter); Nigeria/Global/Track scopes | Scopes pending |
+| 16 | Social | friends (`AddFriend`/`RemoveFriend`), `BailRequest`; presence, requests, party | Presence/requests pending |
+| 17 | Tournament | — | Pending |
+| 18 | Season and challenges | `GetChallenges` (daily/weekly), Wahala calendar (`liveEvents.weekdayRules`); pass tiers | Pass pending |
+| 19 | Shop | premium currency in the ledger; cosmetics catalogue | Catalogue pending |
+| 20 | Settings: data and performance | client; content packs manifest | Pending |
+| 21 | Save progress | `ClaimStart` / `ClaimVerify` / `ClaimWithProvider`, account bonus | Served (ADR-0009) |
+| 22–23 | Phone number, enter code | `ClaimStart` (Text = number, Flag = WhatsApp), `ClaimVerify`, resend timer | Served |
+| 24 | Create your racer | `CheckName`, `SetRacer` (name, look, home city) | Served |
+| 25 | Account ready | `Account` (referral code), `ApplyReferral`, referral bonus after first race | Served |

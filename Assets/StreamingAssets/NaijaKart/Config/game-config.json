@@ -274,6 +274,32 @@
       }
     ]
   },
+  "accounts": {
+    "otpDigits": 6,
+    "otpTtlSeconds": 300,
+    "otpMaxAttempts": 5,
+    "otpResendSeconds": 45,
+    "defaultCountryCode": "\u002B234",
+    "accountBonusCoins": 500,
+    "referralBonusCoins": 300,
+    "nameMinLength": 3,
+    "nameMaxLength": 16,
+    "reservedNames": [
+      "admin",
+      "lastma",
+      "naijakart",
+      "moderator"
+    ],
+    "cities": [
+      "Lagos",
+      "Abuja",
+      "Kano",
+      "PH",
+      "Ibadan",
+      "Other"
+    ],
+    "rankedRequiresAccount": true
+  },
   "antiCheat": {
     "absoluteMinLapSeconds": 20,
     "minLapFractionOfReference": 0.55,
