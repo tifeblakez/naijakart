@@ -16,13 +16,15 @@ namespace NaijaKart.Server.Tests
         {
             var json = new JsonConfigSource(ServerHarness.ConfigDir());
             Assert.That(ConfigValidator.Validate(json), Is.Empty);
-            Assert.That(json.Items.items.Length, Is.EqualTo(10), "PRD §26: ten initial items");
+            Assert.That(json.Items.items.Length, Is.GreaterThanOrEqualTo(10), "PRD §26: ten initial items (+ UI extras)");
+            foreach (var id in new[] { "jollof_boost", "suya_burst", "generator_shield", "no_wahala", "pure_water", "egg", "oil", "danfo", "okada", "sharp_guy", "spike_strip", "banana" })
+                Assert.That(json.Items.items.Any(i => i.id == id), id);
             Assert.That(json.Vehicles.vehicles.Length, Is.EqualTo(10), "PRD §20: ten vehicles");
             Assert.That(json.Characters.characters.Length, Is.EqualTo(8), "PRD §21: eight characters");
             Assert.That(json.TrackIds, Does.Contain("third_mainland_rush"));
             Assert.That(json.Game.progression.ranks.Length, Is.EqualTo(10), "PRD §7: ten ranks");
             Assert.That(json.Game.progression.ranks[7].displayName, Is.EqualTo("Chairman"));
-            Assert.That(json.Game.lastma.fineAmount, Is.EqualTo(2000));
+            Assert.That(json.Game.lastma.fineAmount, Is.EqualTo(200), "PULL OVER design: 200 Coins (configurable)");
         }
 
         [Test]
@@ -225,6 +227,7 @@ namespace NaijaKart.Server.Tests
             var broke = h.NewClient("broke", 0.9f);
             var friend = h.NewClient("friend", 0.5f);
             broke.AutoPayFine = false;        // will call for bail
+            broke.PullOverChoice = "bail";
             friend.AutoBailOthers = true;      // pays when asked
             broke.Connect(); friend.Connect();
             h.Run(0.1f, broke, friend);
@@ -259,6 +262,7 @@ namespace NaijaKart.Server.Tests
             var h = new ServerHarness(g =>
             {
                 g.raceRules.defaultLaps = 1;
+                g.lastma.arrestEnabled = true;
                 g.lastma.firstTriggerMinSeconds = 2f;
                 g.lastma.warningSeconds = 0.5f;
                 g.lastma.pursuitSeconds = 2f;
@@ -269,6 +273,7 @@ namespace NaijaKart.Server.Tests
             });
             var a = h.NewClient("a", 0.9f); var b = h.NewClient("b", 0.6f);
             a.AutoPayFine = false;
+            a.PullOverChoice = null; // never answers: arrest when enabled
             a.Connect(); b.Connect();
             h.Run(0.1f, a, b);
             h.Server.Ledger.Debit("a", h.Server.Ledger.GetBalance("a") - 1, "test", "drain", out _);

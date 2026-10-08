@@ -76,6 +76,17 @@ namespace NaijaKart.Core.Items
                     RegisterHit(user, target, item);
                     return true;
                 }
+                case ItemEffectType.DropSpikeStrip:
+                {
+                    Vec3 pos = user.State.Position - user.State.Forward * cfg.items.dropBehindDistance;
+                    var h = _ctx.Hazards.Spawn(HazardKind.SpikeStrip, pos, item.magnitude, item.duration, 0f, user.PlayerId);
+                    if (h != null)
+                    {
+                        var e = _ctx.Emit(RaceEventType.HazardSpawned, user.PlayerId, null, h.Id);
+                        e.Position = pos;
+                    }
+                    return h != null;
+                }
                 case ItemEffectType.DropOilPatch:
                 {
                     Vec3 pos = user.State.Position - user.State.Forward * cfg.items.dropBehindDistance;
@@ -155,6 +166,10 @@ namespace NaijaKart.Core.Items
                 case HazardKind.Pothole:
                     victim.State.Speed *= cfg.roadEvents.potholeSpeedRetention;
                     victim.State.BoostTimeRemaining = 0f;
+                    break;
+                case HazardKind.SpikeStrip:
+                    model.ApplyStun(ref victim.State, cfg.items.spikeStunSeconds, cfg.items.spikeSpeedRetention);
+                    _ctx.Hazards.Remove(h);
                     break;
                 case HazardKind.DanfoCrossing:
                 case HazardKind.OkadaCrossing:

@@ -21,8 +21,11 @@ namespace NaijaKart.Core.Config
         public int traction = 50;
         /// <summary>Player level required to unlock. 0 = starter.</summary>
         public int unlockLevel = 0;
+        /// <summary>Price in earned Coins (0 = free once the level is reached). Never premium currency: no pay-to-win.</summary>
+        public long priceCoins = 0;
         /// <summary>Addressable/Resources key for the view prefab. Presentation only.</summary>
         public string prefabKey;
+        public string tagline;
     }
 
     [Serializable]
@@ -39,6 +42,7 @@ namespace NaijaKart.Core.Config
         public string weaknessStat;
         public int weaknessPenalty = 3;
         public int unlockLevel = 0;
+        public long priceCoins = 0;
         public string prefabKey;
         public string[] voiceLineKeys = Array.Empty<string>();
     }
@@ -58,7 +62,8 @@ namespace NaijaKart.Core.Config
         DropOilPatch,
         SpawnDanfoCrossing,
         SpawnOkadaCrossing,
-        AutoAvoid
+        AutoAvoid,
+        DropSpikeStrip
     }
 
     public enum ItemTargeting

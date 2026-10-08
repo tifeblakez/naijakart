@@ -15,7 +15,8 @@ namespace NaijaKart.Core.Chaos
         TrafficCar,
         GoSlowZone,
         FloodZone,
-        PoliceCheckpoint
+        PoliceCheckpoint,
+        SpikeStrip
     }
 
     public sealed class Hazard

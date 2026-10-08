@@ -97,6 +97,7 @@ namespace NaijaKart.Server.Hosting
         {
             if (_members.Contains(playerId)) return true;
             if (Race.State != RaceState.Lobby && Race.State != RaceState.Waiting) return false;
+            _server.ResolveLoadout(playerId, ref vehicleId, ref characterId);
             if (!Race.AddParticipant(playerId, _server.DisplayNameOf(playerId), vehicleId, characterId)) return false;
             _members.Add(playerId);
             _loadouts[playerId] = (vehicleId, characterId);
@@ -137,6 +138,7 @@ namespace NaijaKart.Server.Hosting
         public void SetLoadout(string playerId, string vehicleId, string characterId)
         {
             if (!_members.Contains(playerId) || Race.State != RaceState.Lobby) return;
+            if (!_server.ResolveLoadout(playerId, ref vehicleId, ref characterId)) { _server.SendError(playerId, "You don't own that kart or racer"); return; }
             _loadouts[playerId] = (vehicleId, characterId);
             Race.RemoveParticipant(playerId);
             Race.AddParticipant(playerId, _server.DisplayNameOf(playerId), vehicleId, characterId);
@@ -211,7 +213,7 @@ namespace NaijaKart.Server.Hosting
                     var le = Race.Lastma.EventFor(kv.Key);
                     if (le != null && le.Phase == Core.Lastma.LastmaPhase.FinePending && !le.BailRequested)
                     {
-                        if (!Race.PayFine(kv.Key)) Race.RequestBail(kv.Key);
+                        if (!Race.PayFine(kv.Key)) Race.TakePenalty(kv.Key);
                     }
                 }
             }
@@ -295,6 +297,26 @@ namespace NaijaKart.Server.Hosting
                 {
                     _server.BroadcastBailRequest(this, e.PlayerId, (long)e.FloatValue);
                 }
+                if (e.Type == RaceEventType.LastmaCaught)
+                {
+                    _server.SendTo(e.PlayerId, new ServerEnvelope
+                    {
+                        Kind = ServerMessageKind.LastmaOptions,
+                        PlayerId = e.PlayerId,
+                        LastmaOptions = new LastmaOptionsDto
+                        {
+                            FineAmount = (long)e.FloatValue,
+                            DecisionSeconds = _cfg.lastma.fineDecisionSeconds,
+                            PenaltySeconds = _cfg.lastma.penaltySeconds,
+                            FineResumeSeconds = _cfg.lastma.resumeStunSeconds,
+                            FinesAllowed = Race.Lastma.FinesAllowed,
+                            BailAllowed = Race.Lastma.BailAllowed,
+                            CanAffordFine = _server.Ledger.GetBalance(e.PlayerId) >= (long)e.FloatValue,
+                            FriendsOnline = _server.FriendsOnline(e.PlayerId, this),
+                            Ranked = Mode == RaceMode.Ranked || Mode == RaceMode.Tournament
+                        }
+                    });
+                }
                 if (e.Type == RaceEventType.StateChanged) BroadcastRoomState();
             }
         }
@@ -307,7 +329,10 @@ namespace NaijaKart.Server.Hosting
                     Race.SubmitInput(playerId, msg.Input);
                     break;
                 case ClientMessageKind.PayFine:
-                    if (!Race.PayFine(playerId)) _server.SendError(playerId, "Cannot pay fine (no fine pending or not enough Coins)");
+                    if (!Race.PayFine(playerId)) _server.SendError(playerId, "Cannot pay fine (not allowed here, nothing pending, or not enough Coins)");
+                    break;
+                case ClientMessageKind.TakePenalty:
+                    if (!Race.TakePenalty(playerId)) _server.SendError(playerId, "No penalty to take");
                     break;
                 case ClientMessageKind.RequestBail:
                     if (!Race.RequestBail(playerId)) _server.SendError(playerId, "No fine pending, or bail already requested");
@@ -326,7 +351,7 @@ namespace NaijaKart.Server.Hosting
                     SetLoadout(playerId, msg.VehicleId, msg.CharacterId);
                     break;
                 case ClientMessageKind.StartRoom:
-                    if (Mode == RaceMode.PrivateRoom)
+                    if (Mode == RaceMode.PrivateRoom || Mode == RaceMode.Practice)
                     {
                         if (msg.TrackId != null || msg.Laps > 0) Configure(msg.TrackId, msg.Laps, msg.ItemsEnabled, msg.LastmaEnabled);
                         if (!StartByHost(playerId, msg.Flag)) _server.SendError(playerId, "Only the host can start, and the room needs enough players");

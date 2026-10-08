@@ -27,6 +27,8 @@ namespace NaijaKart.Core.Progression
         public List<string> Achievements = new List<string>();
         public List<string> FriendIds = new List<string>();
         public List<string> TracksWon = new List<string>();
+        public string SelectedVehicleId;
+        public string SelectedCharacterId;
 
         public float WinRate => Races == 0 ? 0f : (float)Wins / Races;
     }

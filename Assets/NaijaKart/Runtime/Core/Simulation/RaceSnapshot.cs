@@ -31,6 +31,9 @@ namespace NaijaKart.Core.Simulation
         public bool IsImmobilised;
         public string HeldItemId;
         public bool ItemReady;
+        public string[] HeldItemIds;
+        public bool[] ItemsReady;
+        public int BoostCharges;
         public LastmaPhase LastmaPhase;
         public float LastmaPressure;
         public float LastmaTimeRemaining;

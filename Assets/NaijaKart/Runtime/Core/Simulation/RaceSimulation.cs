@@ -69,7 +69,8 @@ namespace NaijaKart.Core.Simulation
             _roadEvents = new RoadEventScheduler(this);
             _itemEffects = new ItemEffectSystem(this, _roadEvents);
             _itemRoller = new ItemRoller(content.Items, setup.AllowedItemIds);
-            _lastma = new LastmaSystem(this, wallet ?? new PracticeWallet(), setup.LastmaIntervalMultiplier);
+            bool competitive = setup.Mode == RaceMode.Ranked || setup.Mode == RaceMode.Tournament;
+            _lastma = new LastmaSystem(this, wallet ?? new PracticeWallet(), setup.LastmaIntervalMultiplier, competitive);
             _boxRespawn = new float[_trackDef.itemBoxes.Length];
             _sm.Transitioned += (from, to) => Emit(RaceEventType.StateChanged, null, null, to.ToString(), (int)to);
         }
@@ -158,7 +159,7 @@ namespace NaijaKart.Core.Simulation
             PlaceOnGrid(p);
             _participants.Add(p);
             _byId[playerId] = p;
-            _inventories[playerId] = new ItemInventory();
+            _inventories[playerId] = new ItemInventory(_cfg.items.inventorySlots);
             _prevUseItem[playerId] = false;
             _rateLimiters[playerId] = new InputRateLimiter(_cfg.antiCheat.maxInputFramesPerSecond);
             if (_sm.Current == RaceState.Waiting) _sm.Transition(RaceState.Lobby);
@@ -252,6 +253,9 @@ namespace NaijaKart.Core.Simulation
         }
 
         public bool PayFine(string playerId) => _lastma.PayFine(playerId);
+        public bool TakePenalty(string playerId) => _lastma.TakePenalty(playerId);
+        /// <summary>Empties a racer's item slots (LASTMA penalty).</summary>
+        public void ClearItems(string playerId) { if (_inventories.TryGetValue(playerId, out var inv)) inv.Clear(); }
         public bool RequestBail(string playerId) => _lastma.RequestBail(playerId);
         public bool PayBail(string payerId, string targetPlayerId) => _lastma.PayBail(payerId, targetPlayerId);
 
@@ -393,6 +397,7 @@ namespace NaijaKart.Core.Simulation
                 Emit(RaceEventType.DriftLevelUp, p.PlayerId, null, p.State.DriftLevel.ToString(), (int)p.State.DriftLevel);
             }
             if ((ev & VehicleStepEvents.BoostStarted) != 0) { p.Telemetry.Boosts++; Emit(RaceEventType.BoostStarted, p.PlayerId, null, "drift"); }
+            if ((ev & VehicleStepEvents.ChargeStored) != 0) Emit(RaceEventType.BoostChargeStored, p.PlayerId, null, null, p.State.BoostCharges);
             if ((ev & VehicleStepEvents.WentOffroad) != 0) Emit(RaceEventType.WentOffroad, p.PlayerId);
             if (p.State.Speed > p.Telemetry.TopSpeed) p.Telemetry.TopSpeed = p.State.Speed;
 
@@ -429,9 +434,11 @@ namespace NaijaKart.Core.Simulation
 
                     float closing = Vec3.Dot(a.State.Velocity - b.State.Velocity, n);
                     if (closing <= 0f) continue;
-                    // Lighter kart loses more speed and gets pushed sideways.
-                    a.State.Speed *= 1f - _cfg.collision.bumpSpeedLoss * shareA;
-                    b.State.Speed *= 1f - _cfg.collision.bumpSpeedLoss * shareB;
+                    // Lighter kart loses more speed and gets pushed sideways; a nudge costs far less than a ram.
+                    float severity = MathUtil.Clamp01(closing / System.Math.Max(0.1f, _cfg.collision.bumpFullLossClosingSpeed));
+                    float loss = _cfg.collision.bumpSpeedLoss * severity;
+                    a.State.Speed *= 1f - loss * shareA;
+                    b.State.Speed *= 1f - loss * shareB;
                     float lateral = _cfg.collision.bumpLateralImpulse;
                     a.State.LateralVelocity -= Vec3.Dot(n, a.State.Right) * lateral * shareA;
                     b.State.LateralVelocity += Vec3.Dot(n, b.State.Right) * lateral * shareB;
@@ -456,7 +463,7 @@ namespace NaijaKart.Core.Simulation
         {
             if (!_setup.ItemsEnabled || _itemRoller.Count == 0) return;
             var inv = _inventories[p.PlayerId];
-            if (inv.HasItem) return;
+            if (inv.IsFull) return;
             var boxes = _trackDef.itemBoxes;
             for (int i = 0; i < boxes.Length; i++)
             {
@@ -479,9 +486,10 @@ namespace NaijaKart.Core.Simulation
             _prevUseItem[p.PlayerId] = pressed;
             if (!rising || p.State.IsImmobilised) return;
             var inv = _inventories[p.PlayerId];
-            if (!inv.IsReady) return;
-            var def = _itemRoller.Find(inv.HeldItemId);
-            inv.Consume();
+            int slot = inv.ResolveSlot(p.LatestInput.ItemSlot);
+            if (slot < 0) return;
+            var def = _itemRoller.Find(inv.ItemAt(slot));
+            inv.Consume(slot);
             _itemEffects.Use(p, def);
         }
 
@@ -689,7 +697,10 @@ namespace NaijaKart.Core.Simulation
                     WobbleTimeRemaining = p.State.WobbleTimeRemaining,
                     IsImmobilised = p.State.IsImmobilised,
                     HeldItemId = inv.HeldItemId,
-                    ItemReady = inv.IsReady,
+                    ItemReady = inv.IsReadyAny,
+                    HeldItemIds = inv.SnapshotIds(),
+                    ItemsReady = inv.SnapshotReady(),
+                    BoostCharges = p.State.BoostCharges,
                     LastmaPhase = le?.Phase ?? LastmaPhase.None,
                     LastmaPressure = le?.Pressure ?? 0f,
                     LastmaTimeRemaining = le?.PhaseTimeRemaining ?? 0f,

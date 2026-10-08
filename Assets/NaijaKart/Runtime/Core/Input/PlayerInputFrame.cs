@@ -16,11 +16,13 @@ namespace NaijaKart.Core.Input
         public float Steer;
         public bool Drift;
         public bool UseItem;
+        /// <summary>Inventory slot to use when UseItem is set (-1 = first filled slot).</summary>
+        public int ItemSlot;
         public bool Boost;
         public bool LookBack;
         public bool Horn;
 
-        public static PlayerInputFrame Neutral => new PlayerInputFrame();
+        public static PlayerInputFrame Neutral => new PlayerInputFrame { ItemSlot = -1 };
 
         public PlayerInputFrame Sanitised()
         {

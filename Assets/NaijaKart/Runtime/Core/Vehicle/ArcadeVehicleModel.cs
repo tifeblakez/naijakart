@@ -54,6 +54,7 @@ namespace NaijaKart.Core.Vehicle
             {
                 s.OffroadBeyondMarginTime = 0f;
             }
+            s.OffroadTime = surface.OnRoad ? 0f : s.OffroadTime + dt;
 
             if (s.IsImmobilised)
             {
@@ -96,6 +97,17 @@ namespace NaijaKart.Core.Vehicle
                 float decel = s.IsStunned ? drv.brakeDeceleration : drv.coastDeceleration;
                 s.Speed = MathUtil.MoveTowards(s.Speed, targetSpeed, decel * dt);
             }
+
+            // --- Boost button spends a banked charge ---
+            if (controllable && input.Boost && s.BoostCharges > 0 && !s.BoostHeld)
+            {
+                s.BoostCharges--;
+                bool was = s.IsBoosting;
+                ApplyBoost(ref s, _cfg.boost.storedChargeDuration * stats.BoostDurationScale, _cfg.boost.storedChargeMultiplier);
+                ev |= VehicleStepEvents.ChargeSpent;
+                if (!was) ev |= VehicleStepEvents.BoostStarted;
+            }
+            s.BoostHeld = input.Boost;
 
             // --- Drift state machine ---
             if (controllable)
@@ -202,6 +214,7 @@ namespace NaijaKart.Core.Vehicle
             s.Speed = stats.TopSpeed * _cfg.driving.recoverySpeedFraction;
             s.LateralVelocity = 0f;
             s.OffroadBeyondMarginTime = 0f;
+            s.OffroadTime = 0f;
             s.IsOffroad = false;
             s.StunTimeRemaining = System.Math.Max(s.StunTimeRemaining, _cfg.driving.recoveryStunSeconds);
             s.IsDrifting = false;
@@ -209,7 +222,9 @@ namespace NaijaKart.Core.Vehicle
             s.DriftLevel = DriftLevel.None;
         }
 
-        public bool NeedsRecovery(in VehicleState s) => s.OffroadBeyondMarginTime >= _cfg.driving.recoveryDelaySeconds;
+        public bool NeedsRecovery(in VehicleState s) =>
+            s.OffroadBeyondMarginTime >= _cfg.driving.recoveryDelaySeconds
+            || (_cfg.driving.offroadStuckSeconds > 0f && s.OffroadTime >= _cfg.driving.offroadStuckSeconds);
 
         private static DriftLevel LevelFor(float charge, DriftConfig drift)
         {
@@ -231,6 +246,13 @@ namespace NaijaKart.Core.Vehicle
                 return;
             }
             int idx = (int)level - 1;
+            if (_cfg.drift.releaseMode == DriftReleaseMode.StoreCharge)
+            {
+                int add = _cfg.drift.levelStoredCharges[System.Math.Min(idx, _cfg.drift.levelStoredCharges.Length - 1)];
+                s.BoostCharges = System.Math.Min(_cfg.boost.maxStoredCharges, s.BoostCharges + add);
+                ev |= VehicleStepEvents.DriftReleasedWithBoost | VehicleStepEvents.ChargeStored;
+                return;
+            }
             float duration = _cfg.drift.levelBoostDuration[idx] * stats.BoostDurationScale * _driftBoostDurationMul;
             float mul = _cfg.drift.levelBoostMultiplier[idx];
             bool wasBoosting = s.IsBoosting;

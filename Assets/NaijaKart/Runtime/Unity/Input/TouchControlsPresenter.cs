@@ -20,6 +20,7 @@ namespace NaijaKart.Unity.Input
         [SerializeField] private HoldButton _horn;
         [SerializeField] private HoldButton _steerLeft;
         [SerializeField] private HoldButton _steerRight;
+        [SerializeField] private GameObject _touchZone;
         [SerializeField] private RectTransform _rightCluster;
         [SerializeField] private RectTransform _leftCluster;
 
@@ -38,9 +39,7 @@ namespace NaijaKart.Unity.Input
 
         public void ApplyLayout()
         {
-            bool buttons = PlayerSettingsStore.UseButtonSteering;
-            if (_steerLeft != null) _steerLeft.gameObject.SetActive(buttons);
-            if (_steerRight != null) _steerRight.gameObject.SetActive(buttons);
+            SetSteeringMode(PlayerSettingsStore.SteeringMode);
             if (_rightCluster != null && _leftCluster != null && PlayerSettingsStore.LeftHandedLayout)
             {
                 var r = _rightCluster.anchoredPosition;
@@ -65,6 +64,15 @@ namespace NaijaKart.Unity.Input
         public void SetItem(string itemId, bool ready)
         {
             if (_item != null) _item.SetHighlight(ready);
+        }
+
+        /// <summary>Touch steering shows the drag zone instead of steer buttons.</summary>
+        public void SetSteeringMode(SteeringMode mode)
+        {
+            bool buttons = mode == SteeringMode.Buttons;
+            if (_steerLeft != null) _steerLeft.gameObject.SetActive(buttons);
+            if (_steerRight != null) _steerRight.gameObject.SetActive(buttons);
+            if (_touchZone != null) _touchZone.SetActive(mode == SteeringMode.Touch);
         }
     }
 }

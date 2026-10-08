@@ -28,6 +28,10 @@ namespace NaijaKart.Core.Vehicle
 
         public float BoostTimeRemaining;
         public float BoostMultiplier;
+        /// <summary>Banked boost charges (StoreCharge drift mode); spent with the Boost button.</summary>
+        public int BoostCharges;
+        /// <summary>Edge detection for the Boost button (one charge per press).</summary>
+        public bool BoostHeld;
 
         public float StunTimeRemaining;
         public float WobbleTimeRemaining;
@@ -46,6 +50,8 @@ namespace NaijaKart.Core.Vehicle
 
         public bool IsOffroad;
         public float OffroadBeyondMarginTime;
+        /// <summary>Continuous seconds spent offroad (any distance).</summary>
+        public float OffroadTime;
         /// <summary>Set by LASTMA while the racer is pulled over. Vehicle cannot move.</summary>
         public bool IsImmobilised;
 
@@ -81,6 +87,8 @@ namespace NaijaKart.Core.Vehicle
         DriftCancelled = 1 << 3,
         BoostStarted = 1 << 4,
         BoostEnded = 1 << 5,
+        ChargeStored = 1 << 10,
+        ChargeSpent = 1 << 11,
         WentOffroad = 1 << 6,
         ReturnedToRoad = 1 << 7,
         Recovered = 1 << 8,

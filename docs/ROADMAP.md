@@ -17,6 +17,13 @@ Phases follow the PRD (§85). Gates (§106) are questions answered by playtestin
 | 10 Polish | VFX, audio, animation, UI, camera, performance, onboarding | Pending |
 | 11 QA | network matrix, devices, exploits, crashes | Automated matrix exists in tests; device QA pending |
 
+## UI-driven changes (see ADR-0007 and UI_MAPPING.md)
+
+The Garage, control-choice, PULL OVER and Race HUD designs are implemented behind the server
+(options message, garage/purchases, four item slots, banked boost charges, penalty-by-default LASTMA,
+shortcut heat, touch drag steering) and as Unity presenters. Remaining for those screens: prefabs/
+layout in the editor and the 3D art the HUD mock shows.
+
 ## Immediate next steps (in order)
 
 1. Open in Unity 6, scaffold scenes, build greybox, drive with tilt on a device. **Gate 1: is driving fun?** Tune `driving`/`drift` in `game-config.json` only.

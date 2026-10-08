@@ -33,5 +33,7 @@ namespace NaijaKart.Core.Race
         RaceEvent Emit(RaceEventType type, string playerId = null, string target = null, string payload = null, int i = 0, float f = 0f);
         /// <summary>Removes a racer from competition (LASTMA arrest). They continue as a spectator.</summary>
         void Eliminate(RaceParticipant p, string reason);
+        /// <summary>Empties a racer's item slots (LASTMA penalty).</summary>
+        void ClearItems(string playerId);
     }
 }

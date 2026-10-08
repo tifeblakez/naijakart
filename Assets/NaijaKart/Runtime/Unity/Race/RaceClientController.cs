@@ -53,6 +53,36 @@ namespace NaijaKart.Unity.Race
         public TrackGeometry Track => _track;
         public string LocalPlayerId => _net.PlayerId;
 
+        private static readonly Color[] Palette =
+        {
+            new Color(0.3f, 0.85f, 0.4f), new Color(1f, 0.55f, 0.1f), new Color(0.3f, 0.7f, 1f), new Color(0.1f, 0.1f, 0.2f),
+            new Color(1f, 0.4f, 0.7f), new Color(0.8f, 0.3f, 1f), new Color(1f, 0.9f, 0.2f), new Color(0.2f, 0.9f, 0.9f)
+        };
+
+        public string DisplayNameOf(string playerId)
+        {
+            var room = _net.Room;
+            if (room != null) foreach (var m in room.Members) if (m.PlayerId == playerId) return m.DisplayName;
+            return playerId;
+        }
+
+        /// <summary>Stable per-racer colour (standings dots, minimap).</summary>
+        public Color ColorOf(string playerId)
+        {
+            var room = _net.Room;
+            if (room != null) for (int i = 0; i < room.Members.Length; i++) if (room.Members[i].PlayerId == playerId) return Palette[i % Palette.Length];
+            return Color.white;
+        }
+
+        /// <summary>Label of the shortcut gate the local racer just passed (checkpoint index from the GatePassed event).</summary>
+        public string ShortcutLabel(int nextCheckpoint)
+        {
+            if (_trackDef == null) return null;
+            int passed = (nextCheckpoint - 1 + _trackDef.checkpoints.Length) % _trackDef.checkpoints.Length;
+            foreach (var g in _trackDef.checkpoints[passed].gates) if (g.isShortcut) return (g.label ?? "shortcut").Replace('_', ' ');
+            return null;
+        }
+
         private void Start()
         {
             _net = NetworkClient.Instance;

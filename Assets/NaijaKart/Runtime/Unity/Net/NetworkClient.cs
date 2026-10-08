@@ -43,6 +43,11 @@ namespace NaijaKart.Unity.Net
         public event Action<RaceEvent> RaceEventReceived;
         public event Action<RaceResults, SettledRewardDto[]> ResultsReceived;
         public event Action<string, long, string> BailRequested;
+        public event Action<LastmaOptionsDto> LastmaOptionsReceived;
+        public event Action<ServerEnvelope> GarageReceived;
+        public event Action<ServerEnvelope> ChallengeCompleted;
+        public event Action<string, string> LiveEvent;
+        public long PremiumBalance { get; private set; }
         public event Action<string> ServerError;
 
         private void Awake()
@@ -145,6 +150,15 @@ namespace NaijaKart.Unity.Net
         public void SetReady(bool ready) => Send(new ClientEnvelope { Kind = ClientMessageKind.Ready, Flag = ready });
         public void StartRoom(bool fillWithBots) => Send(new ClientEnvelope { Kind = ClientMessageKind.StartRoom, Flag = fillWithBots });
         public void PayFine() => Send(new ClientEnvelope { Kind = ClientMessageKind.PayFine });
+        public void TakePenalty() => Send(new ClientEnvelope { Kind = ClientMessageKind.TakePenalty });
+        public void GetGarage() => Send(new ClientEnvelope { Kind = ClientMessageKind.GetGarage });
+        public void PurchaseVehicle(string id) => Send(new ClientEnvelope { Kind = ClientMessageKind.PurchaseVehicle, VehicleId = id });
+        public void PurchaseCharacter(string id) => Send(new ClientEnvelope { Kind = ClientMessageKind.PurchaseCharacter, CharacterId = id });
+        public void GetChallenges() => Send(new ClientEnvelope { Kind = ClientMessageKind.GetChallenges });
+        public void GetProfile(string playerId = null) => Send(new ClientEnvelope { Kind = ClientMessageKind.GetProfile, TargetPlayerId = playerId });
+        public void GetLeaderboard(string metric, bool friendsOnly) => Send(new ClientEnvelope { Kind = ClientMessageKind.GetLeaderboard, Text = metric, Flag = friendsOnly });
+        public void GetRivalries() => Send(new ClientEnvelope { Kind = ClientMessageKind.GetRivalries });
+        public void AddFriend(string playerId) => Send(new ClientEnvelope { Kind = ClientMessageKind.AddFriend, TargetPlayerId = playerId });
         public void RequestBail() => Send(new ClientEnvelope { Kind = ClientMessageKind.RequestBail });
         public void PayBail(string targetPlayerId) => Send(new ClientEnvelope { Kind = ClientMessageKind.PayBail, TargetPlayerId = targetPlayerId });
         public void VoteRematch() => Send(new ClientEnvelope { Kind = ClientMessageKind.VoteRematch });
@@ -157,6 +171,7 @@ namespace NaijaKart.Unity.Net
                 case ServerMessageKind.Welcome:
                     IsAuthenticated = true;
                     CoinBalance = m.Amount;
+                    PremiumBalance = m.PremiumBalance;
                     RankId = m.Text;
                     Authenticated?.Invoke();
                     break;
@@ -186,6 +201,20 @@ namespace NaijaKart.Unity.Net
                     break;
                 case ServerMessageKind.BailRequest:
                     BailRequested?.Invoke(m.PlayerId, m.Amount, m.Text);
+                    break;
+                case ServerMessageKind.LastmaOptions:
+                    LastmaOptionsReceived?.Invoke(m.LastmaOptions);
+                    break;
+                case ServerMessageKind.Garage:
+                    CoinBalance = m.Amount;
+                    PremiumBalance = m.PremiumBalance;
+                    GarageReceived?.Invoke(m);
+                    break;
+                case ServerMessageKind.ChallengeCompleted:
+                    ChallengeCompleted?.Invoke(m);
+                    break;
+                case ServerMessageKind.LiveEvent:
+                    LiveEvent?.Invoke(m.PlayerId, m.Text);
                     break;
                 case ServerMessageKind.Pong:
                     LastRttMs = NowMs() - m.ClientTimeMs;

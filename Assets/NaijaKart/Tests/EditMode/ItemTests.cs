@@ -65,7 +65,7 @@ namespace NaijaKart.Tests
             Assert.That(roller.Count, Is.EqualTo(1));
             var inv = new ItemInventory();
             inv.Grant("egg", 1f, 5f, 0f);
-            inv.Consume();
+            inv.Consume(0);
             Assert.That(inv.IsOnCooldown("egg", 2f), Is.True);
             Assert.That(inv.IsOnCooldown("egg", 6f), Is.False);
         }
@@ -75,13 +75,66 @@ namespace NaijaKart.Tests
         {
             var inv = new ItemInventory();
             inv.Grant("egg", 1f, 0f, 0f);
-            Assert.That(inv.HasItem && !inv.IsReady);
+            Assert.That(inv.HasItem && !inv.IsReadyAny);
             inv.Tick(0.5f);
-            Assert.That(inv.IsReady, Is.False);
+            Assert.That(inv.IsReadyAny, Is.False);
             inv.Tick(0.6f);
-            Assert.That(inv.IsReady, Is.True);
-            Assert.That(inv.Consume(), Is.EqualTo("egg"));
+            Assert.That(inv.IsReadyAny, Is.True);
+            Assert.That(inv.Consume(0), Is.EqualTo("egg"));
             Assert.That(inv.HasItem, Is.False);
+        }
+
+        [Test]
+        public void FourSlotInventoryFillsInOrderAndUsesByTappedSlot()
+        {
+            var inv = new ItemInventory(4);
+            Assert.That(inv.Grant("jollof_boost", 0f, 0f, 0f), Is.EqualTo(0));
+            Assert.That(inv.Grant("pure_water", 0f, 0f, 0f), Is.EqualTo(1));
+            Assert.That(inv.Grant("egg", 1f, 0f, 0f), Is.EqualTo(2));
+            Assert.That(inv.Grant("oil", 0f, 0f, 0f), Is.EqualTo(3));
+            Assert.That(inv.IsFull);
+            Assert.That(inv.Grant("egg", 0f, 0f, 0f), Is.EqualTo(-1), "full");
+            Assert.That(inv.ResolveSlot(2), Is.EqualTo(-1), "slot 2 still rolling");
+            Assert.That(inv.ResolveSlot(-1), Is.EqualTo(0), "first ready slot");
+            Assert.That(inv.ResolveSlot(1), Is.EqualTo(1));
+            Assert.That(inv.Consume(1), Is.EqualTo("pure_water"));
+            Assert.That(inv.ItemAt(1), Is.Null);
+            Assert.That(inv.Grant("danfo", 0f, 0f, 0f), Is.EqualTo(1), "gap refilled first");
+            var ids = inv.SnapshotIds();
+            Assert.That(ids, Is.EqualTo(new[] { "jollof_boost", "danfo", "egg", "oil" }));
+            inv.Clear();
+            Assert.That(inv.Count, Is.EqualTo(0));
+        }
+
+        [Test]
+        public void SpikeStripStunsAndIsConsumed()
+        {
+            var a = _sim.Find("a");
+            var b = _sim.Find("b");
+            TestContent.Drive(_sim, "a", 30);
+            TestContent.Drive(_sim, "b", 30);
+            var spike = new ItemDefinition { id = "spike", effect = ItemEffectType.DropSpikeStrip, duration = 10f, magnitude = 2f };
+            Assert.That(_effects.Use(a, spike), Is.True);
+            var h = _sim.Hazards.All[0];
+            Assert.That(h.Kind, Is.EqualTo(HazardKind.SpikeStrip));
+            Assert.That(_effects.ApplyHazardContact(b, h), Is.True);
+            Assert.That(b.State.IsStunned);
+            Assert.That(_sim.Hazards.All.Count, Is.EqualTo(0));
+        }
+
+        [Test]
+        public void SimulationUsesTheTappedSlot()
+        {
+            var a = _sim.Find("a");
+            var inv = _sim.InventoryOf("a");
+            inv.Grant("jollof_boost", 0f, 0f, 0f);
+            inv.Grant("generator_shield", 0f, 0f, 0f);
+            TestContent.Drive(_sim, "a", 30);
+            _sim.SubmitInput("a", new Core.Input.PlayerInputFrame { Sequence = a.LastInputSequence + 1, UseItem = true, ItemSlot = 1 });
+            _sim.Step();
+            Assert.That(a.State.HasShield, "slot 1 (shield) was used");
+            Assert.That(inv.ItemAt(0), Is.EqualTo("jollof_boost"), "slot 0 untouched");
+            Assert.That(inv.ItemAt(1), Is.Null);
         }
 
         [Test]

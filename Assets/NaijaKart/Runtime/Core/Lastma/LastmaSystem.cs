@@ -11,6 +11,8 @@ namespace NaijaKart.Core.Lastma
         Warning,
         Pursuit,
         FinePending,
+        /// <summary>Serving the roadside penalty.</summary>
+        Penalty,
         Escaped,
         Resolved,
         Arrested
@@ -47,15 +49,17 @@ namespace NaijaKart.Core.Lastma
         private float _nextTriggerAt;
         private int _eventCounter;
         private readonly float _intervalMul;
+        private readonly bool _competitive;
 
         public IReadOnlyList<LastmaEvent> Events => _events;
 
-        public LastmaSystem(IRaceContext ctx, IWallet wallet, float intervalMultiplier = 1f)
+        public LastmaSystem(IRaceContext ctx, IWallet wallet, float intervalMultiplier = 1f, bool competitiveRules = false)
         {
             _ctx = ctx;
             _cfg = ctx.Config.lastma;
             _wallet = wallet;
             _intervalMul = intervalMultiplier > 0f ? intervalMultiplier : 1f;
+            _competitive = competitiveRules;
             _nextTriggerAt = _cfg.firstTriggerMinSeconds * _intervalMul + ctx.Rng.Range(0f, (_cfg.maxIntervalSeconds - _cfg.minIntervalSeconds) * _intervalMul);
         }
 
@@ -95,20 +99,37 @@ namespace NaijaKart.Core.Lastma
             return e;
         }
 
-        /// <summary>Called by the simulation when the target crosses a shortcut gate during pursuit.</summary>
+        public bool FinesAllowed => !_competitive || _cfg.finesAllowedInRanked;
+        public bool BailAllowed => !_competitive || _cfg.bailAllowedInRanked;
+
+        /// <summary>Called when a racer crosses a shortcut gate: "faster, but LASTMA dey watch".</summary>
         public void NotifyShortcut(string playerId)
         {
+            var p = _ctx.Find(playerId);
+            if (p != null && _cfg.shortcutHeatSeconds > 0f) p.LastmaHeatUntil = _ctx.RaceTime + _cfg.shortcutHeatSeconds;
             var e = EventFor(playerId);
-            if (e != null && e.Phase == LastmaPhase.Pursuit)
+            if (e != null && e.Phase == LastmaPhase.Pursuit && _cfg.shortcutPressureRelief > 0f)
             {
                 e.Pressure = System.Math.Max(0f, e.Pressure - _cfg.shortcutPressureRelief);
             }
         }
 
-        public bool PayFine(string playerId)
+        /// <summary>The free default: wait at the roadside and lose your items.</summary>
+        public bool TakePenalty(string playerId)
         {
             var e = EventFor(playerId);
             if (e == null || e.Phase != LastmaPhase.FinePending) return false;
+            e.Phase = LastmaPhase.Penalty;
+            e.PhaseTimeRemaining = _cfg.penaltySeconds;
+            if (_cfg.penaltyLosesItems) _ctx.ClearItems(playerId);
+            _ctx.Emit(RaceEventType.LastmaPenaltyTaken, playerId, null, e.Id, 0, _cfg.penaltySeconds);
+            return true;
+        }
+
+        public bool PayFine(string playerId)
+        {
+            var e = EventFor(playerId);
+            if (e == null || e.Phase != LastmaPhase.FinePending || !FinesAllowed) return false;
             if (!_wallet.TryDebit(playerId, e.FineAmount, "lastma_fine", e.Id + ":fine")) return false;
             var p = _ctx.Find(playerId);
             if (p != null) p.Telemetry.LastmaFinesPaid++;
@@ -119,7 +140,7 @@ namespace NaijaKart.Core.Lastma
         public bool RequestBail(string playerId)
         {
             var e = EventFor(playerId);
-            if (e == null || e.Phase != LastmaPhase.FinePending || e.BailRequested) return false;
+            if (e == null || e.Phase != LastmaPhase.FinePending || e.BailRequested || !BailAllowed) return false;
             e.BailRequested = true;
             var p = _ctx.Find(playerId);
             if (p != null) p.Telemetry.BailRequested++;
@@ -131,7 +152,7 @@ namespace NaijaKart.Core.Lastma
         public bool PayBail(string payerId, string targetPlayerId)
         {
             var e = EventFor(targetPlayerId);
-            if (e == null || e.Phase != LastmaPhase.FinePending || !e.BailRequested) return false;
+            if (e == null || (e.Phase != LastmaPhase.FinePending && e.Phase != LastmaPhase.Penalty) || !e.BailRequested) return false;
             if (payerId == targetPlayerId) return false;
             if (!_wallet.TryDebit(payerId, e.FineAmount, "lastma_bail", e.Id + ":bail:" + payerId)) return false;
             e.BailPaidBy = payerId;
@@ -150,7 +171,8 @@ namespace NaijaKart.Core.Lastma
             if (p != null)
             {
                 p.State.IsImmobilised = false;
-                p.State.StunTimeRemaining = System.Math.Max(p.State.StunTimeRemaining, _cfg.resumeStunSeconds);
+                float resume = type == RaceEventType.LastmaBailed ? _cfg.bailResumeSeconds : type == RaceEventType.LastmaPenaltyServed ? 0f : _cfg.resumeStunSeconds;
+                p.State.StunTimeRemaining = System.Math.Max(p.State.StunTimeRemaining, resume);
             }
             _ctx.Emit(type, playerId, by, e.Id, 0, (float)e.FineAmount);
             _events.Remove(e);
@@ -203,10 +225,23 @@ namespace NaijaKart.Core.Lastma
                     case LastmaPhase.FinePending:
                         if (e.PhaseTimeRemaining <= 0f)
                         {
-                            e.Phase = LastmaPhase.Arrested;
-                            _ctx.Emit(RaceEventType.LastmaArrested, p.PlayerId, null, e.Id);
-                            _events.RemoveAt(i);
-                            _ctx.Eliminate(p, "lastma_arrest");
+                            if (_cfg.arrestEnabled)
+                            {
+                                e.Phase = LastmaPhase.Arrested;
+                                _ctx.Emit(RaceEventType.LastmaArrested, p.PlayerId, null, e.Id);
+                                _events.RemoveAt(i);
+                                _ctx.Eliminate(p, "lastma_arrest");
+                            }
+                            else
+                            {
+                                TakePenalty(p.PlayerId);
+                            }
+                        }
+                        break;
+                    case LastmaPhase.Penalty:
+                        if (e.PhaseTimeRemaining <= 0f)
+                        {
+                            Resolve(e, RaceEventType.LastmaPenaltyServed, p.PlayerId);
                         }
                         break;
                 }
@@ -251,7 +286,7 @@ namespace NaijaKart.Core.Lastma
         private int ActiveCount()
         {
             int n = 0;
-            foreach (var e in _events) if (e.Phase == LastmaPhase.Warning || e.Phase == LastmaPhase.Pursuit || e.Phase == LastmaPhase.FinePending) n++;
+            foreach (var e in _events) if (e.Phase == LastmaPhase.Warning || e.Phase == LastmaPhase.Pursuit || e.Phase == LastmaPhase.FinePending || e.Phase == LastmaPhase.Penalty) n++;
             return n;
         }
 
@@ -277,6 +312,7 @@ namespace NaijaKart.Core.Lastma
                 bool onCooldown = _cooldownUntil.TryGetValue(p.PlayerId, out float until) && _ctx.RaceTime < until;
                 bool busy = EventFor(p.PlayerId) != null;
                 float w = _cfg.positionWeights[System.Math.Min(i, _cfg.positionWeights.Length - 1)];
+                if (p.LastmaHeatUntil > _ctx.RaceTime) w *= _cfg.shortcutHeatMultiplier;
                 weights[i] = onCooldown || busy || p.Status != ParticipantStatus.Connected ? 0f : w;
                 any |= weights[i] > 0f;
             }

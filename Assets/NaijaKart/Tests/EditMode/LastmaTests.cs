@@ -23,6 +23,7 @@ namespace NaijaKart.Tests
             _content.Game.lastma.warningSeconds = 1f;
             _content.Game.lastma.pursuitSeconds = 5f;
             _content.Game.lastma.fineDecisionSeconds = 3f;
+            _content.Game.lastma.penaltySeconds = 2f;
             _ledger = new CoinLedger(new InMemoryCoinStore(), _content.Game.economy);
             _sim = new RaceSimulation(TestContent.Setup(items: false, lastma: true, road: false), _content, new LedgerWallet(_ledger));
             int n = 0;
@@ -162,8 +163,90 @@ namespace NaijaKart.Tests
         }
 
         [Test]
-        public void NoPaymentMeansArrestAndElimination()
+        public void NoChoiceMeansThePenaltyByDefault()
         {
+            GetCaught("a");
+            var inv = _sim.InventoryOf("a");
+            inv.Grant("jollof_boost", 0f, 0f, 0f);
+            long before = _ledger.GetBalance("a");
+            StepAll(30 * 3 + 2);
+            var types = Drain();
+            Assert.That(types, Does.Contain(RaceEventType.LastmaPenaltyTaken));
+            Assert.That(types, Does.Not.Contain(RaceEventType.LastmaArrested));
+            var e = _sim.Lastma.EventFor("a");
+            Assert.That(e.Phase, Is.EqualTo(LastmaPhase.Penalty));
+            Assert.That(_sim.Find("a").State.IsImmobilised, Is.True);
+            Assert.That(inv.Count, Is.EqualTo(0), "penalty loses your items");
+            Assert.That(_ledger.GetBalance("a"), Is.EqualTo(before), "always free");
+            StepAll(30 * 2 + 2);
+            Assert.That(Drain(), Does.Contain(RaceEventType.LastmaPenaltyServed));
+            Assert.That(_sim.Find("a").State.IsImmobilised, Is.False);
+            Assert.That(_sim.Find("a").Status, Is.EqualTo(ParticipantStatus.Connected), "nobody is eliminated");
+        }
+
+        [Test]
+        public void TakePenaltyExplicitlyAndBailFreesEarly()
+        {
+            GetCaught("a");
+            Assert.That(_sim.TakePenalty("a"), Is.True);
+            Assert.That(_sim.TakePenalty("a"), Is.False);
+            // Bail can still free a racer serving the penalty (requested before taking it).
+            GetCaught("b");
+            Assert.That(_sim.RequestBail("b"), Is.True);
+            Assert.That(_sim.TakePenalty("b"), Is.True);
+            Assert.That(_sim.PayBail("c", "b"), Is.True, "friend frees you early");
+            Assert.That(_sim.Find("b").State.IsImmobilised, Is.False);
+        }
+
+        [Test]
+        public void RankedRulesForbidFinesAndBail()
+        {
+            var sim = new RaceSimulation(TestContent.Setup(items: false, lastma: true, road: false, mode: RaceMode.Ranked), _content, new LedgerWallet(_ledger));
+            sim.AddParticipant("a", "A", "danfo", null);
+            sim.AddParticipant("b", "B", "danfo", null);
+            sim.BeginCountdown();
+            while (sim.State == RaceState.Countdown) sim.Step();
+            Assert.That(sim.Lastma.FinesAllowed, Is.False);
+            Assert.That(sim.Lastma.BailAllowed, Is.False);
+            var e = sim.Lastma.Trigger(sim.Find("a"));
+            for (int i = 0; i < 30 * 8 && e.Phase != LastmaPhase.FinePending; i++) { sim.Find("a").State.StunTimeRemaining = 10f; sim.Step(); }
+            Assert.That(e.Phase, Is.EqualTo(LastmaPhase.FinePending));
+            Assert.That(sim.PayFine("a"), Is.False, "everyone takes the same penalty");
+            Assert.That(sim.RequestBail("a"), Is.False);
+            Assert.That(sim.TakePenalty("a"), Is.True);
+        }
+
+        [Test]
+        public void ShortcutsRaiseLastmaHeat()
+        {
+            _content.Game.lastma.shortcutHeatMultiplier = 100f;
+            _content.Game.lastma.shortcutHeatSeconds = 60f;
+            _content.Game.lastma.firstTriggerMinSeconds = 0f;
+            _content.Game.lastma.minIntervalSeconds = 0.2f;
+            _content.Game.lastma.maxIntervalSeconds = 0.3f;
+            _content.Game.lastma.targetCooldownSeconds = 0f;
+            _content.Game.lastma.warningSeconds = 0.1f;
+            _content.Game.lastma.pursuitSeconds = 0.1f;
+            var content = TestContent.Create(withShortcut: true);
+            content.Game = _content.Game;
+            var counts = new Dictionary<string, int>();
+            var events = new List<RaceEvent>();
+            TestContent.RunBotRace(content, TestContent.Setup(laps: 1, items: false, lastma: true, road: false), 4, perTick: s =>
+            {
+                // p0 "takes the shortcut" every tick by marking heat; others never do.
+                s.Lastma.NotifyShortcut("p0");
+                events.Clear(); s.DrainEvents(events);
+                foreach (var ev in events) if (ev.Type == RaceEventType.LastmaWarning) counts[ev.PlayerId] = counts.TryGetValue(ev.PlayerId, out int c) ? c + 1 : 1;
+            });
+            int hot = counts.TryGetValue("p0", out int h) ? h : 0;
+            int others = 0; foreach (var kv in counts) if (kv.Key != "p0") others += kv.Value;
+            Assert.That(hot, Is.GreaterThan(others), $"heat p0={hot} others={others}");
+        }
+
+        [Test]
+        public void NoPaymentMeansArrestAndEliminationWhenEnabled()
+        {
+            _content.Game.lastma.arrestEnabled = true;
             _ledger.Debit("a", _ledger.GetBalance("a") - 10, "test", "drain", out _);
             GetCaught("a");
             _sim.RequestBail("a");

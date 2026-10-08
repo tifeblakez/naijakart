@@ -21,6 +21,10 @@ namespace NaijaKart.Unity.Input
         private float _rawRollDegrees;
         private bool _sensorAvailable;
 
+        /// <summary>Set by TouchSteerZone while the thumb drags (Touch steering mode).</summary>
+        public float TouchSteer { get; set; }
+        /// <summary>Slot the next UseItem press refers to (-1 = first ready).</summary>
+        public int ItemSlot { get; set; } = -1;
         public bool DriftHeld { get; set; }
         public bool ItemPressed { get; set; }
         public bool BoostPressed { get; set; }
@@ -60,10 +64,27 @@ namespace NaijaKart.Unity.Input
         private void Update()
         {
             float dt = Time.unscaledDeltaTime;
-            if (!PlayerSettingsStore.UseButtonSteering && _sensorAvailable)
+            if (PlayerSettingsStore.SteeringMode == SteeringMode.Tilt && _sensorAvailable)
             {
                 _rawRollDegrees = ReadRollDegrees();
                 CurrentSteer = _mapper.Map(_rawRollDegrees, dt);
+            }
+            else if (PlayerSettingsStore.SteeringMode == SteeringMode.Touch || !_sensorAvailable)
+            {
+                CurrentSteer = Mathf.MoveTowards(CurrentSteer, TouchSteer, _buttonSteerRate * 2f * dt);
+#if UNITY_EDITOR || UNITY_STANDALONE
+                var kb = Keyboard.current;
+                if (kb != null)
+                {
+                    float k = 0f;
+                    if (kb.aKey.isPressed || kb.leftArrowKey.isPressed) k = -1f;
+                    if (kb.dKey.isPressed || kb.rightArrowKey.isPressed) k = 1f;
+                    if (k != 0f) CurrentSteer = Mathf.MoveTowards(CurrentSteer, k, _buttonSteerRate * dt);
+                    DriftHeld |= kb.spaceKey.isPressed;
+                    if (kb.eKey.wasPressedThisFrame) ItemPressed = true;
+                    if (kb.leftShiftKey.wasPressedThisFrame) BoostPressed = true;
+                }
+#endif
             }
             else
             {
@@ -103,11 +124,13 @@ namespace NaijaKart.Unity.Input
                 Steer = CurrentSteer,
                 Drift = DriftHeld,
                 UseItem = ItemPressed,
+                ItemSlot = ItemSlot,
                 Boost = BoostPressed,
                 LookBack = LookBackHeld,
                 Horn = HornPressed
             };
             ItemPressed = false;
+            ItemSlot = -1;
             BoostPressed = false;
             HornPressed = false;
             return f;

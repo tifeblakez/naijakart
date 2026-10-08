@@ -77,6 +77,7 @@ namespace NaijaKart.Tests
         [Test]
         public void ReleasingChargedDriftBoosts()
         {
+            _cfg.drift.releaseMode = DriftReleaseMode.Immediate;
             var s = VehicleState.AtRest(Vec3.Zero, 0f);
             Run(ref s, PlayerInputFrame.Neutral, 90);
             Run(ref s, new PlayerInputFrame { Steer = 1f, Drift = true }, (int)(_cfg.drift.levelThresholds[1] / Dt) + 5);
@@ -88,6 +89,27 @@ namespace NaijaKart.Tests
             Assert.That(s.BoostMultiplier, Is.EqualTo(_cfg.drift.levelBoostMultiplier[1]).Within(1e-4));
             Run(ref s, PlayerInputFrame.Neutral, 15);
             Assert.That(s.Speed, Is.GreaterThan(_stats.TopSpeed * 1.05f), "boost exceeds normal top speed");
+        }
+
+        [Test]
+        public void StoreChargeModeBanksChargesAndBoostButtonSpendsThem()
+        {
+            _cfg.drift.releaseMode = DriftReleaseMode.StoreCharge;
+            var s = VehicleState.AtRest(Vec3.Zero, 0f);
+            Run(ref s, PlayerInputFrame.Neutral, 90);
+            Run(ref s, new PlayerInputFrame { Steer = 1f, Drift = true }, (int)(_cfg.drift.levelThresholds[2] / Dt) + 5);
+            var ev = Run(ref s, PlayerInputFrame.Neutral, 1);
+            Assert.That(ev.HasFlag(VehicleStepEvents.ChargeStored));
+            Assert.That(s.IsBoosting, Is.False, "nothing fires on release");
+            Assert.That(s.BoostCharges, Is.EqualTo(_cfg.drift.levelStoredCharges[2]));
+            ev = Run(ref s, new PlayerInputFrame { Boost = true }, 1);
+            Assert.That(ev.HasFlag(VehicleStepEvents.ChargeSpent));
+            Assert.That(s.IsBoosting);
+            Assert.That(s.BoostCharges, Is.EqualTo(_cfg.drift.levelStoredCharges[2] - 1));
+            Run(ref s, new PlayerInputFrame { Boost = true }, 5);
+            Assert.That(s.BoostCharges, Is.EqualTo(_cfg.drift.levelStoredCharges[2] - 1), "holding the button spends one charge only");
+            for (int i = 0; i < 10; i++) { Run(ref s, new PlayerInputFrame { Steer = 1f, Drift = true }, (int)(_cfg.drift.levelThresholds[2] / Dt) + 5); Run(ref s, PlayerInputFrame.Neutral, 1); }
+            Assert.That(s.BoostCharges, Is.EqualTo(_cfg.boost.maxStoredCharges), "capped");
         }
 
         [Test]

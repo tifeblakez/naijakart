@@ -28,6 +28,8 @@ namespace NaijaKart.Core.Race
         public bool IsReady;
         public bool VotedRematch;
         public bool IsBot;
+        /// <summary>Race time until which LASTMA targeting weight is multiplied (took a shortcut).</summary>
+        public float LastmaHeatUntil = -1f;
 
         public readonly ParticipantStats Telemetry = new ParticipantStats();
 

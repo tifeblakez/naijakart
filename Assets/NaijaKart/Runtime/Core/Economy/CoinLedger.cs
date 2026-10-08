@@ -5,6 +5,10 @@ using NaijaKart.Core.Util;
 
 namespace NaijaKart.Core.Economy
 {
+    /// <summary>Coins are earned through play and spend on fines, vehicles and cosmetics. Premium is purchased and
+    /// spends on cosmetics only: it can never buy a fine, a vehicle stat or anything competitive (PRD §37).</summary>
+    public enum Currency { Coins, Premium }
+
     public enum TransactionResult
     {
         Ok,
@@ -20,6 +24,7 @@ namespace NaijaKart.Core.Economy
     {
         public string TransactionId;
         public string PlayerId;
+        public Currency Currency;
         public string Source;
         public long Amount;
         public long BalanceBefore;
@@ -81,42 +86,56 @@ namespace NaijaKart.Core.Economy
             _clock = unixMsClock ?? (() => DateTimeOffset.UtcNow.ToUnixTimeMilliseconds());
         }
 
+        private static string Key(string playerId, Currency c) => c == Currency.Coins ? playerId : playerId + "#premium";
+
         public void EnsureAccount(string playerId)
         {
             lock (_lock)
             {
                 if (!_store.TryGetBalance(playerId, out _)) _store.SetBalance(playerId, _config.startingBalance);
+                string pk = Key(playerId, Currency.Premium);
+                if (!_store.TryGetBalance(pk, out _)) _store.SetBalance(pk, _config.startingPremiumBalance);
             }
         }
 
-        public long GetBalance(string playerId)
+        public long GetBalance(string playerId) => GetBalance(playerId, Currency.Coins);
+
+        public long GetBalance(string playerId, Currency currency)
         {
-            lock (_lock) return _store.TryGetBalance(playerId, out long b) ? b : 0L;
+            lock (_lock) return _store.TryGetBalance(Key(playerId, currency), out long b) ? b : 0L;
         }
+
+        public TransactionResult Credit(string playerId, Currency currency, long amount, string source, string idempotencyKey, out CoinTransaction tx) =>
+            Apply(playerId, currency, amount, source, idempotencyKey, out tx);
+
+        public TransactionResult Debit(string playerId, Currency currency, long amount, string source, string idempotencyKey, out CoinTransaction tx) =>
+            Apply(playerId, currency, -amount, source, idempotencyKey, out tx);
 
         public bool CanAfford(string playerId, long amount) => GetBalance(playerId) >= amount;
 
         public TransactionResult Credit(string playerId, long amount, string source, string idempotencyKey, out CoinTransaction tx) =>
-            Apply(playerId, amount, source, idempotencyKey, out tx);
+            Apply(playerId, Currency.Coins, amount, source, idempotencyKey, out tx);
 
         public TransactionResult Debit(string playerId, long amount, string source, string idempotencyKey, out CoinTransaction tx) =>
-            Apply(playerId, -amount, source, idempotencyKey, out tx);
+            Apply(playerId, Currency.Coins, -amount, source, idempotencyKey, out tx);
 
-        private TransactionResult Apply(string playerId, long delta, string source, string idempotencyKey, out CoinTransaction tx)
+        private TransactionResult Apply(string playerId, Currency currency, long delta, string source, string idempotencyKey, out CoinTransaction tx)
         {
+            string key = Key(playerId, currency);
             tx = null;
             if (string.IsNullOrEmpty(idempotencyKey)) throw new ArgumentException("idempotencyKey required");
             if (delta == 0 || System.Math.Abs(delta) > _config.maxSingleTransaction) return TransactionResult.InvalidAmount;
             lock (_lock)
             {
                 if (_store.HasIdempotencyKey(idempotencyKey)) return TransactionResult.Duplicate;
-                if (!_store.TryGetBalance(playerId, out long before)) return TransactionResult.UnknownPlayer;
+                if (!_store.TryGetBalance(key, out long before)) return TransactionResult.UnknownPlayer;
                 long after = before + delta;
                 if (after < 0) return TransactionResult.InsufficientBalance;
                 tx = new CoinTransaction
                 {
                     TransactionId = IdGenerator.NextString("tx"),
                     PlayerId = playerId,
+                    Currency = currency,
                     Source = source,
                     Amount = delta,
                     BalanceBefore = before,
@@ -124,7 +143,7 @@ namespace NaijaKart.Core.Economy
                     TimestampUnixMs = _clock(),
                     IdempotencyKey = idempotencyKey
                 };
-                _store.SetBalance(playerId, after);
+                _store.SetBalance(key, after);
                 _store.Append(tx);
                 return TransactionResult.Ok;
             }

@@ -2,9 +2,13 @@ using UnityEngine;
 
 namespace NaijaKart.Unity
 {
+    public enum SteeringMode { Tilt = 0, Touch = 1, Buttons = 2 }
+
     /// <summary>Local, non-competitive player preferences (PRD §72). Never gameplay-affecting server state.</summary>
     public static class PlayerSettingsStore
     {
+        public static SteeringMode SteeringMode = SteeringMode.Tilt;
+        public static bool OnboardingComplete = false;
         public static float TiltSensitivity = 1f;
         public static float TiltCalibrationOffset = 0f;
         public static bool TiltInverted = false;
@@ -27,6 +31,8 @@ namespace NaijaKart.Unity
             TiltCalibrationOffset = PlayerPrefs.GetFloat("nk.tilt.offset", 0f);
             TiltInverted = PlayerPrefs.GetInt("nk.tilt.inverted", 0) == 1;
             UseButtonSteering = PlayerPrefs.GetInt("nk.steer.buttons", 0) == 1;
+            SteeringMode = (SteeringMode)PlayerPrefs.GetInt("nk.steer.mode", 0);
+            OnboardingComplete = PlayerPrefs.GetInt("nk.onboarding.done", 0) == 1;
             LeftHandedLayout = PlayerPrefs.GetInt("nk.ui.lefthanded", 0) == 1;
             ReducedCameraShake = PlayerPrefs.GetInt("nk.cam.reducedshake", 0) == 1;
             Vibration = PlayerPrefs.GetInt("nk.vibration", 1) == 1;
@@ -52,6 +58,8 @@ namespace NaijaKart.Unity
             PlayerPrefs.SetFloat("nk.tilt.offset", TiltCalibrationOffset);
             PlayerPrefs.SetInt("nk.tilt.inverted", TiltInverted ? 1 : 0);
             PlayerPrefs.SetInt("nk.steer.buttons", UseButtonSteering ? 1 : 0);
+            PlayerPrefs.SetInt("nk.steer.mode", (int)SteeringMode);
+            PlayerPrefs.SetInt("nk.onboarding.done", OnboardingComplete ? 1 : 0);
             PlayerPrefs.SetInt("nk.ui.lefthanded", LeftHandedLayout ? 1 : 0);
             PlayerPrefs.SetInt("nk.cam.reducedshake", ReducedCameraShake ? 1 : 0);
             PlayerPrefs.SetInt("nk.vibration", Vibration ? 1 : 0);

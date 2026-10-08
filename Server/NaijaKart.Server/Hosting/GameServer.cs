@@ -182,6 +182,15 @@ namespace NaijaKart.Server.Hosting
                 case ClientMessageKind.GetProfile:
                     _transport.Send(connectionId, new ServerEnvelope { Kind = ServerMessageKind.Profile, Profile = BuildProfile(msg.TargetPlayerId ?? s.PlayerId) });
                     break;
+                case ClientMessageKind.GetGarage:
+                    SendGarage(s);
+                    break;
+                case ClientMessageKind.PurchaseVehicle:
+                    HandlePurchase(s, msg.VehicleId, isVehicle: true);
+                    break;
+                case ClientMessageKind.PurchaseCharacter:
+                    HandlePurchase(s, msg.CharacterId, isVehicle: false);
+                    break;
                 default:
                     if (s.Room == null) { SendError(s.PlayerId, "Not in a room"); break; }
                     s.Room.HandleIntent(s.PlayerId, msg);
@@ -217,6 +226,7 @@ namespace NaijaKart.Server.Hosting
                 Kind = ServerMessageKind.Welcome,
                 PlayerId = playerId,
                 Amount = Ledger.GetBalance(playerId),
+                PremiumBalance = Ledger.GetBalance(playerId, Core.Economy.Currency.Premium),
                 Text = RankLadder.TierFor(profile.Rating).id,
                 ServerTimeMs = NowMs()
             });
@@ -360,6 +370,129 @@ namespace NaijaKart.Server.Hosting
 
         public WeekdayRule TodayRule() => Content.Game.liveEvents?.RuleFor((int)UtcNow().DayOfWeek);
 
+        // ---- garage ----
+        public bool OwnsVehicle(PlayerProfile p, VehicleDefinition v) =>
+            v != null && ((v.priceCoins <= 0 && v.unlockLevel <= 0) || p.UnlockedVehicleIds.Contains(v.id)
+                          || (v.priceCoins <= 0 && XpCurve.LevelForXp(p.TotalXp, Content.Game.progression) >= v.unlockLevel));
+
+        public bool OwnsCharacter(PlayerProfile p, CharacterDefinition c) =>
+            c != null && ((c.priceCoins <= 0 && c.unlockLevel <= 0) || p.UnlockedCharacterIds.Contains(c.id)
+                          || (c.priceCoins <= 0 && XpCurve.LevelForXp(p.TotalXp, Content.Game.progression) >= c.unlockLevel));
+
+        private VehicleDefinition FindVehicle(string id) { foreach (var v in Content.Vehicles.vehicles) if (v.id == id) return v; return null; }
+        private CharacterDefinition FindCharacter(string id) { foreach (var c in Content.Characters.characters) if (c.id == id) return c; return null; }
+
+        /// <summary>
+        /// Resolves a requested loadout against ownership. Null ids fall back to the profile's selection,
+        /// then to the first starter. Returns false if a named vehicle/character is not owned (ids are
+        /// then replaced with owned fallbacks so the racer can still race).
+        /// </summary>
+        public bool ResolveLoadout(string playerId, ref string vehicleId, ref string characterId)
+        {
+            var p = Profiles.Get(playerId);
+            bool ok = true;
+            var v = FindVehicle(vehicleId ?? p.SelectedVehicleId);
+            if (vehicleId != null && (v == null || !OwnsVehicle(p, v))) ok = false;
+            if (v == null || !OwnsVehicle(p, v)) v = FirstOwnedVehicle(p);
+            var c = FindCharacter(characterId ?? p.SelectedCharacterId);
+            if (characterId != null && c != null && !OwnsCharacter(p, c)) ok = false;
+            if (c != null && !OwnsCharacter(p, c)) c = null;
+            vehicleId = v?.id;
+            characterId = c?.id;
+            if (ok)
+            {
+                p.SelectedVehicleId = vehicleId;
+                if (characterId != null) p.SelectedCharacterId = characterId;
+                Profiles.Save(p);
+            }
+            return ok;
+        }
+
+        private VehicleDefinition FirstOwnedVehicle(PlayerProfile p)
+        {
+            foreach (var v in Content.Vehicles.vehicles) if (OwnsVehicle(p, v)) return v;
+            return Content.Vehicles.vehicles[0];
+        }
+
+        private void HandlePurchase(Session s, string id, bool isVehicle)
+        {
+            var p = Profiles.Get(s.PlayerId);
+            int level = XpCurve.LevelForXp(p.TotalXp, Content.Game.progression);
+            long price; int unlockLevel; bool owned; string name;
+            if (isVehicle)
+            {
+                var v = FindVehicle(id);
+                if (v == null) { SendError(s.PlayerId, "Unknown kart"); return; }
+                price = v.priceCoins; unlockLevel = v.unlockLevel; owned = OwnsVehicle(p, v); name = v.displayName;
+            }
+            else
+            {
+                var c = FindCharacter(id);
+                if (c == null) { SendError(s.PlayerId, "Unknown racer"); return; }
+                price = c.priceCoins; unlockLevel = c.unlockLevel; owned = OwnsCharacter(p, c); name = c.displayName;
+            }
+            if (owned) { SendError(s.PlayerId, name + " is already yours"); return; }
+            if (level < unlockLevel) { SendError(s.PlayerId, $"{name} unlocks at level {unlockLevel}"); return; }
+            // Earned Coins only: premium currency never buys anything that affects a race (PRD §37).
+            string key = $"purchase:{s.PlayerId}:{(isVehicle ? "vehicle" : "character")}:{id}";
+            if (price > 0 && Ledger.Debit(s.PlayerId, price, "purchase:" + id, key, out _) != Core.Economy.TransactionResult.Ok)
+            {
+                SendError(s.PlayerId, $"Not enough Coins for {name} ({price:N0} C)");
+                return;
+            }
+            if (isVehicle) { p.UnlockedVehicleIds.Add(id); p.SelectedVehicleId = id; }
+            else { p.UnlockedCharacterIds.Add(id); p.SelectedCharacterId = id; }
+            Profiles.Save(p);
+            Log.Info("garage", $"{s.PlayerId} bought {id} for {price}");
+            SendGarage(s);
+        }
+
+        private void SendGarage(Session s)
+        {
+            var p = Profiles.Get(s.PlayerId);
+            int level = XpCurve.LevelForXp(p.TotalXp, Content.Game.progression);
+            var vehicles = new List<GarageItemDto>();
+            foreach (var v in Content.Vehicles.vehicles)
+            {
+                vehicles.Add(new GarageItemDto
+                {
+                    Id = v.id, DisplayName = v.displayName, Tagline = v.tagline ?? v.description, Owned = OwnsVehicle(p, v),
+                    Selected = v.id == (p.SelectedVehicleId ?? FirstOwnedVehicle(p).id), PriceCoins = v.priceCoins, UnlockLevel = v.unlockLevel,
+                    LevelReached = level >= v.unlockLevel,
+                    Speed = v.speed, Acceleration = v.acceleration, Handling = v.handling, Drift = v.drift, Weight = v.weight, Boost = v.boost, Traction = v.traction
+                });
+            }
+            var characters = new List<GarageItemDto>();
+            foreach (var c in Content.Characters.characters)
+            {
+                characters.Add(new GarageItemDto
+                {
+                    Id = c.id, DisplayName = c.displayName, Tagline = c.archetype, Owned = OwnsCharacter(p, c),
+                    Selected = c.id == p.SelectedCharacterId, PriceCoins = c.priceCoins, UnlockLevel = c.unlockLevel, LevelReached = level >= c.unlockLevel
+                });
+            }
+            _transport.Send(s.ConnectionId, new ServerEnvelope
+            {
+                Kind = ServerMessageKind.Garage,
+                Vehicles = vehicles.ToArray(),
+                Characters = characters.ToArray(),
+                Amount = Ledger.GetBalance(s.PlayerId),
+                PremiumBalance = Ledger.GetBalance(s.PlayerId, Core.Economy.Currency.Premium)
+            });
+        }
+
+        /// <summary>Friends currently connected who could pay bail (shown on the PULL OVER dialog).</summary>
+        public int FriendsOnline(string playerId, RaceRoom room)
+        {
+            int n = 0;
+            var seen = new HashSet<string>();
+            foreach (var f in Profiles.Get(playerId).FriendIds)
+                if (seen.Add(f) && _byPlayer.TryGetValue(f, out var s) && s.ConnectionId != null) n++;
+            foreach (var m in room.Members)
+                if (m != playerId && seen.Add(m) && _byPlayer.TryGetValue(m, out var s) && s.ConnectionId != null) n++;
+            return n;
+        }
+
         private void HandleAddFriend(Session s, string targetId)
         {
             // First pass: symmetric friendship on request (ADR-0006: request/accept flow comes with accounts).
@@ -483,8 +616,13 @@ namespace NaijaKart.Server.Hosting
                 CurrentWinStreak = p.CurrentWinStreak,
                 BestWinStreak = p.BestWinStreak,
                 Coins = Ledger.GetBalance(playerId),
+                Premium = Ledger.GetBalance(playerId, Core.Economy.Currency.Premium),
                 Achievements = p.Achievements.ToArray(),
-                FriendIds = p.FriendIds.ToArray()
+                FriendIds = p.FriendIds.ToArray(),
+                UnlockedVehicleIds = p.UnlockedVehicleIds.ToArray(),
+                UnlockedCharacterIds = p.UnlockedCharacterIds.ToArray(),
+                SelectedVehicleId = p.SelectedVehicleId,
+                SelectedCharacterId = p.SelectedCharacterId
             };
         }
 

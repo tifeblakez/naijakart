@@ -75,7 +75,7 @@ namespace NaijaKart.Server
             Console.WriteLine($"Race {results.RaceId} on {results.TrackId}: {results.RaceDuration:0.0}s race time, {ticks} ticks simulated in {sw.ElapsedMilliseconds} ms");
             foreach (var e in results.Entries)
             {
-                Console.WriteLine($"  {e.FinishPosition}. {e.DisplayName,-10} {(e.Finished ? e.TotalTime.ToString("0.00") + "s" : e.Status.ToString()),-14} best lap {e.BestLap:0.00}  overtakes {e.Stats.Overtakes} items {e.Stats.ItemsUsed} hits {e.Stats.ItemHitsLanded} lastma t/e {e.Stats.LastmaTargeted}/{e.Stats.LastmaEscapes} recoveries {e.Stats.Recoveries}");
+                Console.WriteLine($"  {e.FinishPosition}. {e.DisplayName,-10} {(e.Finished ? e.TotalTime.ToString("0.00") + "s" : e.Status.ToString()),-14} laps {e.LapsCompleted} best {e.BestLap:0.00}  ovt {e.Stats.Overtakes} items {e.Stats.ItemsUsed} hit {e.Stats.ItemHitsLanded} taken {e.Stats.ItemHitsTaken} hz {e.Stats.HazardHits} col {e.Stats.Collisions} lastma t/e/f {e.Stats.LastmaTargeted}/{e.Stats.LastmaEscapes}/{e.Stats.LastmaFinesPaid} rec {e.Stats.Recoveries}");
             }
             return 0;
         }

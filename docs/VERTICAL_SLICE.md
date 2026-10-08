@@ -15,10 +15,10 @@
 | 11 | Nigerian road events occur | Done (7 kinds, telegraphed) | `RoadEventScheduler` |
 | 12 | LASTMA can pursue any racer | Done + tested (position weights) | `LastmaSystem.PickTarget` |
 | 13 | Player can escape LASTMA | Done + tested (pressure model, shortcut relief, shield) | `LastmaSystem` |
-| 14 | Player can be fined | Done + tested (ledger debit) | `LastmaSystem.PayFine` |
+| 14 | Player can be fined | Done + tested (ledger debit; penalty / fine / bail per the PULL OVER design, ADR-0007) | `LastmaSystem.PayFine`, `TakePenalty` |
 | 15 | Player can request bail | Done + tested | `LastmaSystem.RequestBail` |
 | 16 | Another player can bail them | Done + tested over the wire | `GameServer.BroadcastBailRequest`, `PayBail` |
-| 17 | Player can be eliminated | Done + tested (arrest → spectate) | `LastmaSystem`, `RaceSimulation.Eliminate` |
+| 17 | Player can be eliminated | Done + tested; off by default per the UI design (`lastma.arrestEnabled`) | `LastmaSystem`, `RaceSimulation.Eliminate` |
 | 18 | Race completes correctly | Done + tested | `RaceSimulation.CheckFinishConditions` |
 | 19 | Finish order is authoritative | Done + tested (no client path) | `RaceSimulation`, `ClientCannotDeclareItselfFinished` test |
 | 20 | XP and Coins are awarded | Done + tested (idempotent; challenges/achievements too) | `RaceSettlementService`, `ChallengeEvaluator` |

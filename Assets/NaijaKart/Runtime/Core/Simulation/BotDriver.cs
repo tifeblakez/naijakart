@@ -23,6 +23,10 @@ namespace NaijaKart.Core.Simulation
         private readonly float _laneOffset;
         private int _sequence;
         private float _itemHoldTimer;
+        private float _driftHeld;
+        /// <summary>Hold a started drift at least this long so it banks a charge (the first drift level).</summary>
+        private const float MinDriftSeconds = 1.0f;
+        private const float MaxDriftSeconds = 2.5f;
 
         public BotDriver(TrackGeometry track, ulong seed, float skill = 0.6f)
         {
@@ -75,9 +79,24 @@ namespace NaijaKart.Core.Simulation
             float error = MathUtil.WrapAngle(desired - s.Heading);
             float steer = MathUtil.Clamp(error * MathUtil.Lerp(1.2f, 2.2f, _skill), -1f, 1f);
 
-            // Drift through sustained turns when skilled enough.
-            bool drift = _skill > 0.3f && System.Math.Abs(error) > MathUtil.Lerp(0.5f, 0.3f, _skill) && s.Speed > 10f;
-            if (s.IsDrifting && System.Math.Abs(error) > 0.12f) drift = true;
+            // Drift through sustained turns when skilled enough; once started, hold it long enough to bank a charge.
+            float absError = System.Math.Abs(error);
+            // Drift through medium turns only: hairpins (large error) and offroad are handled by steering, not sliding.
+            bool drift = _skill > 0.3f && absError > MathUtil.Lerp(0.5f, 0.3f, _skill) && absError < 1.0f && s.Speed > 12f && !s.IsOffroad;
+            if (s.IsDrifting)
+            {
+                _driftHeld += dt;
+                // Skilled bots hold the drift long enough to bank a charge; never past MaxDriftSeconds or while offroad.
+                float hold = _skill >= 0.5f ? MinDriftSeconds : 0f;
+                drift = !s.IsOffroad && _driftHeld < MaxDriftSeconds && (absError > 0.12f || _driftHeld < hold);
+            }
+            else
+            {
+                _driftHeld = 0f;
+            }
+
+            // Spend banked boost on straights (small steering error), like a player would.
+            bool boost = s.BoostCharges > 0 && !s.IsBoosting && System.Math.Abs(error) < 0.15f && s.Speed > 12f && _rng.Chance(MathUtil.Lerp(0.05f, 0.2f, _skill));
 
             bool useItem = false;
             _itemHoldTimer -= dt;
@@ -92,7 +111,9 @@ namespace NaijaKart.Core.Simulation
                 Sequence = ++_sequence,
                 Steer = steer,
                 Drift = drift,
-                UseItem = useItem
+                UseItem = useItem,
+                ItemSlot = -1,
+                Boost = boost
             };
         }
     }

@@ -24,6 +24,10 @@ namespace NaijaKart.Core.Net
         PayFine,
         RequestBail,
         PayBail,
+        TakePenalty,
+        PurchaseVehicle,
+        PurchaseCharacter,
+        GetGarage,
         VoteRematch,
         Ping,
         AddFriend,
@@ -73,7 +77,24 @@ namespace NaijaKart.Core.Net
         Leaderboard,
         Rivalries,
         Profile,
-        LiveEvent
+        LiveEvent,
+        /// <summary>Sent to the caught racer with LastmaCaught: fine, friends online, what is allowed.</summary>
+        LastmaOptions,
+        Garage
+    }
+
+    [Serializable]
+    public sealed class GarageItemDto
+    {
+        public string Id;
+        public string DisplayName;
+        public string Tagline;
+        public bool Owned;
+        public bool Selected;
+        public long PriceCoins;
+        public int UnlockLevel;
+        public bool LevelReached;
+        public int Speed, Acceleration, Handling, Drift, Weight, Boost, Traction;
     }
 
     [Serializable]
@@ -133,8 +154,13 @@ namespace NaijaKart.Core.Net
         public int CurrentWinStreak;
         public int BestWinStreak;
         public long Coins;
+        public long Premium;
         public string[] Achievements = Array.Empty<string>();
         public string[] FriendIds = Array.Empty<string>();
+        public string[] UnlockedVehicleIds = Array.Empty<string>();
+        public string[] UnlockedCharacterIds = Array.Empty<string>();
+        public string SelectedVehicleId;
+        public string SelectedCharacterId;
     }
 
     [Serializable]
@@ -181,6 +207,20 @@ namespace NaijaKart.Core.Net
     }
 
     [Serializable]
+    public sealed class LastmaOptionsDto
+    {
+        public long FineAmount;
+        public float DecisionSeconds;
+        public float PenaltySeconds;
+        public float FineResumeSeconds;
+        public bool FinesAllowed;
+        public bool BailAllowed;
+        public bool CanAffordFine;
+        public int FriendsOnline;
+        public bool Ranked;
+    }
+
+    [Serializable]
     public sealed class ServerEnvelope
     {
         public ServerMessageKind Kind;
@@ -201,5 +241,9 @@ namespace NaijaKart.Core.Net
         public LeaderboardRowDto[] Leaderboard;
         public RivalryDto[] Rivalries;
         public ProfileDto Profile;
+        public LastmaOptionsDto LastmaOptions;
+        public GarageItemDto[] Vehicles;
+        public GarageItemDto[] Characters;
+        public long PremiumBalance;
     }
 }

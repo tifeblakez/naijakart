@@ -35,6 +35,10 @@ namespace NaijaKart.Server.Tests
         public RivalryDto[] RivalryList { get; private set; }
         public ProfileDto Profile { get; private set; }
         public string LiveEventName { get; private set; }
+        public LastmaOptionsDto LastOptions { get; private set; }
+        public ServerEnvelope Garage { get; private set; }
+        /// <summary>What to do when pulled over: "pay", "bail", "penalty" or null (let the timer decide).</summary>
+        public string PullOverChoice = "pay";
         public int SnapshotsReceived { get; private set; }
         public bool AutoPayFine = true;
         public bool AutoBailOthers = false;
@@ -87,6 +91,8 @@ namespace NaijaKart.Server.Tests
                 case ServerMessageKind.Rivalries: RivalryList = m.Rivalries; break;
                 case ServerMessageKind.Profile: Profile = m.Profile; break;
                 case ServerMessageKind.LiveEvent: LiveEventName = m.Text; break;
+                case ServerMessageKind.LastmaOptions: LastOptions = m.LastmaOptions; break;
+                case ServerMessageKind.Garage: Garage = m; break;
                 case ServerMessageKind.RaceResults:
                     if (Results != null && m.Results != null && Results.RaceId == m.Results.RaceId) break; // re-sent copy
                     Results = m.Results;
@@ -120,8 +126,10 @@ namespace NaijaKart.Server.Tests
                 if (!_fineHandled)
                 {
                     _fineHandled = true;
-                    if (AutoPayFine) Send(new ClientEnvelope { Kind = ClientMessageKind.PayFine });
-                    else Send(new ClientEnvelope { Kind = ClientMessageKind.RequestBail });
+                    string choice = AutoPayFine ? "pay" : PullOverChoice;
+                    if (choice == "pay") Send(new ClientEnvelope { Kind = ClientMessageKind.PayFine });
+                    else if (choice == "bail") Send(new ClientEnvelope { Kind = ClientMessageKind.RequestBail });
+                    else if (choice == "penalty") Send(new ClientEnvelope { Kind = ClientMessageKind.TakePenalty });
                 }
                 return;
             }

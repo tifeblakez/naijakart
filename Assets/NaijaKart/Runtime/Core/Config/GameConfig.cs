@@ -116,6 +116,8 @@ namespace NaijaKart.Core.Config
         public float offroadGripMultiplier = 0.6f;
         /// <summary>Seconds the car must be beyond the recovery margin before being reset to the last checkpoint.</summary>
         public float recoveryDelaySeconds = 1.5f;
+        /// <summary>Recovery zone (PRD §47): continuous seconds offroad (even near the edge) before a reset to the last gate.</summary>
+        public float offroadStuckSeconds = 6f;
         /// <summary>Extra distance beyond the road edge before recovery kicks in (metres).</summary>
         public float recoveryMarginMeters = 12f;
         /// <summary>Speed the car is reset to after recovery (fraction of top speed).</summary>
@@ -151,9 +153,15 @@ namespace NaijaKart.Core.Config
         public float[] levelThresholds = { 0.8f, 1.8f, 3.0f };
         /// <summary>Boost duration (seconds) awarded per drift level (blue, orange, purple).</summary>
         public float[] levelBoostDuration = { 0.6f, 1.1f, 1.8f };
-        /// <summary>Boost speed multiplier per drift level.</summary>
+        /// <summary>Boost speed multiplier per drift level (Immediate mode).</summary>
         public float[] levelBoostMultiplier = { 1.15f, 1.22f, 1.3f };
+        /// <summary>Immediate: boost fires on release. StoreCharge: release banks charges spent with the Boost button (HUD gauge).</summary>
+        public DriftReleaseMode releaseMode = DriftReleaseMode.StoreCharge;
+        /// <summary>Charges banked per drift level in StoreCharge mode (blue, orange, purple).</summary>
+        public int[] levelStoredCharges = { 1, 1, 2 };
     }
+
+    public enum DriftReleaseMode { Immediate, StoreCharge }
 
     [Serializable]
     public sealed class BoostConfig
@@ -165,6 +173,11 @@ namespace NaijaKart.Core.Config
         /// <summary>Boost stat 0..100 scales the duration of boosts the vehicle gets.</summary>
         public float minDurationScale = 0.85f;
         public float maxDurationScale = 1.2f;
+        /// <summary>StoreCharge mode: maximum banked charges shown on the speed gauge.</summary>
+        public int maxStoredCharges = 3;
+        /// <summary>Duration and multiplier of one spent charge.</summary>
+        public float storedChargeDuration = 1.2f;
+        public float storedChargeMultiplier = 1.25f;
     }
 
     [Serializable]
@@ -212,8 +225,10 @@ namespace NaijaKart.Core.Config
     {
         /// <summary>Collision radius used for kart-vs-kart and kart-vs-hazard tests (metres).</summary>
         public float vehicleRadius = 1.1f;
-        /// <summary>Fraction of relative speed lost by the lighter kart on contact.</summary>
-        public float bumpSpeedLoss = 0.25f;
+        /// <summary>Maximum fraction of speed lost on contact (reached at bumpFullLossClosingSpeed). Nudges cost proportionally less.</summary>
+        public float bumpSpeedLoss = 0.2f;
+        /// <summary>Closing speed (m/s) at which the full bumpSpeedLoss applies.</summary>
+        public float bumpFullLossClosingSpeed = 10f;
         /// <summary>Lateral push (m/s) applied on contact, scaled by weight ratio.</summary>
         public float bumpLateralImpulse = 3f;
         /// <summary>Minimum closing speed before a contact counts as a "hit" event.</summary>
@@ -241,6 +256,11 @@ namespace NaijaKart.Core.Config
         public float dropBehindDistance = 3f;
         /// <summary>Maximum simultaneously alive hazards per race (perf and chaos cap).</summary>
         public int maxActiveHazards = 24;
+        /// <summary>Item slots per racer (HUD shows four).</summary>
+        public int inventorySlots = 4;
+        /// <summary>Spike strip hit: stun and speed retention.</summary>
+        public float spikeStunSeconds = 0.8f;
+        public float spikeSpeedRetention = 0.3f;
     }
 
     [Serializable]
@@ -294,18 +314,32 @@ namespace NaijaKart.Core.Config
         /// <summary>Pressure jumps on being stunned/offroad/hit (per second while in that state).</summary>
         public float pressureGainWhileStunned = 0.6f;
         public float pressureGainWhileOffroad = 0.2f;
-        /// <summary>Taking a shortcut gate during pursuit drops pressure by this amount.</summary>
-        public float shortcutPressureRelief = 0.5f;
+        /// <summary>Taking a shortcut gate during pursuit drops pressure by this amount (0 = shortcuts do not help escape).</summary>
+        public float shortcutPressureRelief = 0f;
+        /// <summary>"Faster, but LASTMA dey watch": targeting weight multiplier after a shortcut, for shortcutHeatSeconds.</summary>
+        public float shortcutHeatMultiplier = 2.5f;
+        public float shortcutHeatSeconds = 30f;
         /// <summary>Below this fraction of top speed the pursuer gains extra pressure.</summary>
         public float slowSpeedFraction = 0.6f;
         public float pressureGainWhileSlow = 0.3f;
-        /// <summary>Fine in Naija Coins. PRD §33: 2,000 initial.</summary>
-        public long fineAmount = 2000;
-        /// <summary>Seconds to pay, call for bail, or get bailed before arrest.</summary>
-        public float fineDecisionSeconds = 15f;
+        /// <summary>Fine in Naija Coins (earned Coins only, never premium currency).</summary>
+        public long fineAmount = 200;
+        /// <summary>Seconds to choose: take the penalty, pay the fine, or call for bail. No choice = penalty.</summary>
+        public float fineDecisionSeconds = 3f;
+        /// <summary>Penalty option: wait this long at the roadside.</summary>
+        public float penaltySeconds = 3f;
+        /// <summary>Penalty option also empties the item slots.</summary>
+        public bool penaltyLosesItems = true;
+        /// <summary>If true, no choice within fineDecisionSeconds (and no bail) means arrest and elimination (PRD §35). Off: the penalty applies.</summary>
+        public bool arrestEnabled = false;
+        /// <summary>Ranked/tournament: everyone takes the same penalty; paying or bail is not allowed.</summary>
+        public bool finesAllowedInRanked = false;
+        public bool bailAllowedInRanked = false;
+        /// <summary>Seconds a bailed-out racer waits before resuming (bail "frees you early" relative to the penalty).</summary>
+        public float bailResumeSeconds = 0.5f;
         /// <summary>Speed multiplier while stopped by LASTMA (fine pending).</summary>
         public float pulledOverSpeedMultiplier = 0f;
-        /// <summary>After paying or being bailed, a short slow-down before resuming.</summary>
+        /// <summary>After paying the fine, "back in" this many seconds.</summary>
         public float resumeStunSeconds = 1f;
         /// <summary>A Generator Shield blocks the catch and ends the pursuit.</summary>
         public bool shieldBlocksCatch = true;
@@ -315,7 +349,9 @@ namespace NaijaKart.Core.Config
     public sealed class EconomyConfig
     {
         public string currencyName = "Naija Coins";
+        public string premiumCurrencyName = "P";
         public long startingBalance = 2500;
+        public long startingPremiumBalance = 0;
         /// <summary>Hard cap per transaction to contain bugs/exploits.</summary>
         public long maxSingleTransaction = 1000000;
         /// <summary>Coins by finishing position (index 0 = 1st). Beyond the array, last value applies.</summary>

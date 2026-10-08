@@ -54,6 +54,17 @@ namespace NaijaKart.Tests
         }
 
         [Test]
+        public void PremiumIsASeparateBalanceThatCannotPayCoinDebits()
+        {
+            Assert.That(_ledger.GetBalance("tife", Currency.Premium), Is.EqualTo(0));
+            Assert.That(_ledger.Credit("tife", Currency.Premium, 350, "iap", "p1", out var tx), Is.EqualTo(TransactionResult.Ok));
+            Assert.That(tx.Currency, Is.EqualTo(Currency.Premium));
+            Assert.That(_ledger.GetBalance("tife", Currency.Premium), Is.EqualTo(350));
+            Assert.That(_ledger.GetBalance("tife"), Is.EqualTo(100), "coins untouched");
+            Assert.That(_ledger.Debit("tife", 300, "fine", "f1", out _), Is.EqualTo(TransactionResult.InsufficientBalance), "premium never covers a coin debit");
+        }
+
+        [Test]
         public void EnsureAccountIsIdempotent()
         {
             _ledger.Credit("tife", 50, "r", "k", out _);
