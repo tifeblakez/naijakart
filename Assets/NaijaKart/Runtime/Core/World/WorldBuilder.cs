@@ -19,6 +19,17 @@ namespace NaijaKart.Core.World
     /// </summary>
     public static class WorldBuilder
     {
+        // Environment colour palette from the reference board (Lagos Yellow, Danfo Blue, Road Grey,
+        // Sky Blue, Green, Building Beige, Ocean Blue, Night Purple)
+        public static readonly float[] LagosYellow = { 0.99f, 0.78f, 0.08f };
+        public static readonly float[] DanfoBlue = { 0.23f, 0.42f, 0.76f };
+        public static readonly float[] RoadGrey = { 0.45f, 0.47f, 0.52f };
+        public static readonly float[] SkyBlue = { 0.55f, 0.78f, 0.95f };
+        public static readonly float[] NaijaGreen = { 0.08f, 0.58f, 0.34f };
+        public static readonly float[] BuildingBeige = { 0.93f, 0.87f, 0.75f };
+        public static readonly float[] OceanBlue = { 0.08f, 0.48f, 0.74f };
+        public static readonly float[] NightPurple = { 0.24f, 0.18f, 0.44f };
+
         // Palette (Lagos daylight)
         static readonly float[] Asphalt = { 0.13f, 0.135f, 0.15f };
         static readonly float[] Concrete = { 0.74f, 0.72f, 0.68f };
@@ -26,7 +37,7 @@ namespace NaijaKart.Core.World
         static readonly float[] KerbYellow = { 0.98f, 0.78f, 0.1f };
         static readonly float[] KerbBlack = { 0.07f, 0.07f, 0.08f };
         static readonly float[] LineWhite = { 0.95f, 0.95f, 0.93f };
-        static readonly float[] Water = { 0.05f, 0.4f, 0.62f };
+        static readonly float[] Water = { 0.06f, 0.44f, 0.68f };
         static readonly float[] Ground = { 0.34f, 0.42f, 0.24f };
         static readonly float[] Grass = { 0.28f, 0.5f, 0.2f };
         static readonly float[] Sand = { 0.82f, 0.74f, 0.55f };
@@ -42,7 +53,7 @@ namespace NaijaKart.Core.World
         static readonly float[][] SkinTones = { new[] { 0.36f, 0.22f, 0.13f }, new[] { 0.5f, 0.32f, 0.2f }, new[] { 0.27f, 0.16f, 0.1f }, new[] { 0.6f, 0.42f, 0.28f } };
         static readonly float[][] ClothTones = { new[] { 0.95f, 0.85f, 0.2f }, new[] { 0.1f, 0.55f, 0.3f }, new[] { 0.9f, 0.2f, 0.2f }, new[] { 0.95f, 0.95f, 0.95f }, new[] { 0.2f, 0.4f, 0.9f }, new[] { 0.95f, 0.5f, 0.1f }, new[] { 0.6f, 0.2f, 0.7f }, new[] { 0.1f, 0.1f, 0.12f } };
         static readonly string[] ShopNames = { "MAMA PUT", "JOLLOF JUNCTION", "SUYA SPOT", "PURE WATER ₦50", "NO WAHALA TYRES", "GOD'S GRACE BARBING", "CHOP LIFE LOUNGE", "OKADA PARK", "BOLE & FISH", "BLESSING PHONES", "EBA PALACE", "DANFO PARK", "AMALA ZONE", "GENERATOR REPAIRS" };
-        static readonly string[][] Billboards = { new[] { "NAIJA KART", "RACE WEEKEND" }, new[] { "Y PLACE", "LAGOS" }, new[] { "LASTMA DEY WATCH", "DRIVE WELL" }, new[] { "JOLLOF", "NO. 1 IN AFRICA" }, new[] { "PURE WATER", "COLD ONE ₦50" }, new[] { "EKO O NI BAJE", "LAGOS" }, new[] { "THIRD MAINLAND", "RUSH" } };
+        static readonly string[][] Billboards = { new[] { "NAIJA KART", "RACE WEEKEND" }, new[] { "LAGOS", "No Stress" }, new[] { "Y PLACE", "LAGOS" }, new[] { "LASTMA DEY WATCH", "DRIVE WELL" }, new[] { "JOLLOF", "NO. 1 IN AFRICA" }, new[] { "PURE WATER", "COLD ONE ₦50" }, new[] { "EKO O NI BAJE", "LAGOS" }, new[] { "THIRD MAINLAND", "RUSH" } };
 
         private sealed class Ctx
         {
@@ -63,18 +74,31 @@ namespace NaijaKart.Core.World
         const float LagoonSouth = 30f, LagoonNorth = 330f;
         const float WaterLevel = -4f;
 
-        public static WorldModel Build(TrackDefinition track, ulong seed = 1)
+        public static WorldModel Build(TrackDefinition track, ulong seed = 1, string theme = "day")
         {
             var geo = new TrackGeometry(track);
-            var world = new WorldModel
-            {
-                trackId = track.id, displayName = track.displayName, city = track.city,
-                waterLevel = WaterLevel,
-                sunDirection = new Vec3(-0.45f, -0.75f, -0.35f),
-                skyTop = new[] { 0.1f, 0.36f, 0.88f }, skyHorizon = new[] { 0.76f, 0.86f, 0.97f },
-                fogColor = new[] { 0.8f, 0.87f, 0.96f }, fogStart = 200f, fogEnd = 1600f,
-                ambient = new[] { 0.6f, 0.68f, 0.8f },
-            };
+            bool night = string.Equals(theme, "night", StringComparison.OrdinalIgnoreCase);
+            var world = night
+                ? new WorldModel
+                {
+                    trackId = track.id, displayName = track.displayName, city = track.city, theme = "night", isNight = true,
+                    waterLevel = WaterLevel,
+                    sunDirection = new Vec3(0.3f, -0.6f, -0.5f),
+                    skyTop = new[] { 0.02f, 0.02f, 0.1f }, skyHorizon = new[] { NightPurple[0], NightPurple[1], NightPurple[2] },
+                    fogColor = new[] { 0.1f, 0.08f, 0.2f }, fogStart = 120f, fogEnd = 900f,
+                    ambient = new[] { 0.16f, 0.16f, 0.3f },
+                    sunIntensity = 0.45f, sunColor = new[] { 0.6f, 0.7f, 1f }, lampGlow = 3f, windowLitChance = 0.5f,
+                }
+                : new WorldModel
+                {
+                    trackId = track.id, displayName = track.displayName, city = track.city, theme = "day", isNight = false,
+                    waterLevel = WaterLevel,
+                    sunDirection = new Vec3(-0.45f, -0.75f, -0.35f),
+                    skyTop = new[] { 0.1f, 0.36f, 0.88f }, skyHorizon = new[] { 0.76f, 0.86f, 0.97f },
+                    fogColor = new[] { 0.8f, 0.87f, 0.96f }, fogStart = 200f, fogEnd = 1600f,
+                    ambient = new[] { 0.6f, 0.68f, 0.8f },
+                    sunIntensity = 4f, sunColor = new[] { 1f, 0.9f, 0.77f }, lampGlow = 0.6f, windowLitChance = 0.14f,
+                };
             var ctx = new Ctx { Track = track, Geo = geo, M = new MeshBuilder(), World = world, Rng = new DeterministicRandom(seed) };
             int n = (int)(geo.LapLength / ctx.Step);
             for (int i = 0; i < n; i++)
@@ -97,6 +121,7 @@ namespace NaijaKart.Core.World
             BuildBoats(ctx);
             BuildMarket(ctx);
             BuildRoadsideLife(ctx);
+            BuildConstruction(ctx);
             BuildGrandstands(ctx);
             BuildTemplates(ctx);
             BuildProps(ctx);
@@ -769,6 +794,72 @@ namespace NaijaKart.Core.World
             }
         }
 
+        /// <summary>Road diversion at the construction chicane: striped barriers, cones, chevrons, a crane and pipes.</summary>
+        private static void BuildConstruction(Ctx c)
+        {
+            float hw = c.Track.roadHalfWidth;
+            var red = B(c, "paint", new[] { 0.9f, 0.12f, 0.15f });
+            var white = B(c, "paint", LineWhite);
+            var orange = B(c, "paint", new[] { 1f, 0.45f, 0.05f });
+            var yellow = B(c, "paint", LagosYellow);
+            var steel = B(c, "metal", Steel);
+            var concrete = B(c, "concrete", new[] { 0.6f, 0.6f, 0.58f });
+            float start = 392f, end = 500f;
+            int n = 0;
+            for (int i = 0; i < c.Centre.Count; i++)
+            {
+                float along = c.Along[i];
+                if (along < start || along > end) continue;
+                var p = c.Centre[i]; float yaw = c.Dir[i].ToYaw();
+                if (n++ % 2 == 0)
+                {
+                    // striped barriers on both verges
+                    foreach (float side in new[] { -1f, 1f })
+                    {
+                        Vec3 b = p + c.Right[i] * (side * (hw + 1.0f));
+                        c.M.Box((n / 2) % 2 == 0 ? red : white, b + new Vec3(0, 0.55f, 0), new Vec3(0.3f, 0.5f, c.Step * 2f), yaw);
+                        c.M.Box(steel, b + new Vec3(0, 0.15f, 0), new Vec3(0.5f, 0.3f, 0.3f), yaw);
+                    }
+                }
+                // cones along the inside line of the chicane
+                if (n % 3 == 0)
+                {
+                    float side = along < 445f ? -1f : 1f;
+                    Vec3 b = p + c.Right[i] * (side * (hw - 1.2f));
+                    c.M.Cone(orange, b, 0.28f, 0.75f, 8);
+                    c.M.Box(white, b + new Vec3(0, 0.4f, 0), new Vec3(0.3f, 0.08f, 0.3f));
+                }
+                // flashing warning lamps on the barriers
+                if (n % 6 == 0) c.M.Sphere(B(c, "emissive", new[] { 1f, 0.6f, 0.1f }, 2f), p + c.Right[i] * (hw + 1.0f) + new Vec3(0, 1.0f, 0), 0.12f, 6, 4);
+            }
+            // chevron and diversion signs at the entry
+            c.Geo.Sample(start - 12f, out Vec3 e, out Vec3 ed); Vec3 er = Vec3.Cross(Vec3.Up, ed); float eyaw = ed.ToYaw();
+            foreach (float side in new[] { -1f, 1f })
+            {
+                Vec3 b = Flat(e + er * (side * (hw + 2.5f)), 0f);
+                c.M.Cylinder(steel, b, 0.08f, 2.4f, 6);
+                c.M.Box(yellow, b + new Vec3(0, 2.6f, 0), new Vec3(1.8f, 1.0f, 0.08f), eyaw);
+                c.World.signs.Add(new SignInstance { style = "banner", text = side < 0 ? "DIVERSION  →" : "←  SLOW", position = b + new Vec3(0, 2.6f, 0) - ed * 0.06f, yaw = eyaw + MathUtil.Pi, width = 1.7f, height = 0.9f, background = LagosYellow, foreground = new[] { 0.05f, 0.05f, 0.05f } });
+            }
+            // chevron board on the outside of the first bend
+            c.Geo.Sample(start + 20f, out Vec3 ch, out Vec3 chd); Vec3 chr = Vec3.Cross(Vec3.Up, chd);
+            Vec3 cb = Flat(ch + chr * (hw + 2.2f), 0f);
+            c.M.Box(steel, cb + new Vec3(0, 0.6f, 0), new Vec3(0.1f, 1.2f, 0.1f));
+            c.World.signs.Add(new SignInstance { style = "banner", text = ">>>>>>", position = cb + new Vec3(0, 1.6f, 0) - chd * 0.06f, yaw = chd.ToYaw() + MathUtil.Pi, width = 3.2f, height = 0.8f, background = LagosYellow, foreground = new[] { 0.05f, 0.05f, 0.05f } });
+            // crane and concrete pipes beyond the verge
+            Vec3 site = Flat(ch + chr * (hw + 12f), 0f);
+            if (!InLagoon(site))
+            {
+                c.M.Box(yellow, site + new Vec3(0, 14f, 0), new Vec3(1.4f, 28f, 1.4f));
+                c.M.Box(yellow, site + new Vec3(10f, 27.5f, 0), new Vec3(26f, 1.0f, 1.0f));
+                c.M.Beam(steel, site + new Vec3(22f, 27f, 0), site + new Vec3(22f, 8f, 0), 0.06f);
+                c.M.Box(concrete, site + new Vec3(22f, 7.2f, 0), new Vec3(2.4f, 1.6f, 2.4f));
+                for (int k = 0; k < 4; k++) c.M.Wheel(concrete, site + new Vec3(-4f + k * 2.2f, 1.0f, 5f), 1.0f, 3f, 0f, 12);
+                c.M.Box(B(c, "sand", Sand), site + new Vec3(4f, 1.2f, 6f), new Vec3(6f, 2.4f, 5f));
+                c.M.Frustum(B(c, "sand", Sand), site + new Vec3(4f, 2.4f, 6f), new Vec3(6f, 0, 5f), new Vec3(1f, 0, 1f), 2f);
+            }
+        }
+
         private static void BuildGrandstands(Ctx c)
         {
             // Temporary stands along the start straight: tiered rows of fans with flags
@@ -816,10 +907,12 @@ namespace NaijaKart.Core.World
             Hazards(c);
             var box = Template(c, "item_box");
             var mb = new MeshBuilder();
-            mb.Box(mb.Batch("hologram", 0.55f, 0.3f, 1f, 1.2f, 0.55f), Vec3.Zero, new Vec3(1.4f, 1.4f, 1.4f), 0.6f);
-            mb.Box(mb.Batch("emissive", 0.4f, 0.9f, 1f, 2.5f), Vec3.Zero, new Vec3(1.42f, 0.06f, 1.42f), 0.6f);
+            mb.Box(mb.Batch("hologram", 1f, 0.55f, 0.1f, 1.4f, 0.6f), Vec3.Zero, new Vec3(1.4f, 1.4f, 1.4f), 0.6f);
+            mb.Box(mb.Batch("emissive", 1f, 0.8f, 0.2f, 2.5f), Vec3.Zero, new Vec3(1.42f, 0.06f, 1.42f), 0.6f);
+            mb.Box(mb.Batch("emissive", 1f, 0.8f, 0.2f, 2.5f), Vec3.Zero, new Vec3(0.06f, 1.42f, 1.42f), 0.6f);
             box.batches.AddRange(mb.Batches);
-            box.signs.Add(new SignInstance { style = "hologram", text = "?", position = Vec3.Zero, yaw = 0f, width = 1.0f, height = 1.0f, background = new[] { 0f, 0f, 0f }, foreground = new[] { 1f, 0.9f, 0.3f } });
+            box.signs.Add(new SignInstance { style = "hologram", text = "?", position = Vec3.Zero, yaw = 0f, width = 1.0f, height = 1.0f, background = new[] { 0f, 0f, 0f }, foreground = new[] { 1f, 0.95f, 0.6f } });
+            box.signs.Add(new SignInstance { style = "hologram", text = "?", position = Vec3.Zero, yaw = MathUtil.Pi * 0.5f, width = 1.0f, height = 1.0f, background = new[] { 0f, 0f, 0f }, foreground = new[] { 1f, 0.95f, 0.6f } });
         }
 
         private static void Kart(Ctx c, string id)
@@ -1092,6 +1185,8 @@ namespace NaijaKart.Core.World
                 var t = Template(c, "cone_row"); var m = new MeshBuilder();
                 var orange = m.Batch("paint", 1f, 0.42f, 0.05f);
                 for (int k = -2; k <= 2; k++) { m.Cone(orange, new Vec3(k * 2.5f, 0, 0), 0.3f, 0.8f, 10); m.Box(m.Batch("paint", 0.95f, 0.95f, 0.95f), new Vec3(k * 2.5f, 0.42f, 0), new Vec3(0.3f, 0.1f, 0.3f)); m.Box(orange, new Vec3(k * 2.5f, 0.03f, 0), new Vec3(0.7f, 0.06f, 0.7f)); }
+                m.Box(m.Batch("metal", Steel[0], Steel[1], Steel[2]), new Vec3(0, 0.5f, -1.2f), new Vec3(0.1f, 1.0f, 0.1f));
+                t.signs.Add(new SignInstance { style = "banner", text = "GO SLOW", subText = "WORK IN PROGRESS", position = new Vec3(0, 1.4f, -1.2f), yaw = MathUtil.Pi, width = 2.6f, height = 0.9f, background = LagosYellow, foreground = new[] { 0.05f, 0.05f, 0.05f }, template = t.name });
                 t.batches.AddRange(m.Batches);
             }
             {

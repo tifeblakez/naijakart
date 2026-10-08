@@ -91,17 +91,19 @@ const camera = new THREE.PerspectiveCamera(66, W / H, 0.3, 3200);
 await document.fonts.ready;
 try { await Promise.all([document.fonts.load('800 40px Baloo'), document.fonts.load('700 40px Baloo')]); } catch (e) {}
 
-const world = await (await fetch('world.json')).json();
+const world = await (await fetch(q.get('world') || 'world.json')).json();
 const replay = await (await fetch('replay.json')).json();
 const sunDir = new THREE.Vector3(-world.sunDirection.X, -world.sunDirection.Y, -world.sunDirection.Z).normalize();
 const uTime = {value: 0};
 
 // ---------------------------------------------------------------- sky + environment
-const skyUniforms = {top: {value: new THREE.Color(...world.skyTop)}, hor: {value: new THREE.Color(...world.skyHorizon)}, sunDir: {value: sunDir}, sunCol: {value: new THREE.Color(1.0, 0.93, 0.8)}, time: uTime};
+const night = !!world.isNight;
+const lampGlow = world.lampGlow ?? 0.6, windowLit = world.windowLitChance ?? 0.14;
+const skyUniforms = {top: {value: new THREE.Color(...world.skyTop)}, hor: {value: new THREE.Color(...world.skyHorizon)}, sunDir: {value: sunDir}, sunCol: {value: night ? new THREE.Color(0.7, 0.8, 1.0) : new THREE.Color(1.0, 0.93, 0.8)}, time: uTime, night: {value: night ? 1.0 : 0.0}};
 const skyMat = new THREE.ShaderMaterial({side: THREE.BackSide, depthWrite: false, fog: false, uniforms: skyUniforms,
   vertexShader: `varying vec3 vP; void main(){ vP = position; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }`,
   fragmentShader: `
-    uniform vec3 top, hor, sunDir, sunCol; uniform float time; varying vec3 vP;
+    uniform vec3 top, hor, sunDir, sunCol; uniform float time, night; varying vec3 vP;
     float hash(vec2 p){ return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }
     float noise(vec2 p){ vec2 i = floor(p), f = fract(p); f = f*f*(3.0-2.0*f); return mix(mix(hash(i), hash(i+vec2(1,0)), f.x), mix(hash(i+vec2(0,1)), hash(i+vec2(1,1)), f.x), f.y); }
     float fbm(vec2 p){ float v = 0.0, a = 0.5; for (int i = 0; i < 5; i++){ v += a*noise(p); p *= 2.03; a *= 0.5; } return v; }
@@ -110,12 +112,13 @@ const skyMat = new THREE.ShaderMaterial({side: THREE.BackSide, depthWrite: false
       vec3 col = mix(hor, top, pow(h, 0.5));
       col = mix(col, vec3(1.0, 0.95, 0.88), (1.0 - smoothstep(0.0, 0.1, h)) * 0.35);
       float s = max(dot(d, sunDir), 0.0);
-      col += sunCol * (pow(s, 1200.0) * 8.0 + pow(s, 48.0) * 0.4 + pow(s, 5.0) * 0.1);
+      col += sunCol * (pow(s, 1200.0) * 8.0 + pow(s, 48.0) * 0.4 + pow(s, 5.0) * 0.1) * (1.0 - night*0.8);
+      if (night > 0.5){ col += sunCol * (smoothstep(0.9985, 0.9992, s) * 3.0); float st = step(0.9975, hash(floor(d.xz/(d.y+0.05)*220.0))) * smoothstep(0.05, 0.3, d.y); col += vec3(st) * 1.5; }
       if (d.y > 0.01){
         vec2 uv = d.xz / (d.y + 0.12) * 1.6 + vec2(time * 0.003, 0.0);
         float c = fbm(uv * 1.3); float cov = smoothstep(0.5, 0.74, c);
         float shade = fbm(uv * 1.3 + vec2(0.37, 0.11));
-        vec3 cc = mix(vec3(0.72, 0.78, 0.9), vec3(1.0), shade) + sunCol * 0.12 * pow(s, 2.0);
+        vec3 cc = mix(mix(vec3(0.72, 0.78, 0.9), vec3(1.0), shade), vec3(0.12, 0.1, 0.2) + 0.08*shade, night) + sunCol * 0.12 * pow(s, 2.0) * (1.0-night);
         col = mix(col, cc, cov * smoothstep(0.01, 0.12, d.y) * 0.92);
       }
       if (d.y < 0.0) col = mix(hor, vec3(0.3, 0.32, 0.3), clamp(-d.y * 4.0, 0.0, 1.0));
@@ -125,12 +128,12 @@ const sky = new THREE.Mesh(new THREE.SphereGeometry(1500, 48, 24), skyMat); sky.
 {
   const pm = new THREE.PMREMGenerator(renderer);
   const envScene = new THREE.Scene(); envScene.add(new THREE.Mesh(new THREE.SphereGeometry(500, 32, 16), skyMat));
-  scene.environment = pm.fromScene(envScene, 0.02, 1, 2000).texture; scene.environmentIntensity = 0.7;
+  scene.environment = pm.fromScene(envScene, 0.02, 1, 2000).texture; scene.environmentIntensity = night ? 0.35 : 0.7;
   pm.dispose();
 }
 scene.fog = new THREE.Fog(new THREE.Color(...world.fogColor), world.fogStart, world.fogEnd);
-const hemi = new THREE.HemisphereLight(new THREE.Color(...world.skyTop).lerp(new THREE.Color(1, 1, 1), 0.4), new THREE.Color(0.4, 0.36, 0.28), 1.0); scene.add(hemi);
-const sun = new THREE.DirectionalLight(0xffe6c4, 4.0);
+const hemi = new THREE.HemisphereLight(new THREE.Color(...world.skyTop).lerp(new THREE.Color(1, 1, 1), night ? 0.1 : 0.4), night ? new THREE.Color(0.12, 0.1, 0.2) : new THREE.Color(0.4, 0.36, 0.28), night ? 0.5 : 1.0); scene.add(hemi);
+const sun = new THREE.DirectionalLight(new THREE.Color(...(world.sunColor || [1, 0.9, 0.77])), world.sunIntensity ?? 4.0);
 sun.castShadow = true; sun.shadow.mapSize.set(3072, 3072);
 const sc = sun.shadow.camera; sc.near = 20; sc.far = 900; sc.left = -95; sc.right = 95; sc.top = 95; sc.bottom = -95;
 sun.shadow.bias = -0.00035; sun.shadow.normalBias = 0.6; sun.shadow.radius = 2;
@@ -156,13 +159,13 @@ const DETAIL = {
               vec2 cell = vec2(floor(u/cw), floor(v/ch)); vec2 f = vec2(fract(u/cw), fract(v/ch));
               nkWin = step(mx, f.x)*step(f.x, 1.0-mx)*step(my, f.y)*step(f.y, 1.0-my);
               if (bid > 0.75) nkWin *= step(0.5, fract(v/(ch*2.0))) + 0.0; // banded facade
-              nkLit = step(0.86, nkHash(cell + vec2(nn.x*7.0, nn.z*3.0)));
+              nkLit = step(1.0 - uWindowLit, nkHash(cell + vec2(nn.x*7.0, nn.z*3.0)));
               float tint = nkHash(cell*1.7 + vec2(3.1));
               vec3 glass = mix(mix(vec3(0.1, 0.25, 0.45), vec3(0.55, 0.8, 1.0), 0.2 + 0.6*tint), vec3(0.95,0.8,0.5), 0.3*step(0.5,bid)*step(0.6,fract(bid*7.7)));
               diffuseColor.rgb = mix(diffuseColor.rgb * (0.9 + 0.2*nkNoise(vec2(u*0.3, v*0.3))), glass, nkWin);
             } else { diffuseColor.rgb *= 0.8; }`,
           rough: `roughnessFactor = mix(0.7, 0.1, nkWin); metalnessFactor = mix(0.0, 0.7, nkWin);`,
-          emissive: `totalEmissiveRadiance += nkWin * nkLit * vec3(1.0, 0.82, 0.5) * 0.3;`},
+          emissive: `totalEmissiveRadiance += nkWin * nkLit * vec3(1.0, 0.82, 0.5) * (0.3 + 0.9*uNight);`},
   water: {color: `vec2 p = vWP.xz; float t = uTime; float deep = nkFbm(p*0.012 + t*0.01); diffuseColor.rgb = mix(vec3(0.02, 0.24, 0.46), vec3(0.08, 0.5, 0.64), smoothstep(0.3, 0.7, deep)); float foam = smoothstep(0.86, 0.94, nkNoise(p*0.5 + vec2(t*0.25, -t*0.2))) * smoothstep(0.6,0.9,nkNoise(p*0.03)); diffuseColor.rgb = mix(diffuseColor.rgb, vec3(0.85,0.93,1.0), foam*0.35);`,
           normal: `{ vec2 p = vWP.xz; float t = uTime;
              float dx = 0.5*cos(p.x*0.42 + t*1.3) + 0.35*cos((p.x+p.y)*0.9 + t*1.9) + 0.14*cos(p.x*2.3 - p.y*1.3 + t*2.6) + 0.04*cos(p.x*5.1 + t*3.0);
@@ -188,7 +191,7 @@ function material(b, isTemplate){
     case 'metal': m = new THREE.MeshStandardMaterial({color, roughness: 0.42, metalness: 0.85}); break;
     case 'glass': m = new THREE.MeshPhysicalMaterial({color: color.multiplyScalar(0.6), roughness: 0.08, metalness: 0.1, transparent: true, opacity: 0.6, depthWrite: false, envMapIntensity: 0.5}); break;
     case 'water': m = new THREE.MeshStandardMaterial({color, roughness: 0.08, metalness: 0.0, transparent: true, opacity: 0.96, envMapIntensity: 1.6}); break;
-    case 'emissive': m = new THREE.MeshStandardMaterial({color, roughness: 0.5, emissive: color, emissiveIntensity: b.emissive || 1.5}); break;
+    case 'emissive': m = new THREE.MeshStandardMaterial({color, roughness: 0.5, emissive: color, emissiveIntensity: (b.emissive || 1.5) * (b.emissive <= 0.9 ? lampGlow / 0.6 : 1)}); break;
     case 'hologram': m = new THREE.MeshPhysicalMaterial({color, roughness: 0.1, metalness: 0.3, transparent: true, opacity: b.opacity || 0.55, emissive: color, emissiveIntensity: b.emissive || 1.0, depthWrite: false, side: THREE.DoubleSide}); break;
     case 'rubber': m = new THREE.MeshStandardMaterial({color, roughness: 0.95, metalness: 0.0}); break;
     case 'skin': m = new THREE.MeshStandardMaterial({color, roughness: 0.55, metalness: 0.0}); break;
@@ -200,10 +203,10 @@ function material(b, isTemplate){
   if (detail){
     m.customProgramCacheKey = () => 'nk_' + b.material;
     m.onBeforeCompile = (shader) => {
-      shader.uniforms.uTime = uTime;
+      shader.uniforms.uTime = uTime; shader.uniforms.uWindowLit = {value: windowLit}; shader.uniforms.uNight = {value: night ? 1.0 : 0.0};
       shader.vertexShader = shader.vertexShader.replace('#include <common>', GLSL_COMMON + '\n#include <common>')
         .replace('#include <fog_vertex>', '#include <fog_vertex>\n vWP = (modelMatrix * vec4(transformed, 1.0)).xyz; vWN = normalize(mat3(modelMatrix) * objectNormal);');
-      shader.fragmentShader = shader.fragmentShader.replace('#include <common>', GLSL_COMMON + '\nuniform float uTime;\n#include <common>')
+      shader.fragmentShader = shader.fragmentShader.replace('#include <common>', GLSL_COMMON + '\nuniform float uTime; uniform float uWindowLit; uniform float uNight;\n#include <common>')
         .replace('#include <color_fragment>', '#include <color_fragment>\n' + (detail.color || ''))
         .replace('#include <metalnessmap_fragment>', '#include <metalnessmap_fragment>\n' + (detail.rough || ''))
         .replace('#include <normal_fragment_begin>', '#include <normal_fragment_begin>\n' + (detail.normal || ''))
@@ -273,7 +276,7 @@ function signMesh(s){
   const tex = signTexture(s);
   const mat = s.style === 'hologram'
     ? new THREE.MeshBasicMaterial({map: tex, transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, side: THREE.DoubleSide})
-    : new THREE.MeshStandardMaterial({map: tex, roughness: 0.55, metalness: 0.0, emissive: new THREE.Color(0xffffff), emissiveMap: tex, emissiveIntensity: 0.12});
+    : new THREE.MeshStandardMaterial({map: tex, roughness: 0.55, metalness: 0.0, emissive: new THREE.Color(0xffffff), emissiveMap: tex, emissiveIntensity: night && (s.style === 'billboard' || s.style === 'shop' || s.style === 'gantry') ? 1.6 : 0.12});
   const m = new THREE.Mesh(new THREE.PlaneGeometry(s.width, s.height), mat);
   m.position.set(s.position.X, s.position.Y, s.position.Z); m.rotation.y = s.yaw;
   m.castShadow = false; m.receiveShadow = s.style !== 'hologram';
@@ -302,6 +305,11 @@ const NAMES = ['Amaka', 'Tunde', 'Musa', 'Damilola', 'Chidi', 'Funke', 'Emeka', 
 const COLORS = ['#f6c531', '#7ed957', '#ff8c2a', '#38c6f4', '#ff5fa2', '#b57bff', '#ff4d4d', '#ffffff', '#2ee6a6', '#ffd166'];
 const karts = {};
 replay.karts.forEach((k, i) => { const g = instantiate(k.template); scene.add(g); karts[k.id] = {group: g, name: NAMES[i % NAMES.length], color: COLORS[i % COLORS.length], template: k.template, lean: 0}; });
+if (night && karts[replay.followKartId]){
+  // the hero kart's headlights light the road at night (one spot; the rest stay emissive-only for the mobile budget)
+  const hl = new THREE.SpotLight(0xfff0cc, 90, 60, 0.55, 0.6, 1.1); hl.position.set(0, 0.8, 1.1); hl.target.position.set(0, -0.6, 16);
+  karts[replay.followKartId].group.add(hl); karts[replay.followKartId].group.add(hl.target);
+}
 const hazardObjs = {};
 const hazardTemplate = kind => ({TrafficCar: 'danfo_bus', DanfoCrossing: 'danfo_bus', OkadaCrossing: 'okada_bike', OilPatch: 'oil_patch', Pothole: 'pothole', SpikeStrip: 'spike_strip', GoSlowZone: 'cone_row', FloodZone: 'flood', PoliceCheckpoint: 'checkpoint'}[kind] || 'cone_row');
 
@@ -445,7 +453,7 @@ const camPos = new THREE.Vector3(), camLook = new THREE.Vector3();
 let camInit = false, lastT = null;
 const composer = new EffectComposer(renderer, new THREE.WebGLRenderTarget(W, H, {type: THREE.HalfFloatType}));
 composer.addPass(new RenderPass(scene, camera));
-const bloom = new UnrealBloomPass(new THREE.Vector2(W, H), 0.42, 0.55, 0.92); composer.addPass(bloom);
+const bloom = new UnrealBloomPass(new THREE.Vector2(W, H), night ? 0.6 : 0.42, 0.55, night ? 0.8 : 0.92); composer.addPass(bloom);
 const grade = new ShaderPass({uniforms: {tDiffuse: {value: null}, uSat: {value: 1.3}, uCon: {value: 1.06}, uVig: {value: 0.32}},
   vertexShader: `varying vec2 vUv; void main(){ vUv = uv; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }`,
   fragmentShader: `uniform sampler2D tDiffuse; uniform float uSat, uCon, uVig; varying vec2 vUv;

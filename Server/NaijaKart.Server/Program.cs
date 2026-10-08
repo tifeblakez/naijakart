@@ -32,7 +32,7 @@ namespace NaijaKart.Server
                 case "simulate":
                     return Simulate(configDir, log, int.Parse(GetOption(args, "--players") ?? "8"), GetOption(args, "--track"), GetOption(args, "--replay"), ulong.Parse(GetOption(args, "--seed") ?? "7"));
                 case "export-world":
-                    return ExportWorld(configDir, GetOption(args, "--track"), GetOption(args, "--out") ?? "world.json", ulong.Parse(GetOption(args, "--seed") ?? "1"));
+                    return ExportWorld(configDir, GetOption(args, "--track"), GetOption(args, "--out") ?? "world.json", ulong.Parse(GetOption(args, "--seed") ?? "1"), GetOption(args, "--theme") ?? "day");
                 case "run":
                     return Run(configDir, log, int.Parse(GetOption(args, "--port") ?? "7777"), GetOption(args, "--data"));
                 default:
@@ -55,12 +55,12 @@ namespace NaijaKart.Server
         }
 
         /// <summary>Headless bot race: a smoke test of the whole simulation that runs faster than real time.</summary>
-        private static int ExportWorld(string configDir, string trackId, string outPath, ulong seed)
+        private static int ExportWorld(string configDir, string trackId, string outPath, ulong seed, string theme)
         {
             var content = new JsonConfigSource(configDir);
             var track = content.GetTrack(trackId ?? content.TrackIds[0]);
             if (track == null) { Console.Error.WriteLine("Unknown track"); return 1; }
-            var world = NaijaKart.Core.World.WorldBuilder.Build(track, seed);
+            var world = NaijaKart.Core.World.WorldBuilder.Build(track, seed, theme);
             int verts = 0; foreach (var b in world.batches) verts += b.VertexCount;
             System.IO.File.WriteAllText(outPath, System.Text.Json.JsonSerializer.Serialize(world, new System.Text.Json.JsonSerializerOptions { IncludeFields = true, IgnoreReadOnlyProperties = true }));
             Console.WriteLine($"Wrote {outPath}: {world.batches.Count} batches, {verts} vertices, {world.templates.Count} templates, {world.props.Count} props");

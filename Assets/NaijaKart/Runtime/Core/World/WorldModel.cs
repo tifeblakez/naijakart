@@ -84,6 +84,15 @@ namespace NaijaKart.Core.World
         public float fogEnd = 900f;
         public float waterLevel = -3f;
         public float[] ambient = { 0.55f, 0.6f, 0.7f };
+        /// <summary>day or night (Day &amp; Night Cycles in the environment reference).</summary>
+        public string theme = "day";
+        public bool isNight;
+        public float sunIntensity = 4f;
+        public float[] sunColor = { 1f, 0.9f, 0.77f };
+        /// <summary>Emissive strength of street lamps and lit signs; renderers scale lamp/sign glow by it.</summary>
+        public float lampGlow = 0.6f;
+        /// <summary>Fraction of tower windows that are lit.</summary>
+        public float windowLitChance = 0.14f;
 
         public MeshTemplate Template(string name)
         {
