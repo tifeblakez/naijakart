@@ -32,6 +32,11 @@ dotnet run --project Server/NaijaKart.Server -- simulate --players 8    # headle
 dotnet run --project Server/NaijaKart.Server -- run --port 7777 --data state.json   # authoritative server with file persistence
 ```
 
+## Run it locally
+
+See `docs/LOCAL_SETUP.md` (prerequisites, build, previewer, server, Claude Code with the Blender MCP
+server). `scripts/setup-local.sh` checks the tools and prepares the previewer.
+
 ## Preview the world as a video
 
 Look development happens in `tools/world-preview` (see ADR-0008). After `npm install && npm run setup`,
