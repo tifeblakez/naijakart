@@ -191,8 +191,8 @@ def make_material(name, hint, rgb, emissive, opacity, world_info):
         f2 = _math(tree, "MULTIPLY_ADD", patch, 0.2, (-300, -300))
         f2.node.inputs[2].default_value = 0.9
         color_socket = _scale_color(tree, _scale_color(tree, base.outputs[0], f1, (-100, 100)), f2, (100, 100))
-        rough_socket = _math(tree, "MULTIPLY_ADD", patch, -0.25, (-100, -400))
-        rough_socket.node.inputs[2].default_value = 0.9
+        rough_socket = _math(tree, "MULTIPLY_ADD", patch, -0.3, (-100, -400))
+        rough_socket.node.inputs[2].default_value = 0.72
     elif hint in ("concrete", "barrier"):
         n = _noise(tree, wp, 0.45 if hint == "concrete" else 0.6, 4.0, (-900, -100))
         f = _math(tree, "MULTIPLY_ADD", n, 0.26, (-500, -100))
@@ -360,7 +360,8 @@ def load_font(kind, font_dir):
         return _font_cache[kind]
     font = None
     candidates = DISPLAY_FONT_CANDIDATES if kind == "display" else TEXT_FONT_CANDIDATES
-    for d in [font_dir, os.environ.get("NK_FONT_DIR")]:
+    repo_fonts = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))), "out", "fonts")
+    for d in [font_dir, os.environ.get("NK_FONT_DIR"), repo_fonts]:
         if not d:
             continue
         for c in candidates:
@@ -546,6 +547,16 @@ def chase_camera_target(me, cam_state, dt):
     return cam_state["pos"], cam_state["look"], fov
 
 
+def hero_camera_target(me):
+    """Key-art framing like the concept images: low, close and wide, kart in the lower centre."""
+    fwd = Vector((math.sin(me["yaw"]), 0.0, math.cos(me["yaw"])))
+    right = Vector((fwd.z, 0.0, -fwd.x))
+    pos = Vector((me["x"], me["y"], me["z"]))
+    cam = pos - fwd * 5.2 + Vector((0, 1.9, 0)) + right * 0.35
+    look = pos + Vector((0, 0.9, 0)) + fwd * 14.0
+    return cam, look, 66.0
+
+
 def place_camera(cam_obj, pos_three, look_three, fov_deg):
     p = Vector(to_blender(*pos_three))
     l = Vector(to_blender(*look_three))
@@ -608,6 +619,43 @@ def setup_world(scene, world_info):
     glow = _math(tree, "ADD", _math(tree, "MULTIPLY", _math(tree, "POWER", sdot, 48.0, (-250, 400)), 0.5, (-100, 400)),
                  _math(tree, "MULTIPLY", _math(tree, "POWER", sdot, 5.0, (-250, 550)), 0.12, (-100, 550)), (50, 450))
     glow = _math(tree, "ADD", glow, _math(tree, "MULTIPLY", _math(tree, "POWER", sdot, 1200.0, (-250, 700)), 6.0, (-100, 700)), (200, 500))
+    # Clouds: noise on the direction projected onto a plane above the viewer, as in the previewer.
+    proj = tree.nodes.new("ShaderNodeVectorMath")
+    proj.operation = "DIVIDE"
+    proj.location = (-600, -300)
+    _link(tree, tc.outputs["Generated"], proj.inputs[0])
+    zdiv = _math(tree, "ADD", sep.outputs[2], 0.12, (-800, -300))
+    cz = tree.nodes.new("ShaderNodeCombineXYZ")
+    cz.location = (-700, -400)
+    for i in range(3):
+        _link(tree, zdiv, cz.inputs[i])
+    _link(tree, cz.outputs[0], proj.inputs[1])
+    cloud_n = tree.nodes.new("ShaderNodeTexNoise")
+    cloud_n.location = (-400, -300)
+    cloud_n.inputs["Scale"].default_value = 2.1
+    cloud_n.inputs["Detail"].default_value = 6.0
+    cloud_n.inputs["Roughness"].default_value = 0.62
+    _link(tree, proj.outputs[0], cloud_n.inputs["Vector"])
+    cov = tree.nodes.new("ShaderNodeMapRange")
+    cov.location = (-200, -300)
+    cov.interpolation_type = "SMOOTHSTEP"
+    cov.inputs["From Min"].default_value = 0.52
+    cov.inputs["From Max"].default_value = 0.72
+    _link(tree, cloud_n.outputs["Fac"], cov.inputs["Value"])
+    horizon_fade = tree.nodes.new("ShaderNodeMapRange")
+    horizon_fade.location = (-200, -500)
+    horizon_fade.interpolation_type = "SMOOTHSTEP"
+    horizon_fade.inputs["From Min"].default_value = 0.01
+    horizon_fade.inputs["From Max"].default_value = 0.12
+    _link(tree, sep.outputs[2], horizon_fade.inputs["Value"])
+    cloud_fac = _math(tree, "MULTIPLY", _math(tree, "MULTIPLY", cov.outputs["Result"], horizon_fade.outputs["Result"], (0, -300)), 0.92, (150, -300))
+    shade = tree.nodes.new("ShaderNodeTexNoise")
+    shade.location = (-400, -650)
+    shade.inputs["Scale"].default_value = 2.1
+    shade.inputs["Detail"].default_value = 3.0
+    _link(tree, proj.outputs[0], shade.inputs["Vector"])
+    cloud_col = _mix_color(tree, shade.outputs["Fac"], (0.72, 0.78, 0.9, 1) if not night else (0.12, 0.1, 0.2, 1), (1.0, 1.0, 1.0, 1) if not night else (0.2, 0.18, 0.28, 1), (0, -650))
+    col = _mix_color(tree, cloud_fac, col, cloud_col, (300, -200))
     sun_rgb = (1.0, 0.93, 0.8, 1.0) if not night else (0.7, 0.8, 1.0, 1.0)
     glow_col = _scale_color(tree, _mix_color(tree, 1.0, sun_rgb, sun_rgb, (250, 650)), glow, (400, 600))
     add = tree.nodes.new("ShaderNodeMix")
@@ -674,7 +722,7 @@ def setup_fog_compositor(scene, fog_rgb):
         _link(tree, near.outputs[0], amount.inputs[1])
         scaled = tree.nodes.new(near.bl_idname)
         scaled.operation = "MULTIPLY"
-        scaled.inputs[1].default_value = 0.85
+        scaled.inputs[1].default_value = 0.65
         _link(tree, amount.outputs[0], scaled.inputs[0])
         _link(tree, rl.outputs["Image"], a)
         _link(tree, scaled.outputs[0], fac)
@@ -740,7 +788,7 @@ def setup_render(scene, engine, samples, width, height):
 
 # ---------------------------------------------------------------- main build
 def build(world, replay=None, t=14.0, mode="chase", font_dir=None, anim=None, fps=24, keep_scene=False,
-          engine=None, samples=48, width=1280, height=592, max_karts=None):
+          engine=None, samples=48, width=1280, height=592, max_karts=None, follow=None):
     """Imports the world and places the race at time t. Returns the camera object.
     anim=(start, duration) also bakes kart and camera keyframes for that window."""
     t_start = time.time()
@@ -806,7 +854,7 @@ def build(world, replay=None, t=14.0, mode="chase", font_dir=None, anim=None, fp
     col_race.objects.link(cam)
     scene.camera = cam
 
-    follow = rep.get("followKartId") if rep else None
+    follow = (follow or rep.get("followKartId")) if rep else None
     kart_objs = {}
     hazard_objs = {}
     if rep:
@@ -854,7 +902,10 @@ def build(world, replay=None, t=14.0, mode="chase", font_dir=None, anim=None, fp
                     if key is not None:
                         o.keyframe_insert("hide_render", frame=key)
             if me:
-                if mode == "overview":
+                if mode == "hero":
+                    pos, look, fov = hero_camera_target(me)
+                    place_camera(cam, pos, look, fov)
+                elif mode == "overview":
                     u = max(0.0, time_s + 3) / 5
                     ang = math.pi * 1.25 - u * 0.5
                     r = 260 - u * 60
@@ -904,7 +955,7 @@ def _parse(argv):
     p.add_argument("--replay", default="tools/world-preview/public/replay.json")
     p.add_argument("--no-replay", action="store_true")
     p.add_argument("--t", type=float, default=14.0, help="race time in seconds to show")
-    p.add_argument("--mode", choices=["chase", "overview"], default="chase")
+    p.add_argument("--mode", choices=["chase", "hero", "overview"], default="chase")
     p.add_argument("--anim", nargs=2, type=float, metavar=("START", "DURATION"), help="also bake keyframes for this window")
     p.add_argument("--fps", type=int, default=24)
     p.add_argument("--fonts", default=None, help="folder with LilitaOne-Regular.ttf / Nunito-Black.ttf (TTF); Blender's font otherwise")
@@ -914,6 +965,9 @@ def _parse(argv):
     p.add_argument("--save", default=None, help=".blend to write")
     p.add_argument("--render", default=None, help=".png to render")
     p.add_argument("--max-karts", type=int, default=None)
+    p.add_argument("--follow", default=None, help="kart id to follow instead of the replay's followKartId")
+    p.add_argument("--motion-blur", action="store_true", help="bake a short window around --t and render with motion blur")
+    p.add_argument("--dof", type=float, default=0.0, help="f-stop for depth of field focused on the followed kart (0 = off)")
     return p.parse_args(argv)
 
 
@@ -922,8 +976,22 @@ def main(argv=None):
         argv = sys.argv[sys.argv.index("--") + 1:] if "--" in sys.argv else sys.argv[1:]
     a = _parse(argv)
     wd, ht = (int(v) for v in a.size.lower().split("x"))
-    build(a.world, None if a.no_replay else a.replay, t=a.t, mode=a.mode, font_dir=a.fonts, anim=tuple(a.anim) if a.anim else None,
-          fps=a.fps, engine=a.engine, samples=a.samples, width=wd, height=ht, max_karts=a.max_karts)
+    anim = tuple(a.anim) if a.anim else ((a.t - 2.0 / a.fps, 4.0 / a.fps) if a.motion_blur else None)
+    cam = build(a.world, None if a.no_replay else a.replay, t=a.t, mode=a.mode, font_dir=a.fonts, anim=anim,
+                fps=a.fps, engine=a.engine, samples=a.samples, width=wd, height=ht, max_karts=a.max_karts, follow=a.follow)
+    scene = bpy.context.scene
+    if a.motion_blur:
+        scene.render.use_motion_blur = True
+        try:
+            scene.render.motion_blur_shutter = 0.35
+        except Exception:
+            pass
+    if a.dof > 0:
+        you = next((o for o in bpy.data.objects if o.name.startswith("you_")), None)
+        cam.data.dof.use_dof = True
+        cam.data.dof.aperture_fstop = a.dof
+        if you:
+            cam.data.dof.focus_object = you
     if a.save:
         os.makedirs(os.path.dirname(os.path.abspath(a.save)), exist_ok=True)
         bpy.ops.wm.save_as_mainfile(filepath=os.path.abspath(a.save))
