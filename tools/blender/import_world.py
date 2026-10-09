@@ -1004,5 +1004,7 @@ def main(argv=None):
         log(f"rendered {a.render} in {time.time() - t0:.0f}s with {bpy.context.scene.render.engine}")
 
 
-if __name__ == "__main__":
+if __name__ == "__main__" and ("--" in sys.argv or (sys.argv and sys.argv[0].endswith("import_world.py"))):
+    # Command line (blender -b --python … -- args, or the bpy wheel). When exec'd inside Blender's
+    # Text Editor or through the MCP server, call build(...) directly instead.
     main()

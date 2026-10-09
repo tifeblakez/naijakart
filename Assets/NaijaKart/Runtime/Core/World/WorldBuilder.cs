@@ -296,8 +296,8 @@ namespace NaijaKart.Core.World
                 if (OverWater(p) && c.Along[i] - lastPier >= 30f)
                 {
                     lastPier = c.Along[i];
-                    float top = p.Y - 1.6f;
-                    c.M.Box(pier, p + new Vec3(0, top - 0.9f, 0), new Vec3(hw * 2f + 2.4f, 1.8f, 3f), yaw);
+                    float top = p.Y - 1.6f;   // underside of the deck (absolute height)
+                    c.M.Box(pier, Flat(p, top - 0.9f), new Vec3(hw * 2f + 2.4f, 1.8f, 3f), yaw);
                     foreach (float s in new[] { -1f, 1f })
                     {
                         Vec3 b = Flat(p + c.Right[i] * (s * (hw - 1.2f)), WaterLevel - 2f);
