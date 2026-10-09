@@ -64,6 +64,7 @@ pip install fonttools brotli && python3 -I tools/blender/make_fonts.py   # write
 | `--engine CYCLES|BLENDER_EEVEE` | render engine (first available wins) |
 | `--samples`, `--size 1280x592` | render settings |
 | `--fonts DIR` | folder with `LilitaOne-Regular.ttf` and `Nunito-Black.ttf`; `out/fonts` (made by `make_fonts.py`) is used automatically, Blender's font otherwise |
+| `--showcase kart_danfo --view front34` | render one template alone on a studio floor; views front34, rear34, front, back, left, right, top34 (the design-sheet angles) |
 | `--save file.blend`, `--render file.png` | outputs (`out/` is git-ignored) |
 
 Night: pass `--world tools/world-preview/public/world_night.json`.

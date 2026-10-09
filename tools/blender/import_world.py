@@ -787,6 +787,54 @@ def setup_render(scene, engine, samples, width, height):
 
 
 # ---------------------------------------------------------------- main build
+def showcase(world, template_name, view="front34", font_dir=None, engine=None, samples=64, width=1280, height=800):
+    """Builds one template alone on a studio floor with the world's lighting: the design-sheet views
+    (front34, rear34, front, back, left, right, top34)."""
+    scene = bpy.context.scene
+    for o in list(bpy.data.objects):
+        bpy.data.objects.remove(o, do_unlink=True)
+    for c in list(bpy.data.collections):
+        bpy.data.collections.remove(c)
+    with open(world) as f:
+        w = json.load(f)
+    tpl = next((x for x in w.get("templates") or [] if x["name"] == template_name), None)
+    if tpl is None:
+        raise SystemExit(f"no template {template_name}; have {[x['name'] for x in w.get('templates') or []]}")
+    root = bpy.data.collections.new("Showcase")
+    scene.collection.children.link(root)
+    library = bpy.data.collections.new("Templates (library)")
+    root.children.link(library)
+    col = build_template(tpl, w, font_dir, {}, library)
+    lib_layer = next((lc for lc in bpy.context.view_layer.layer_collection.children[root.name].children if lc.collection == library), None)
+    if lib_layer:
+        lib_layer.exclude = True
+    inst = instance("showcase_" + template_name, col, root, (0, 0, 0), 0.0)
+    floor = bpy.data.meshes.new("floor")
+    floor.from_pydata([(-40, -40, 0), (40, -40, 0), (40, 40, 0), (-40, 40, 0)], [], [(0, 1, 2, 3)])
+    floor.update()
+    floor.materials.append(flat_material("studio_floor", (0.42, 0.42, 0.44), 0.0))
+    fo = bpy.data.objects.new("floor", floor)
+    root.objects.link(fo)
+    cam_data = bpy.data.cameras.new("Showcase camera")
+    cam = bpy.data.objects.new("Showcase camera", cam_data)
+    root.objects.link(cam)
+    scene.camera = cam
+    # Camera positions in three.js coordinates (x right, y up, z forward = the kart's nose).
+    views = {"front34": ((3.6, 1.7, 3.4), 30), "rear34": ((-3.4, 1.8, -3.6), 30), "front": ((0, 1.1, 5.2), 26), "back": ((0, 1.1, -5.2), 26),
+             "left": ((-5.2, 1.0, 0), 26), "right": ((5.2, 1.0, 0), 26), "top34": ((2.8, 3.6, 3.0), 30)}
+    pos, fov = views.get(view, views["front34"])
+    place_camera(cam, pos, (0, 0.95, 0), fov)
+    fog = setup_world(scene, w)
+    setup_render(scene, engine, samples, width, height)
+    setup_fog_compositor(scene, fog)
+    scene.view_settings.exposure = 0.55
+    for o in bpy.data.objects:
+        if o.type == "LIGHT":
+            o.data.energy *= 1.25
+    log(f"showcase {template_name} ({len(tpl['batches'])} batches, {len(tpl.get('signs') or [])} signs) view {view}")
+    return cam
+
+
 def build(world, replay=None, t=14.0, mode="chase", font_dir=None, anim=None, fps=24, keep_scene=False,
           engine=None, samples=48, width=1280, height=592, max_karts=None, follow=None):
     """Imports the world and places the race at time t. Returns the camera object.
@@ -966,6 +1014,8 @@ def _parse(argv):
     p.add_argument("--render", default=None, help=".png to render")
     p.add_argument("--max-karts", type=int, default=None)
     p.add_argument("--follow", default=None, help="kart id to follow instead of the replay's followKartId")
+    p.add_argument("--showcase", default=None, metavar="TEMPLATE", help="render one template alone on a studio floor (e.g. kart_danfo)")
+    p.add_argument("--view", default="front34", help="showcase view: front34, rear34, front, back, left, right, top34")
     p.add_argument("--motion-blur", action="store_true", help="bake a short window around --t and render with motion blur")
     p.add_argument("--dof", type=float, default=0.0, help="f-stop for depth of field focused on the followed kart (0 = off)")
     return p.parse_args(argv)
@@ -976,6 +1026,17 @@ def main(argv=None):
         argv = sys.argv[sys.argv.index("--") + 1:] if "--" in sys.argv else sys.argv[1:]
     a = _parse(argv)
     wd, ht = (int(v) for v in a.size.lower().split("x"))
+    if a.showcase:
+        showcase(a.world, a.showcase, a.view, font_dir=a.fonts, engine=a.engine, samples=a.samples, width=wd, height=ht)
+        if a.save:
+            os.makedirs(os.path.dirname(os.path.abspath(a.save)), exist_ok=True)
+            bpy.ops.wm.save_as_mainfile(filepath=os.path.abspath(a.save))
+        if a.render:
+            os.makedirs(os.path.dirname(os.path.abspath(a.render)), exist_ok=True)
+            bpy.context.scene.render.filepath = os.path.abspath(a.render)
+            bpy.ops.render.render(write_still=True)
+            log("rendered " + a.render)
+        return
     anim = tuple(a.anim) if a.anim else ((a.t - 2.0 / a.fps, 4.0 / a.fps) if a.motion_blur else None)
     cam = build(a.world, None if a.no_replay else a.replay, t=a.t, mode=a.mode, font_dir=a.fonts, anim=anim,
                 fps=a.fps, engine=a.engine, samples=a.samples, width=wd, height=ht, max_karts=a.max_karts, follow=a.follow)

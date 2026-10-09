@@ -929,14 +929,18 @@ namespace NaijaKart.Core.World
             var dark = m.Batch("paint", 0.06f, 0.06f, 0.07f);
 
             bool bike = id == "okada" || id == "delivery_bike";
+            bool danfo = id == "danfo";
             if (!bike)
             {
                 m.Box(chassis, new Vec3(0, 0.3f, 0), new Vec3(1.7f, 0.1f, 2.6f));
-                foreach (var w in new[] { new Vec3(-0.9f, 0.4f, 0.95f), new Vec3(0.9f, 0.4f, 0.95f), new Vec3(-0.9f, 0.4f, -0.95f), new Vec3(0.9f, 0.4f, -0.95f) })
+                float wr = danfo ? 0.43f : 0.4f, ww = danfo ? 0.42f : 0.36f, wx = danfo ? 0.93f : 0.9f;
+                var rimM = danfo ? m.Batch("paint", DanfoYellow[0], DanfoYellow[1], DanfoYellow[2]) : rim;
+                foreach (var w in new[] { new Vec3(-wx, wr, 0.95f), new Vec3(wx, wr, 0.95f), new Vec3(-wx, wr, -0.95f), new Vec3(wx, wr, -0.95f) })
                 {
-                    m.Wheel(rubber, w, 0.4f, 0.36f, 0f, 16);
-                    m.Wheel(rim, w, 0.24f, 0.38f, 0f, 10);
-                    m.Wheel(dark, w, 0.1f, 0.4f, 0f, 6);
+                    m.Wheel(rubber, w, wr, ww, 0f, 16);
+                    m.Wheel(rimM, w, wr * 0.62f, ww + 0.02f, 0f, 12);
+                    m.Wheel(dark, w, wr * 0.3f, ww + 0.04f, 0f, 8);
+                    if (danfo) for (int k = 0; k < 5; k++) { float a = MathUtil.TwoPi * k / 5f; m.Box(chassis, w + new Vec3(System.Math.Sign(w.X) * (ww * 0.5f + 0.02f), (float)System.Math.Cos(a) * wr * 0.18f, (float)System.Math.Sin(a) * wr * 0.18f), new Vec3(0.02f, 0.05f, 0.05f)); }
                 }
                 // front/rear bumpers
                 m.Box(dark, new Vec3(0, 0.45f, 1.32f), new Vec3(1.5f, 0.18f, 0.12f));
@@ -966,23 +970,80 @@ namespace NaijaKart.Core.World
             {
                 case "danfo":
                 {
+                    // Danfo Kart (design sheet): boxy yellow van cab on a kart, open front half, windows at the
+                    // back, double black stripe, bull bar, round headlights, LAGOS flag banners, dual exhausts.
                     var yellow = m.Batch("paint", DanfoYellow[0], DanfoYellow[1], DanfoYellow[2]);
                     var black = m.Batch("paint", 0.05f, 0.05f, 0.05f);
-                    m.Frustum(yellow, new Vec3(0, 0.38f, -0.15f), new Vec3(1.55f, 0, 2.3f), new Vec3(1.5f, 0, 2.2f), 0.62f);   // lower body
-                    m.Frustum(yellow, new Vec3(0, 1.0f, -0.25f), new Vec3(1.5f, 0, 2.0f), new Vec3(1.3f, 0, 1.7f), 0.6f);      // cabin
-                    m.Box(black, new Vec3(0, 0.8f, -0.15f), new Vec3(1.58f, 0.16f, 2.26f));                                   // the stripe
-                    m.Frustum(glass, new Vec3(0, 1.08f, 0.78f), new Vec3(1.3f, 0, 0.1f), new Vec3(1.15f, 0, 0.1f), 0.45f, 0f, -0.12f);
-                    m.Box(glass, new Vec3(-0.72f, 1.3f, -0.35f), new Vec3(0.06f, 0.4f, 1.3f));
-                    m.Box(glass, new Vec3(0.72f, 1.3f, -0.35f), new Vec3(0.06f, 0.4f, 1.3f));
-                    m.Box(chassis, new Vec3(0, 1.66f, -0.3f), new Vec3(1.2f, 0.08f, 1.6f));                                    // roof rack
-                    foreach (float s in new[] { -0.45f, 0.45f }) m.Box(chassis, new Vec3(s, 1.74f, -0.3f), new Vec3(0.06f, 0.1f, 1.5f));
-                    m.Box(chrome, new Vec3(0, 0.55f, 1.0f), new Vec3(1.2f, 0.14f, 0.08f));                                      // grille
-                    m.Box(light, new Vec3(-0.55f, 0.7f, 1.01f), new Vec3(0.3f, 0.2f, 0.06f)); m.Box(light, new Vec3(0.55f, 0.7f, 1.01f), new Vec3(0.3f, 0.2f, 0.06f));
-                    m.Box(tail, new Vec3(-0.6f, 0.7f, -1.31f), new Vec3(0.26f, 0.2f, 0.06f)); m.Box(tail, new Vec3(0.6f, 0.7f, -1.31f), new Vec3(0.26f, 0.2f, 0.06f));
-                    Mirrors(1.2f, 0.6f, 0.75f);
-                    Plate(0.5f, -1.33f, MathUtil.Pi);
-                    t.signs.Add(new SignInstance { style = "bus", text = "DANFO", position = new Vec3(0, 0.95f, -1.31f), yaw = MathUtil.Pi, width = 1.2f, height = 0.3f, background = DanfoYellow, foreground = new[] { 0.05f, 0.05f, 0.05f }, template = t.name });
-                    Driver(m, c, new Vec3(0, 1.4f, 0.05f), open: false, jacket: new[] { 0.12f, 0.5f, 0.25f });
+                    var green = m.Batch("paint", 0.0f, 0.53f, 0.27f);
+                    var white = m.Batch("paint", 0.96f, 0.96f, 0.94f);
+                    var seatM = m.Batch("cloth", 0.08f, 0.08f, 0.09f);
+                    var red = m.Batch("paint", 0.8f, 0.1f, 0.1f);
+                    const float bodyW = 1.54f, roofY = 2.1f;
+                    // Lower body: sills and wheel arches
+                    m.Frustum(yellow, new Vec3(0, 0.4f, -0.05f), new Vec3(bodyW, 0, 2.42f), new Vec3(bodyW + 0.04f, 0, 2.4f), 0.5f);
+                    foreach (float sx in new[] { -1f, 1f }) foreach (float sz in new[] { -0.95f, 0.95f })
+                        m.Frustum(black, new Vec3(sx * 0.78f, 0.62f, sz), new Vec3(0.3f, 0, 1.05f), new Vec3(0.24f, 0, 0.95f), 0.3f);
+                    // Short flat nose with the bonnet
+                    m.Frustum(yellow, new Vec3(0, 0.9f, 0.95f), new Vec3(bodyW, 0, 0.5f), new Vec3(bodyW - 0.06f, 0, 0.44f), 0.3f);
+                    // Windscreen with A-pillars and the header that carries the LAGOS banner
+                    m.Frustum(glass, new Vec3(0, 1.2f, 0.9f), new Vec3(1.34f, 0, 0.06f), new Vec3(1.26f, 0, 0.06f), roofY - 1.28f, 0f, -0.14f);
+                    foreach (float sx in new[] { -1f, 1f }) m.Frustum(yellow, new Vec3(sx * 0.72f, 1.2f, 0.9f), new Vec3(0.1f, 0, 0.12f), new Vec3(0.1f, 0, 0.12f), roofY - 1.2f, 0f, -0.14f);
+                    m.Box(yellow, new Vec3(0, roofY - 0.1f, 0.76f), new Vec3(bodyW, 0.2f, 0.16f));
+                    m.Box(black, new Vec3(0, 1.27f, 0.82f), new Vec3(1.3f, 0.07f, 0.14f));                               // dashboard top
+                    // Roof with ribs
+                    m.Frustum(yellow, new Vec3(0, roofY - 0.02f, -0.2f), new Vec3(bodyW, 0, 2.0f), new Vec3(bodyW - 0.12f, 0, 1.9f), 0.1f);
+                    foreach (float rz in new[] { -0.75f, -0.35f, 0.05f, 0.45f }) m.Box(yellow, new Vec3(0, roofY + 0.09f, rz), new Vec3(1.2f, 0.03f, 0.05f));
+                    // Rear half: side panels with windows, B-pillars; front half open with a low sill
+                    foreach (float sx in new[] { -1f, 1f })
+                    {
+                        m.Box(yellow, new Vec3(sx * (bodyW * 0.5f - 0.03f), 1.42f, -0.78f), new Vec3(0.06f, roofY - 0.1f - 0.9f, 0.96f));
+                        m.Box(glass, new Vec3(sx * (bodyW * 0.5f + 0.005f), 1.6f, -0.76f), new Vec3(0.02f, 0.46f, 0.76f));
+                        m.Box(yellow, new Vec3(sx * (bodyW * 0.5f - 0.03f), 1.42f, -0.27f), new Vec3(0.06f, roofY - 0.1f - 0.9f, 0.1f));
+                        m.Box(black, new Vec3(sx * (bodyW * 0.5f + 0.01f), 0.95f, 0.2f), new Vec3(0.04f, 0.12f, 1.1f));   // door sill trim
+                    }
+                    // Rear wall, window, tail lights, LAGOS plate with flag, bumper and twin exhausts
+                    m.Box(yellow, new Vec3(0, 1.42f, -1.23f), new Vec3(bodyW, roofY - 0.1f - 0.9f, 0.08f));
+                    m.Box(glass, new Vec3(0, 1.62f, -1.275f), new Vec3(1.1f, 0.42f, 0.02f));
+                    foreach (float sx in new[] { -1f, 1f })
+                    {
+                        m.Box(black, new Vec3(sx * 0.6f, 0.78f, -1.275f), new Vec3(0.3f, 0.26f, 0.03f));
+                        m.Box(tail, new Vec3(sx * 0.6f, 0.78f, -1.29f), new Vec3(0.26f, 0.2f, 0.02f));
+                        m.Box(green, new Vec3(sx * 0.4f, 1.12f, -1.28f), new Vec3(0.07f, 0.16f, 0.015f));                  // flag ends
+                    }
+                    m.Box(white, new Vec3(0, 1.12f, -1.275f), new Vec3(0.86f, 0.18f, 0.012f));
+                    m.Box(black, new Vec3(0, 0.52f, -1.3f), new Vec3(bodyW, 0.16f, 0.14f));
+                    m.Box(chrome, new Vec3(0, 0.46f, -1.33f), new Vec3(1.0f, 0.04f, 0.04f));
+                    foreach (float sx in new[] { -0.42f, -0.3f, 0.3f, 0.42f }) m.Wheel(chrome, new Vec3(sx, 0.4f, -1.42f), 0.05f, 0.22f, MathUtil.Pi * 0.5f, 8);
+                    // Front: grille with badge, round headlights with bezels, bumper, bull bar with chrome lower bar
+                    m.Box(black, new Vec3(0, 0.95f, 1.19f), new Vec3(0.62f, 0.3f, 0.05f));
+                    foreach (float gy in new[] { 0.86f, 0.94f, 1.02f }) m.Box(chrome, new Vec3(0, gy, 1.215f), new Vec3(0.56f, 0.025f, 0.02f));
+                    m.Box(white, new Vec3(0, 0.95f, 1.225f), new Vec3(0.1f, 0.12f, 0.02f));
+                    foreach (float sx in new[] { -1f, 1f })
+                    {
+                        m.Wheel(black, new Vec3(sx * 0.5f, 0.95f, 1.2f), 0.17f, 0.06f, MathUtil.Pi * 0.5f, 14);
+                        m.Wheel(light, new Vec3(sx * 0.5f, 0.95f, 1.235f), 0.13f, 0.03f, MathUtil.Pi * 0.5f, 14);
+                        m.Box(red, new Vec3(sx * 0.62f, 0.58f, 1.34f), new Vec3(0.1f, 0.06f, 0.08f));                       // tow hooks
+                    }
+                    m.Box(black, new Vec3(0, 0.56f, 1.3f), new Vec3(bodyW, 0.16f, 0.14f));
+                    m.Box(chrome, new Vec3(0, 0.5f, 1.36f), new Vec3(1.1f, 0.05f, 0.05f));
+                    m.Beam(black, new Vec3(-0.62f, 0.72f, 1.4f), new Vec3(0.62f, 0.72f, 1.4f), 0.07f);
+                    foreach (float sx in new[] { -0.62f, -0.2f, 0.2f, 0.62f }) m.Beam(black, new Vec3(sx, 0.5f, 1.4f), new Vec3(sx, 0.72f, 1.4f), 0.06f);
+                    m.Beam(chrome, new Vec3(-0.5f, 0.38f, 1.42f), new Vec3(0.5f, 0.38f, 1.42f), 0.05f);
+                    // Double black stripe low along both sides (on the sill panel) and across the nose
+                    foreach (float sy in new[] { 0.72f, 0.8f })
+                    {
+                        m.Box(black, new Vec3(0, sy, -0.05f), new Vec3(bodyW + 0.07f, 0.035f, 2.3f));
+                        m.Box(black, new Vec3(0, sy + 0.25f, 1.1f), new Vec3(1.2f, 0.03f, 0.3f));
+                    }
+                    // Interior: seat with yellow piping, visible through the open sides
+                    m.Box(seatM, new Vec3(0, 0.92f, -0.05f), new Vec3(0.62f, 0.14f, 0.5f));
+                    m.Box(seatM, new Vec3(0, 1.22f, -0.33f), new Vec3(0.6f, 0.58f, 0.12f));
+                    m.Box(yellow, new Vec3(0, 1.22f, -0.395f), new Vec3(0.06f, 0.5f, 0.01f));
+                    Mirrors(1.5f, 0.6f, 0.78f);
+                    t.signs.Add(new SignInstance { style = "bus", text = "LAGOS", position = new Vec3(0, roofY - 0.1f, 0.845f), yaw = 0f, width = 1.0f, height = 0.16f, background = new[] { 0.96f, 0.96f, 0.94f }, foreground = new[] { 0.06f, 0.06f, 0.06f }, template = t.name });
+                    foreach (float sx in new[] { -1f, 1f }) m.Box(green, new Vec3(sx * 0.46f, roofY - 0.1f, 0.85f), new Vec3(0.07f, 0.14f, 0.01f));
+                    t.signs.Add(new SignInstance { style = "bus", text = "LAGOS", position = new Vec3(0, 1.12f, -1.285f), yaw = MathUtil.Pi, width = 0.7f, height = 0.17f, background = new[] { 0.96f, 0.96f, 0.94f }, foreground = new[] { 0.06f, 0.06f, 0.06f }, template = t.name });
+                    Driver(m, c, new Vec3(0, 0.9f, -0.05f), open: true, jacket: new[] { 0.12f, 0.5f, 0.25f });
                     break;
                 }
                 case "keke":
