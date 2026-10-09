@@ -83,6 +83,10 @@ One-time codes for "save progress" are printed to the console in development.
 4. Start Claude Code in the folder; the `mcp__blender__*` tools (scene info, object info, run
    Blender Python, viewport screenshot) are then available, and `CLAUDE.md` plus `docs/` give it
    the same context the cloud session had.
+5. First Blender task: import the generated world with `tools/blender/import_world.py` (see
+   `tools/blender/README.md`), either from the command line with `blender -b --python …` or by
+   asking Claude Code to run `build(...)` from that file inside the open Blender. A cloud session
+   cannot reach a Blender on your machine, so this step is local only.
 
 ## 7. Design files
 

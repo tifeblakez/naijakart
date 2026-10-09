@@ -139,6 +139,11 @@ Consumers:
 * Unity: `TrackWorldBuilder` builds Mesh objects from the batches, quads plus `TextMesh` for signs,
   and instantiates templates for karts without an art prefab. The GLSL in the previewer is the
   specification for the URP shader graphs keyed by the same hint names.
+* Blender (`tools/blender/import_world.py`): imports the same `world.json` and replay (meshes per
+  batch, node materials per hint, text signs, template library with instances, sun, sky, fog and the
+  chase camera at a race time, optionally keyframed) for look development, Cycles-quality stills and
+  marketing shots, and for asset work through the Blender MCP server. It is a third reader of the
+  data, never a second source of track geometry.
 
 The quality bar is the Race HUD concept (docs/UI_MAPPING.md): a sunlit, saturated Lagos with the
 lagoon on both sides of the bridge, a dense skyline, crowds and signage. Every look-development
