@@ -930,14 +930,19 @@ namespace NaijaKart.Core.World
 
             bool bike = id == "okada" || id == "delivery_bike";
             bool danfo = id == "danfo";
-            if (!bike)
+            bool trike = id == "keke";
+            if (trike)
+            {
+                // Two front wheels on a wide track, one central rear wheel (built in the keke case below).
+            }
+            else if (!bike)
             {
                 m.Box(chassis, new Vec3(0, 0.3f, 0), new Vec3(1.7f, 0.1f, 2.6f));
                 float wr = danfo ? 0.43f : 0.4f, ww = danfo ? 0.42f : 0.36f, wx = danfo ? 0.93f : 0.9f;
                 var rimM = danfo ? m.Batch("paint", DanfoYellow[0], DanfoYellow[1], DanfoYellow[2]) : rim;
                 foreach (var w in new[] { new Vec3(-wx, wr, 0.95f), new Vec3(wx, wr, 0.95f), new Vec3(-wx, wr, -0.95f), new Vec3(wx, wr, -0.95f) })
                 {
-                    m.Wheel(rubber, w, wr, ww, 0f, 16);
+                    m.Tyre(rubber, w, wr, ww, 0f, 20);
                     m.Wheel(rimM, w, wr * 0.62f, ww + 0.02f, 0f, 12);
                     m.Wheel(dark, w, wr * 0.3f, ww + 0.04f, 0f, 8);
                     if (danfo) for (int k = 0; k < 5; k++) { float a = MathUtil.TwoPi * k / 5f; m.Box(chassis, w + new Vec3(System.Math.Sign(w.X) * (ww * 0.5f + 0.02f), (float)System.Math.Cos(a) * wr * 0.18f, (float)System.Math.Sin(a) * wr * 0.18f), new Vec3(0.02f, 0.05f, 0.05f)); }
@@ -1048,15 +1053,90 @@ namespace NaijaKart.Core.World
                 }
                 case "keke":
                 {
+                    // Keke Napep kart (three wheels): rounded yellow nose and tub with matte black trim, open
+                    // sides with safety bars, black fabric canopy on a tubular roll cage, green-white-green
+                    // stripes, "07" race numbers, square headlights with amber indicators and a centre badge.
                     var yellow = m.Batch("paint", DanfoYellow[0], DanfoYellow[1], DanfoYellow[2]);
-                    var green = m.Batch("paint", 0.1f, 0.45f, 0.25f);
-                    m.Frustum(yellow, new Vec3(0, 0.45f, -0.1f), new Vec3(1.3f, 0, 2.0f), new Vec3(1.2f, 0, 1.8f), 0.7f);
-                    m.Box(green, new Vec3(0, 1.6f, -0.1f), new Vec3(1.4f, 0.1f, 2.1f));
-                    foreach (var post in new[] { new Vec3(-0.6f, 1.25f, -0.9f), new Vec3(0.6f, 1.25f, -0.9f), new Vec3(0, 1.25f, 0.85f) }) m.Box(chassis, post, new Vec3(0.06f, 0.7f, 0.06f));
-                    m.Box(glass, new Vec3(0, 1.25f, 0.9f), new Vec3(1.1f, 0.5f, 0.05f));
-                    m.Box(light, new Vec3(0, 0.8f, 1.0f), new Vec3(0.35f, 0.25f, 0.06f));
-                    Plate(0.5f, -1.0f, MathUtil.Pi);
-                    Driver(m, c, new Vec3(0, 1.15f, 0.2f), open: true, jacket: new[] { 0.9f, 0.9f, 0.85f });
+                    var matte = m.Batch("rubber", 0.07f, 0.07f, 0.08f);
+                    var canvas = m.Batch("cloth", 0.06f, 0.06f, 0.07f);
+                    var green = m.Batch("paint", 0.0f, 0.53f, 0.27f);
+                    var white = m.Batch("paint", 0.96f, 0.96f, 0.94f);
+                    var amber = m.Batch("emissive", 1f, 0.6f, 0.1f, 1.2f);
+                    const float tubeR = 0.03f;
+                    // Wheels: fronts wide, single rear
+                    foreach (var w in new[] { new Vec3(-0.7f, 0.36f, 0.8f), new Vec3(0.7f, 0.36f, 0.8f), new Vec3(0f, 0.4f, -0.92f) })
+                    {
+                        bool rear = w.Z < 0;
+                        float wr = rear ? 0.4f : 0.36f, ww = rear ? 0.34f : 0.26f;
+                        m.Tyre(rubber, w, wr, ww, 0f, 22);
+                        m.Wheel(matte, w, wr * 0.55f, ww + 0.02f, 0f, 14);
+                        m.Wheel(chrome, w, wr * 0.2f, ww + 0.04f, 0f, 10);
+                    }
+                    m.Box(chassis, new Vec3(0, 0.3f, -0.1f), new Vec3(1.2f, 0.08f, 2.1f));
+                    m.Tube(matte, new Vec3(-0.7f, 0.36f, 0.8f), new Vec3(0.7f, 0.36f, 0.8f), 0.035f, 8);                   // front axle
+                    m.Tube(matte, new Vec3(0, 0.4f, -0.92f), new Vec3(0, 0.45f, -0.3f), 0.04f, 8);                         // swing arm
+                    // Passenger tub and the bulbous nose
+                    m.RoundedBox(yellow, new Vec3(0, 0.63f, -0.35f), new Vec3(1.4f, 0.52f, 1.65f), 0.12f, 6);
+                    m.RoundedBox(yellow, new Vec3(0, 0.8f, 0.72f), new Vec3(1.22f, 0.82f, 0.95f), 0.3f, 7);
+                    m.RoundedBox(yellow, new Vec3(0, 0.56f, 1.02f), new Vec3(1.0f, 0.44f, 0.5f), 0.18f, 5);
+                    m.RoundedBox(matte, new Vec3(0, 0.72f, -0.92f), new Vec3(0.46f, 0.34f, 0.95f), 0.14f, 5);               // rear mudguard
+                    foreach (float sx in new[] { -1f, 1f })
+                    {
+                        m.RoundedBox(matte, new Vec3(sx * 0.7f, 0.7f, 0.8f), new Vec3(0.36f, 0.2f, 0.92f), 0.08f, 5);     // front fenders
+                        m.Box(matte, new Vec3(sx * 0.705f, 0.5f, -0.35f), new Vec3(0.03f, 0.1f, 1.55f));                  // sill trim
+                        // green-white-green side stripes
+                        m.Box(green, new Vec3(sx * 0.71f, 0.76f, -0.35f), new Vec3(0.012f, 0.05f, 1.5f));
+                        m.Box(white, new Vec3(sx * 0.71f, 0.705f, -0.35f), new Vec3(0.012f, 0.05f, 1.5f));
+                        m.Box(green, new Vec3(sx * 0.71f, 0.65f, -0.35f), new Vec3(0.012f, 0.05f, 1.5f));
+                    }
+                    // Stripes along the hood
+                    m.Box(green, new Vec3(-0.08f, 1.212f, 0.72f), new Vec3(0.06f, 0.01f, 0.78f));
+                    m.Box(white, new Vec3(0f, 1.212f, 0.72f), new Vec3(0.06f, 0.01f, 0.78f));
+                    m.Box(green, new Vec3(0.08f, 1.212f, 0.72f), new Vec3(0.06f, 0.01f, 0.78f));
+                    // Front fascia: grille slot, centre badge, square headlights with amber indicators, bumper
+                    m.RoundedBox(matte, new Vec3(0, 0.6f, 1.2f), new Vec3(0.5f, 0.09f, 0.05f), 0.02f, 3);
+                    m.RoundedBox(chrome, new Vec3(0, 0.75f, 1.215f), new Vec3(0.13f, 0.13f, 0.03f), 0.03f, 3);
+                    foreach (float sx in new[] { -1f, 1f })
+                    {
+                        m.RoundedBox(matte, new Vec3(sx * 0.36f, 0.9f, 1.19f), new Vec3(0.3f, 0.24f, 0.05f), 0.05f, 4);
+                        m.RoundedBox(light, new Vec3(sx * 0.36f, 0.9f, 1.215f), new Vec3(0.24f, 0.18f, 0.03f), 0.05f, 4);
+                        m.RoundedBox(amber, new Vec3(sx * 0.58f, 0.76f, 1.17f), new Vec3(0.1f, 0.08f, 0.04f), 0.02f, 3);
+                    }
+                    m.Tube(matte, new Vec3(-0.58f, 0.44f, 1.28f), new Vec3(0.58f, 0.44f, 1.28f), 0.045f, 10);
+                    m.Tube(chrome, new Vec3(-0.5f, 0.36f, 1.3f), new Vec3(0.5f, 0.36f, 1.3f), 0.03f, 8);
+                    // Windshield with black trim and a wiper
+                    m.Frustum(glass, new Vec3(0, 1.0f, 0.42f), new Vec3(1.18f, 0, 0.04f), new Vec3(1.08f, 0, 0.04f), 0.78f, 0f, -0.12f);
+                    m.Tube(matte, new Vec3(-0.59f, 1.0f, 0.44f), new Vec3(-0.54f, 1.78f, 0.32f), 0.025f, 8);
+                    m.Tube(matte, new Vec3(0.59f, 1.0f, 0.44f), new Vec3(0.54f, 1.78f, 0.32f), 0.025f, 8);
+                    m.Tube(matte, new Vec3(-0.56f, 1.78f, 0.32f), new Vec3(0.56f, 1.78f, 0.32f), 0.025f, 8);
+                    m.Tube(matte, new Vec3(-0.6f, 1.0f, 0.44f), new Vec3(0.6f, 1.0f, 0.44f), 0.025f, 8);
+                    m.Tube(matte, new Vec3(0.22f, 1.03f, 0.47f), new Vec3(-0.18f, 1.5f, 0.39f), 0.012f, 6);            // wiper
+                    m.Tube(matte, new Vec3(0.22f, 0.98f, 0.5f), new Vec3(0.22f, 1.06f, 0.47f), 0.015f, 6);
+                    // Roll cage: raked A-posts, rear posts, side rails, cross rails, safety bars
+                    foreach (float sx in new[] { -1f, 1f })
+                    {
+                        m.Tube(matte, new Vec3(sx * 0.62f, 0.85f, 0.42f), new Vec3(sx * 0.6f, 1.84f, 0.3f), tubeR, 8);
+                        m.Tube(matte, new Vec3(sx * 0.62f, 0.85f, -1.05f), new Vec3(sx * 0.62f, 1.84f, -1.0f), tubeR, 8);
+                        m.Tube(matte, new Vec3(sx * 0.6f, 1.84f, 0.3f), new Vec3(sx * 0.62f, 1.84f, -1.0f), tubeR, 8);
+                        m.Tube(matte, new Vec3(sx * 0.63f, 1.12f, 0.4f), new Vec3(sx * 0.63f, 1.12f, -1.03f), tubeR, 8);   // safety bar
+                        m.Tube(matte, new Vec3(sx * 0.63f, 0.87f, -0.3f), new Vec3(sx * 0.63f, 1.12f, -0.6f), tubeR * 0.8f, 8);
+                    }
+                    m.Tube(matte, new Vec3(-0.6f, 1.84f, 0.3f), new Vec3(0.6f, 1.84f, 0.3f), tubeR, 8);
+                    m.Tube(matte, new Vec3(-0.62f, 1.84f, -1.0f), new Vec3(0.62f, 1.84f, -1.0f), tubeR, 8);
+                    m.Tube(matte, new Vec3(-0.62f, 1.84f, -0.35f), new Vec3(0.62f, 1.84f, -0.35f), tubeR * 0.8f, 8);
+                    // Fabric canopy over the cage, sagging a little between the rails
+                    m.RoundedBox(canvas, new Vec3(0, 1.86f, -0.35f), new Vec3(1.38f, 0.07f, 1.5f), 0.03f, 6);
+                    m.RoundedBox(canvas, new Vec3(0, 1.845f, -0.35f), new Vec3(1.0f, 0.06f, 1.2f), 0.03f, 4);
+                    // Bench seat behind the driver, race numbers, lights, plate, mirrors
+                    m.RoundedBox(canvas, new Vec3(0, 0.96f, -0.78f), new Vec3(0.92f, 0.16f, 0.42f), 0.05f, 4);
+                    m.RoundedBox(canvas, new Vec3(0, 1.26f, -0.98f), new Vec3(0.92f, 0.5f, 0.1f), 0.04f, 4);
+                    foreach (float sx in new[] { -1f, 1f }) m.RoundedBox(tail, new Vec3(sx * 0.42f, 0.74f, -1.17f), new Vec3(0.16f, 0.14f, 0.04f), 0.03f, 3);
+                    m.RoundedBox(matte, new Vec3(0, 0.46f, -1.2f), new Vec3(1.1f, 0.12f, 0.1f), 0.04f, 4);
+                    t.signs.Add(new SignInstance { style = "plate", text = "07", position = new Vec3(0, 1.08f, 1.19f), yaw = 0f, width = 0.3f, height = 0.26f, background = new[] { 0.98f, 0.98f, 0.96f }, foreground = new[] { 0.05f, 0.05f, 0.05f }, template = t.name });
+                    foreach (float sx in new[] { -1f, 1f }) t.signs.Add(new SignInstance { style = "plate", text = "07", position = new Vec3(sx * 0.715f, 0.62f, -0.15f), yaw = sx * MathUtil.Pi * 0.5f, width = 0.32f, height = 0.26f, background = new[] { 0.98f, 0.98f, 0.96f }, foreground = new[] { 0.05f, 0.05f, 0.05f }, template = t.name });
+                    Plate(0.55f, -1.21f, MathUtil.Pi);
+                    Mirrors(1.2f, 0.36f, 0.64f);
+                    Driver(m, c, new Vec3(0, 0.78f, -0.08f), open: true, jacket: new[] { 0.9f, 0.9f, 0.85f }, scale: 0.95f);
                     break;
                 }
                 case "okada":
@@ -1170,10 +1250,10 @@ namespace NaijaKart.Core.World
             t.batches.AddRange(m.Batches);
         }
 
-        private static void Driver(MeshBuilder m, Ctx c, Vec3 seat, bool open, float[] jacket, bool cap = false, bool helmet = false)
+        private static void Driver(MeshBuilder m, Ctx c, Vec3 seat, bool open, float[] jacket, bool cap = false, bool helmet = false, float scale = 1.15f)
         {
             // Visible driver (kart games show the character big): torso, head with afro or cap, arms to a steering wheel.
-            const float S = 1.15f;
+            float S = scale;
             Vec3 Off(float x, float y, float z) => seat + new Vec3(x * S, y * S, z * S);
             Vec3 Size(float x, float y, float z) => new Vec3(x * S, y * S, z * S);
             var skin = m.Batch("skin", 0.4f, 0.25f, 0.15f);

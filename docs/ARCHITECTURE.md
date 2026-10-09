@@ -119,9 +119,12 @@ hazard. Third Mainland Rush: a three-lane road with Lagos kerbs and markings; tw
 climbing to 8 m over a lagoon with piers, jersey barriers, guard rails, cable-stay pylons, lamp posts
 and gantries; Lagos Island towers, mainland low-rise with shops, a far skyline, islands across the
 water; boats, jetties, shore crowds, umbrellas, grandstands, market stalls, power lines, trees, bus
-stops and parked danfos. Deterministic per seed. `MeshBuilder` offers Box, Frustum, Cylinder, Cone,
-Wheel, Sphere, Beam, Ribbon and Plane; the look comes from composition, PBR materials and shader
-detail, not sculpted assets.
+stops and parked danfos. Deterministic per seed. `MeshBuilder` offers flat-shaded Box, Frustum, Cylinder, Cone,
+Wheel, Sphere, Beam, Ribbon and Plane for the city, and smooth-shaded RoundedBox, Tube and Tyre
+(per-vertex normals) for vehicles, so karts read as soft stylised 3D rather than blocks; the look
+comes from composition, PBR materials and shader detail, not sculpted assets. Each kart is built to
+its design sheet (danfo: four wheels, hard roof, LAGOS banners; keke: three wheels, fabric canopy on
+a roll cage, 07 race numbers) and checked with the Blender showcase views.
 
 Material hints (`MeshBatch.material`) are the contract between generator and renderers: `road`,
 `concrete`, `barrier`, `metal`, `chrome`, `glass`, `tower`, `water`, `foliage`, `trunk`, `paint`,
