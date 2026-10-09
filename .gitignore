@@ -62,3 +62,6 @@ Thumbs.db
 /tools/world-preview/public/fonts/
 /tools/world-preview/public/index.html
 *.png
+
+# ---- local renders ----
+/out/

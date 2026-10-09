@@ -20,7 +20,7 @@ echo "Restoring and testing the .NET solution"
 dotnet test NaijaKart.sln --nologo -v q
 
 echo "Preparing the world previewer"
-( cd tools/world-preview && npm install --no-audit --no-fund && npm run setup )
+( cd tools/world-preview && npm install --no-audit --no-fund && node setup.js )
 
 echo "Validating content"
 dotnet run --project Server/NaijaKart.Server --no-build -- validate-config

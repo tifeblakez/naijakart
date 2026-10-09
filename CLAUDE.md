@@ -18,6 +18,7 @@ dotnet run --project Server/NaijaKart.Server -- validate-config
 dotnet run --project Server/NaijaKart.Server -- simulate --players 8
 ```
 Regenerate data rather than hand-editing: `python3 -I tools/gen_third_mainland_rush.py`,
+`python3 -I tools/gen_design_tokens.py` (design tokens → `DesignTokens.cs`),
 `dotnet run --project Server/NaijaKart.Server -- export-defaults --config Assets/StreamingAssets/NaijaKart/Config`.
 
 ## Where things go

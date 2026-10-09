@@ -39,16 +39,18 @@ server). `scripts/setup-local.sh` checks the tools and prepares the previewer.
 
 ## Preview the world as a video
 
-Look development happens in `tools/world-preview` (see ADR-0008). After `npm install && npm run setup`,
+Look development happens in `tools/world-preview` (see ADR-0008). `scripts/render-race-video.sh`
+makes the full showcase video in one go; after `npm install && node setup.js`,
 `node still.js --t=12,20 --mode=chase --out=frame.png` renders single frames and `node render.js`
-makes the MP4; `NK_CHROME` points at a Chromium binary when the bundled one is unavailable.
+makes an MP4. The renderer uses your GPU; `NK_SOFTWARE_GL=1` forces software rendering and
+`NK_CHROME` points at another Chromium binary.
 
 ### Original notes (no Unity needed)
 
 ```bash
 dotnet run --project Server/NaijaKart.Server -- export-world --track third_mainland_rush --out tools/world-preview/public/world.json
 dotnet run --project Server/NaijaKart.Server -- simulate --players 8 --replay tools/world-preview/public/replay.json
-cd tools/world-preview && npm install && npm run setup && node render.js --duration=60 --overview=5 --out=race.mp4
+cd tools/world-preview && npm install && node setup.js && node render.js --duration=60 --overview=5 --out=race.mp4
 ```
 
 ## Quick start (Unity)

@@ -2,9 +2,12 @@
 // Usage:
 //   dotnet run --project Server/NaijaKart.Server -- export-world --track third_mainland_rush --out tools/world-preview/public/world.json
 //   dotnet run --project Server/NaijaKart.Server -- simulate --players 8 --replay tools/world-preview/public/replay.json
-//   cd tools/world-preview && npm install && npm run setup && node render.js --fps=30 --start=-3 --duration=60 --overview=5 --out=race.mp4
-// Set NK_CHROME to a Chromium/headless-shell binary when the bundled Playwright browser is unavailable.
+//   cd tools/world-preview && npm install && node setup.js && node render.js --fps=30 --start=-3 --duration=60 --overview=5 --out=race.mp4
+// NK_CHROME selects another Chromium binary; NK_SOFTWARE_GL=1 forces software rendering (no GPU).
 const {chromium} = require('playwright');
+// On a machine with a GPU the default Chromium GL path is used (fast). NK_SOFTWARE_GL=1 forces
+// SwiftShader for machines and containers without a GPU; NK_CHROME points at another Chromium binary.
+const gpuArgs = () => process.env.NK_SOFTWARE_GL ? ['--use-gl=angle', '--use-angle=swiftshader', '--enable-unsafe-swiftshader', '--ignore-gpu-blocklist'] : ['--ignore-gpu-blocklist', '--enable-gpu-rasterization', '--enable-webgl'];
 const http = require('http'); const fs = require('fs'); const path = require('path'); const {execSync} = require('child_process');
 const root = path.join(__dirname, 'public');
 const args = Object.fromEntries(process.argv.slice(2).map(a => a.replace(/^--/, '').split('=')));
@@ -19,7 +22,7 @@ const server = http.createServer((req, res) => {
 server.listen(0, async () => {
   const port = server.address().port;
   const browser = await chromium.launch({executablePath: process.env.NK_CHROME || undefined,
-    args: ['--use-gl=angle', '--use-angle=swiftshader', '--enable-unsafe-swiftshader', '--ignore-gpu-blocklist']});
+    args: gpuArgs()});
   const page = await browser.newPage({viewport: {width: +(args.w || 1688), height: +(args.h || 780)}});
   page.on('pageerror', e => console.error('page error:', e.message));
   page.on('console', m => { if (m.type() === 'error') console.error('console:', m.text()); });
@@ -32,7 +35,7 @@ server.listen(0, async () => {
     const t = start + i / fps;
     const mode = i < overview * fps ? 'overview' : 'chase';
     await page.evaluate(([t, mode]) => window.renderAt(t, mode), [t, mode]);
-    await page.screenshot({path: path.join(dir, `f${String(i).padStart(5, '0')}.png`), type: 'png'});
+    await page.screenshot({path: path.join(dir, `f${String(i).padStart(5, '0')}.png`), type: 'png', timeout: 180000});
     if (i % 60 === 0) console.log(`frame ${i}/${total} (${((Date.now() - t0) / 1000).toFixed(0)}s)`);
   }
   await browser.close(); server.close();

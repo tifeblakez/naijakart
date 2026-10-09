@@ -1,7 +1,8 @@
 # Design files
 
-`design/canvas/` is a local copy of the Claude design canvas **"Naija Kart Game Screens"**
-(https://claude.ai/artifact/GY9EgorEEGE9GvJ9RuSWp7, version 1791499064-a1da, copied 2026-10-08):
+`design/canvas/` holds the game screens, **"Naija Kart Game Screens"**. It started as a copy of a
+Claude design canvas (version 1791499064-a1da, copied 2026-10-08) and is now the source of truth:
+edit the files here, not the canvas. Contents:
 34 artboards (`*.dc.html`, 844×390 pt phone frame), the canvas index (`canvas.json`), the shared
 screen CSS (`screens.css`, `mobile.css`) and the design system (`ds/naijakart/`: `tokens.json`,
 `tokens.css`, `components/bundle.css`, `README.md`).
