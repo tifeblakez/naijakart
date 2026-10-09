@@ -149,7 +149,7 @@ namespace NaijaKart.Server.Hosting
             _server.Ledger.EnsureAccount(botId);
             _members.Add(botId);
             _loadouts[botId] = (vehicle, null);
-            _bots[botId] = new BotDriver(Race.Track, _seed + (ulong)_members.Count * 31UL, skill);
+            _bots[botId] = new BotDriver(Race.Track, _seed + (ulong)_members.Count * 31UL, skill, _cfg.bots);
             Race.SetReady(botId, true);
         }
 
@@ -251,8 +251,8 @@ namespace NaijaKart.Server.Hosting
                     foreach (var p in Race.Participants)
                     {
                         if (p.IsBot || p.Status != ParticipantStatus.Disconnected) continue;
-                        if (!_standIns.TryGetValue(p.PlayerId, out var driver)) _standIns[p.PlayerId] = driver = new BotDriver(Race.Track, _seed ^ 0xA11EUL, 0.5f);
-                        Race.SubmitStandInInput(p.PlayerId, driver.Think(p, Race.Hazards.All, dt));
+                        if (!_standIns.TryGetValue(p.PlayerId, out var driver)) _standIns[p.PlayerId] = driver = new BotDriver(Race.Track, _seed ^ 0xA11EUL, 0.5f, _cfg.bots);
+                        Race.SubmitStandInInput(p.PlayerId, driver.Think(p, Race.Hazards.All, Race.Participants, dt));
                         var le = Race.Lastma.EventFor(p.PlayerId);
                         if (le != null && le.Phase == Core.Lastma.LastmaPhase.FinePending && !le.BailRequested) Race.TakePenalty(p.PlayerId);
                     }
@@ -260,7 +260,7 @@ namespace NaijaKart.Server.Hosting
                 {
                     var p = Race.Find(kv.Key);
                     if (p == null || !p.IsActiveRacer) continue;
-                    Race.SubmitInput(kv.Key, kv.Value.Think(p, Race.Hazards.All, dt));
+                    Race.SubmitInput(kv.Key, kv.Value.Think(p, Race.Hazards.All, Race.Participants, dt));
                     var le = Race.Lastma.EventFor(kv.Key);
                     if (le != null && le.Phase == Core.Lastma.LastmaPhase.FinePending && !le.BailRequested)
                     {
@@ -423,7 +423,7 @@ namespace NaijaKart.Server.Hosting
             {
                 Race.MarkDisconnected(playerId);
                 if (_cfg.raceRules.aiStandInWhileDisconnected && !_bots.ContainsKey(playerId) && !_standIns.ContainsKey(playerId))
-                    _standIns[playerId] = new BotDriver(Race.Track, _seed ^ 0xA11EUL, 0.5f);
+                    _standIns[playerId] = new BotDriver(Race.Track, _seed ^ 0xA11EUL, 0.5f, _cfg.bots);
                 BroadcastRoomState();   // members see "AI driving · holding their place"
             }
             else Leave(playerId);

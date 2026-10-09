@@ -197,6 +197,8 @@ namespace NaijaKart.Server.Tests
             h.Run(0.2f, a, b2);
             Assert.That(room.Race.Find("b").Status, Is.EqualTo(ParticipantStatus.Connected));
             Assert.That(b2.Room, Is.Not.Null, "reconnect restores room state");
+            h.Run(0.5f, a, b2);
+            Assert.That(room.Race.Find("b").LastInputSequence, Is.InRange(1, 40), "the new connection's inputs drive the kart at once; the stand-in's last frame is never replayed");
             Assert.That(h.RunUntil(() => a.Results != null, 300f, a, b2), Is.True);
             Assert.That(a.Results.For("b").Finished, Is.True);
         }

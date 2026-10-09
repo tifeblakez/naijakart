@@ -45,6 +45,9 @@ namespace NaijaKart.Core.AntiCheat
             _maxPerSecond = System.Math.Max(1, maxPerSecond);
         }
 
+        /// <summary>A new connection numbers its frames from 1 again: forget the old sequence, keep the rate window.</summary>
+        public void ResetSequence() => _lastSequence = -1;
+
         public bool Accept(int sequence, float now)
         {
             if (now - _windowStart >= 1f)

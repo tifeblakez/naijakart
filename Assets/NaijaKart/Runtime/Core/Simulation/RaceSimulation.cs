@@ -283,6 +283,10 @@ namespace NaijaKart.Core.Simulation
             if (p == null || (p.Status != ParticipantStatus.Disconnected && p.Status != ParticipantStatus.Reconnecting)) return;
             p.Status = ParticipantStatus.Connected;
             p.DisconnectedAt = -1f;
+            // The returning client starts its input sequence from 1 again; never keep steering on the stand-in's last frame.
+            if (_rateLimiters.TryGetValue(playerId, out var limiter)) limiter.ResetSequence();
+            p.LatestInput = PlayerInputFrame.Neutral;
+            p.LastInputSequence = 0;
             Emit(RaceEventType.PlayerReconnected, playerId);
         }
 

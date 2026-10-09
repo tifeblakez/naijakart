@@ -94,6 +94,15 @@
     "gridColumnSpacing": 2.5,
     "rematchVoteSeconds": 20
   },
+  "bots": {
+    "laneSpreadFraction": 0.7,
+    "laneChangeMinSeconds": 6,
+    "laneChangeMaxSeconds": 14,
+    "laneBlendMetresPerSecond": 2.5,
+    "kartAvoidanceRange": 16,
+    "kartAvoidanceClearance": 2.4,
+    "overtakeSpeedMargin": 1.5
+  },
   "collision": {
     "vehicleRadius": 1.1,
     "bumpSpeedLoss": 0.2,

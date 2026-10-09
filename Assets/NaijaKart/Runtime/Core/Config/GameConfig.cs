@@ -18,6 +18,7 @@ namespace NaijaKart.Core.Config
         public BoostConfig boost = new BoostConfig();
         public TiltConfig tilt = new TiltConfig();
         public RaceRulesConfig raceRules = new RaceRulesConfig();
+        public BotConfig bots = new BotConfig();
         public CollisionConfig collision = new CollisionConfig();
         public ItemSystemConfig items = new ItemSystemConfig();
         public RoadEventsConfig roadEvents = new RoadEventsConfig();
@@ -263,6 +264,25 @@ namespace NaijaKart.Core.Config
         public float gridColumnSpacing = 2.5f;
         /// <summary>Seconds the results screen waits for rematch votes.</summary>
         public float rematchVoteSeconds = 20f;
+    }
+
+    /// <summary>AI drivers (always flagged as bots): how they use the road. No speed or grip here: bots drive the same vehicle model as players.</summary>
+    [Serializable]
+    public sealed class BotConfig
+    {
+        /// <summary>Preferred lane offsets are drawn from ±(roadHalfWidth × this), so the field spreads across the road instead of queueing on one line.</summary>
+        public float laneSpreadFraction = 0.7f;
+        /// <summary>Bots re-pick a preferred lane every so often (seconds, uniform in this range), like a driver looking for space.</summary>
+        public float laneChangeMinSeconds = 6f;
+        public float laneChangeMaxSeconds = 14f;
+        /// <summary>How fast the lane target may move sideways (metres per second), so lane changes are smooth, not snaps.</summary>
+        public float laneBlendMetresPerSecond = 2.5f;
+        /// <summary>Look this far ahead (metres) for other karts to steer around.</summary>
+        public float kartAvoidanceRange = 16f;
+        /// <summary>Lateral room (metres) a bot wants between itself and a kart it passes.</summary>
+        public float kartAvoidanceClearance = 2.4f;
+        /// <summary>Only steer around a kart ahead when it is at most this much faster (m/s): no point swerving for one pulling away.</summary>
+        public float overtakeSpeedMargin = 1.5f;
     }
 
     [Serializable]

@@ -13,7 +13,13 @@ namespace NaijaKart.Core.Util
 
         public DeterministicRandom(ulong seed)
         {
-            _state = seed == 0 ? 0x9E3779B97F4A7C15UL : seed;
+            // Xorshift's first outputs are tiny for small seeds (all low bits), so racers seeded 1, 2, 3…
+            // used to share their first draws. A SplitMix64 scramble spreads any seed over all 64 bits.
+            ulong z = seed + 0x9E3779B97F4A7C15UL;
+            z = (z ^ (z >> 30)) * 0xBF58476D1CE4E5B9UL;
+            z = (z ^ (z >> 27)) * 0x94D049BB133111EBUL;
+            z ^= z >> 31;
+            _state = z == 0 ? 0x9E3779B97F4A7C15UL : z;
         }
 
         public ulong NextULong()

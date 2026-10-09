@@ -66,7 +66,7 @@ namespace NaijaKart.Tests
             {
                 string id = "p" + i;
                 sim.AddParticipant(id, "Player " + i, i % 2 == 0 ? "danfo" : "keke", "tunde", isBot: true);
-                bots[id] = new BotDriver(geo, (ulong)(i + 1) * 17, 0.5f + 0.05f * i);
+                bots[id] = new BotDriver(geo, (ulong)(i + 1) * 17, 0.5f + 0.05f * i, content.Game.bots);
             }
             sim.BeginCountdown();
             int maxTicks = content.Game.simulation.tickRate * maxSeconds;
@@ -78,7 +78,7 @@ namespace NaijaKart.Tests
                     {
                         var p = sim.Find(kv.Key);
                         if (p.Status != ParticipantStatus.Connected) continue;
-                        sim.SubmitInput(kv.Key, kv.Value.Think(p, sim.Hazards.All, sim.FixedDeltaTime));
+                        sim.SubmitInput(kv.Key, kv.Value.Think(p, sim.Hazards.All, sim.Participants, sim.FixedDeltaTime));
                         var le = sim.Lastma.EventFor(kv.Key);
                         if (le != null && le.Phase == Core.Lastma.LastmaPhase.FinePending) sim.PayFine(kv.Key);
                     }
